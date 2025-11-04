@@ -1,6 +1,5 @@
 import { initRouter, navigate } from './router.js';
 import { enableA11y } from './utils/accessibility.js';
-import { MascotBubble } from './components/mascot.js';
 import { supabase } from './supabase.js';
 
 // PWA: registrar SW
@@ -12,12 +11,6 @@ if ('serviceWorker' in navigator) {
 
 // Acessibilidade base
 enableA11y();
-
-// Mascote global
-window.mascot = new MascotBubble({
-  container: document.body,
-  avatar: 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/raizes-m-v-p-i9jdtd/assets/w98ashcp30yj/cabeca.png',
-});
 
 // Inicializa roteador
 initRouter();
