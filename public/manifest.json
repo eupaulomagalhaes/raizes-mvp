@@ -1,0 +1,11 @@
+{
+  "name": "Raízes - Jogos Cognitivos Kids",
+  "short_name": "Raízes",
+  "start_url": "/#/",
+  "display": "standalone",
+  "background_color": "#f6fff9",
+  "theme_color": "#234c38",
+  "icons": [
+    { "src": "/img/mascot.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

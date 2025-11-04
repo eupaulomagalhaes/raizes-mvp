@@ -1,0 +1,78 @@
+:root{
+  --color-primary:#234c38;
+  --color-primary-600:#1d3f2f;
+  --color-secondary:#f0a500;
+  --color-accent:#ff6b6b;
+  --bg-primary:#f6fff9;
+  --bg-secondary:#e9f7f0;
+  --text-primary:#1b2b21;
+  --text-secondary:#3a5144;
+  --success:#2bb673;
+  --error:#e63946;
+  --card:#ffffff;
+  --alternate:#f5faf7;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%;}
+body{font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Helvetica Neue", sans-serif;}
+.h1,.h2,.h3{font-family:Poppins, Inter, sans-serif;}
+.h1{font-size:2rem; font-weight:800}
+.h2{font-size:1.5rem; font-weight:700}
+.h3{font-size:1.125rem; font-weight:600}
+
+.container{max-width:960px}
+
+.card{background:var(--card); border-radius:1.25rem; box-shadow:var(--shadow, 0 10px 20px rgba(0,0,0,.06));}
+.card-border{border:1px solid rgba(0,0,0,.06)}
+
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:.5rem; border-radius:1rem; padding:.75rem 1rem; font-weight:600; transition:.2s box-shadow,.2s transform}
+.btn:focus{outline:3px solid rgba(35,76,56,.35); outline-offset:2px}
+.btn[data-variant="primary"]{background:var(--color-primary); color:white}
+.btn[data-variant="primary"]:hover{filter:brightness(.95)}
+.btn[data-variant="secondary"]{background:var(--color-secondary); color:#1b2b21}
+.btn[data-variant="ghost"]{background:transparent; color:var(--color-primary); border:1px solid rgba(0,0,0,.1)}
+
+.input, .select{width:100%; border:1px solid rgba(0,0,0,.12); border-radius:1rem; padding:.75rem 1rem; background:white}
+.input:focus, .select:focus{outline:3px solid rgba(35,76,56,.35);}
+.label{font-weight:600; color:var(--text-secondary)}
+
+.progress{width:100%; height:12px; background:var(--alternate); border-radius:999px; overflow:hidden}
+.progress > .bar{height:100%; background:linear-gradient(90deg, var(--color-primary), var(--color-secondary)); width:0%}
+
+.mascot-bubble{position:fixed; bottom:1rem; right:1rem; display:flex; gap:.75rem; align-items:flex-end; z-index:50}
+.mascot-bubble .bubble{background:white; border-radius:1rem; padding:.75rem 1rem; box-shadow:0 10px 20px rgba(0,0,0,.08); max-width:280px}
+.mascot-bubble .avatar{width:56px; height:56px; border-radius:999px; background:#dff3e8; display:flex; align-items:center; justify-content:center; border:2px solid var(--color-primary)}
+
+.skip-link{position:absolute; left:-9999px; top:auto; width:1px; height:1px; overflow:hidden}
+.skip-link:focus{left:1rem; top:1rem; width:auto; height:auto; padding:.5rem 1rem; background:white; border-radius:.5rem}
+
+.grid-game{display:grid; gap:.5rem}
+.grid-game .cell{aspect-ratio:1/1; border-radius:.75rem; background:white; border:2px solid rgba(0,0,0,.06); display:flex; align-items:center; justify-content:center; cursor:pointer; font-weight:700; background-size:70% auto; background-repeat:no-repeat; background-position:center}
+.grid-game .cell:focus{outline:3px solid rgba(35,76,56,.35)}
+.grid-game .cell.correct{border-color:var(--success); box-shadow:0 0 0 3px rgba(43,182,115,.25) inset}
+.grid-game .cell.wrong{border-color:var(--error); box-shadow:0 0 0 3px rgba(230,57,70,.25) inset}
+
+/* Brand badge for welcome/login */
+.brand-badge{background:white; border-radius:1.25rem; padding:1rem 1.25rem; box-shadow:0 16px 32px rgba(0,0,0,.08); display:inline-block; text-align:center;}
+.brand-badge .brand-title{font-family:Poppins, Inter, sans-serif; font-weight:800; font-size:1.75rem; color:var(--color-primary)}
+.brand-badge .brand-sub{letter-spacing:.08em; font-weight:700; color:#2d4a3b}
+
+/* Form panel rounded like designs */
+.form-panel{background:white; border-radius:1.25rem; padding:1.25rem; box-shadow:0 16px 32px rgba(0,0,0,.08);}
+
+/* Speech bubble look for inline hints */
+.speech{position:relative; background:white; border-radius:1rem; padding:.5rem .75rem; box-shadow:0 10px 20px rgba(0,0,0,.08); display:inline-block}
+.speech:after{content:""; position:absolute; left:.75rem; bottom:-8px; width:0; height:0; border-left:8px solid transparent; border-right:8px solid transparent; border-top:8px solid white}
+
+/* Hero container mimic */
+.hero{min-height:70vh; display:flex; flex-direction:column; justify-content:flex-end; gap:1rem}
+
+/* Backgrounds from provided assets */
+.bg-onboarding{background-image:url('https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/raizes-m-v-p-i9jdtd/assets/l8o6ilu1qm8g/tela_fundo.png'); background-size:cover; background-position:center; background-repeat:no-repeat}
+.bg-room{background-image:url('https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/raizes-m-v-p-i9jdtd/assets/8sgpf2p40cxs/tela_fundo_atividade_1.png'); background-size:cover; background-position:center; background-repeat:no-repeat}
+
+@media (min-width:768px){
+  .brand-badge .brand-title{font-size:2rem}
+  .form-panel{padding:1.5rem}
+}

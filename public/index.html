@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Raízes - Jogos Cognitivos Kids</title>
+    <meta name="theme-color" content="#234c38" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" href="/img/mascot.svg" type="image/svg+xml" />
+
+    <!-- Tipografia -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CDN (modo leve) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            borderRadius: {
+              xl: '1rem',
+              '2xl': '1.25rem',
+            },
+            boxShadow: {
+              soft: '0 10px 20px rgba(0,0,0,0.06)',
+            }
+          }
+        }
+      }
+    </script>
+
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body class="bg-gradient-to-b from-[var(--bg-primary)] to-[var(--bg-secondary)] text-[var(--text-primary)] min-h-screen">
+    <a class="skip-link" href="#app">Pular para o conteúdo</a>
+    <div id="app" class="container mx-auto p-4 md:p-6"></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js" integrity="sha512-VHcHhO8mTkk6p3jfK0f1F3FQ3eU8zq8yR7rYm0f8r0v5aWgVEp9X03n1mM0o6Yt4YcQq9Zy+q6m3qzG3sY9uVg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
