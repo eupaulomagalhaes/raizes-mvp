@@ -16,7 +16,13 @@ export default {
   },
   init(){
     const bar = document.querySelector('#splash-progress .bar');
-    let p = 15;
-    const iv = setInterval(()=>{ p+=25; bar.style.width = p+'%'; if (p>=100){ clearInterval(iv); location.hash = '#/welcome'; } }, 200);
+    let p = 0;
+    const steps = 30; // ~3s at 100ms per step
+    const tick = 100;
+    const iv = setInterval(()=>{
+      p += 100/steps;
+      bar.style.width = Math.min(100,p)+'%';
+      if (p>=100){ clearInterval(iv); setTimeout(()=> location.hash = '#/welcome', 200); }
+    }, tick);
   }
 };
