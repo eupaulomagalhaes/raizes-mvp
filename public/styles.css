@@ -16,6 +16,8 @@
 *{box-sizing:border-box}
 html,body{height:100%;}
 body{font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Helvetica Neue", sans-serif;}
+.screen{min-height:100svh; min-height:100vh; display:flex; flex-direction:column; justify-content:flex-end}
+.screen-center{min-height:100svh; min-height:100vh; display:grid; place-items:center}
 .h1,.h2,.h3{font-family:Poppins, Inter, sans-serif;}
 .h1{font-size:2rem; font-weight:800}
 .h2{font-size:1.5rem; font-weight:700}
@@ -71,6 +73,20 @@ body{font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Helv
 /* Backgrounds from provided assets */
 .bg-onboarding{background-image:url('https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/raizes-m-v-p-i9jdtd/assets/l8o6ilu1qm8g/tela_fundo.png'); background-size:cover; background-position:center; background-repeat:no-repeat}
 .bg-room{background-image:url('https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/raizes-m-v-p-i9jdtd/assets/8sgpf2p40cxs/tela_fundo_atividade_1.png'); background-size:cover; background-position:center; background-repeat:no-repeat}
+
+/* Games list cards */
+.game-card{background:white; border-radius:1rem; padding:1rem; display:flex; align-items:center; justify-content:space-between; gap:.75rem; box-shadow:0 10px 20px rgba(0,0,0,.06)}
+.game-card .num{font-family:Poppins, Inter, sans-serif; font-weight:800; font-size:1.25rem; color:#2c3d33}
+.speech-inline{background:white; border-radius:1rem; padding:.5rem .75rem; box-shadow:0 10px 20px rgba(0,0,0,.08); display:inline-block}
+
+/* Splash specifics */
+.splash-wrap{position:relative; min-height:100svh; min-height:100vh}
+.splash-don{position:absolute; inset-inline:0; bottom:20%; display:grid; place-items:center}
+.splash-don img{max-height:60svh; max-height:60vh; height:auto; width:auto}
+.splash-bottom{position:absolute; left:0; right:0; bottom:0; padding:1.25rem; background:linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.06) 30%, rgba(0,0,0,.12) 70%, rgba(0,0,0,.16) 100%)}
+.splash-title{font-family:Poppins, Inter, sans-serif; font-weight:700; font-size:2rem; color:#ffffff; text-shadow:0 2px 6px rgba(0,0,0,.25)}
+.splash-bottom .progress{background:rgba(255,255,255,.35)}
+.splash-bottom .progress > .bar{background:linear-gradient(90deg, #ffa43b, #ffffff)}
 
 @media (min-width:768px){
   .brand-badge .brand-title{font-size:2rem}

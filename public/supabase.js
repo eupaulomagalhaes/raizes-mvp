@@ -5,6 +5,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 const DB_KEY = 'mvp_db_v1';
 const SESSION_KEY = 'mvp_session_v1';
 const PENDING_ONBOARD_KEY = 'mvp_pending_onboard_v1';
+const ACTIVE_CHILD_KEY = 'mvp_active_child_v1';
 
 // Configuração Supabase real (auth)
 const SUPABASE_URL = 'https://vjeizqpzzfgdxbhetfdc.supabase.co'; // TODO: [CHAVES]
@@ -167,10 +168,21 @@ export const supabase = {
     const db = getDB();
     return db.children.filter(c => c.profile_id === profileId);
   },
+  setActiveChild(childId){ localStorage.setItem(ACTIVE_CHILD_KEY, childId || ''); },
+  getActiveChild(){ const v = localStorage.getItem(ACTIVE_CHILD_KEY); return v || null; },
   async listGames(){
     return getDB().games;
   },
   async startSession({gameId, childId}){
+    // Try Supabase real
+    if (client){
+      try{
+        const started_at = new Date().toISOString();
+        const { data, error } = await client.from('game_sessions').insert({ game_id: gameId, child_id: childId || null, started_at }).select('id, started_at').single();
+        if (error) throw error;
+        return { id: data.id, started_at: new Date(data.started_at).getTime?.() || Date.now() };
+      }catch(e){ /* fallback to local */ }
+    }
     const db = getDB();
     const id = 'sess_'+Math.random().toString(36).slice(2,9);
     const started_at = Date.now();
@@ -179,17 +191,50 @@ export const supabase = {
     return { id, started_at };
   },
   async logEvent(sessionId, ts, payload){
+    if (client){
+      try{
+        const { error } = await client.from('game_events').insert({ session_id: sessionId, ts: new Date(ts).toISOString?.() || new Date().toISOString(), payload });
+        if (!error) return;
+      }catch(e){ /* fallback */ }
+    }
     const db = getDB();
     db.game_events.push({ id: 'evt_'+Math.random().toString(36).slice(2,9), session_id: sessionId, ts, payload });
     setDB(db);
   },
   async endSession(sessionId){
+    if (client){
+      try{
+        const ended_at = new Date().toISOString();
+        await client.from('game_sessions').update({ ended_at }).eq('id', sessionId);
+        return;
+      }catch(e){ /* fallback */ }
+    }
     const db = getDB();
     const s = db.game_sessions.find(s=>s.id===sessionId);
     if (s) s.ended_at = Date.now();
     setDB(db);
   },
   async getGameProgress({childId, gameId}){
+    if (client){
+      try{
+        const q1 = client.from('game_sessions').select('id, child_id, game_id').eq('game_id', gameId);
+        const { data: sess, error: e1 } = childId ? await q1.eq('child_id', childId) : await q1;
+        if (!e1 && sess && sess.length){
+          const ids = sess.map(s=>s.id);
+          const { data: evts, error: e2 } = await client.from('game_events').select('session_id, ts, payload').in('session_id', ids);
+          if (!e2){
+            let total=0, hits=0, rt=0, levelSum=0;
+            evts.forEach(e=>{
+              const { level, correct, reactionTimeMs } = e.payload || {};
+              if (typeof level === 'number') levelSum += level;
+              if (typeof reactionTimeMs === 'number') rt += reactionTimeMs;
+              if (typeof correct === 'boolean') { total++; if (correct) hits++; }
+            });
+            return { sessions: sess.length, accuracy: total? (hits/total):0, avgReaction: total? (rt/total):0, avgLevel: evts.length? (levelSum/Math.max(1,evts.length)):0 };
+          }
+        }
+      }catch(e){ /* fallback */ }
+    }
     const db = getDB();
     const sessions = db.game_sessions.filter(s => (childId? s.child_id===childId : true) && s.game_id===gameId);
     const events = db.game_events.filter(e => sessions.some(s=>s.id===e.session_id));

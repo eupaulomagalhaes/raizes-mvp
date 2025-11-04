@@ -187,7 +187,8 @@ async function start(){
   state.size = gridSize();
   buildGrid();
   try{
-    const sess = await supabase.startSession({ gameId:'onde-esta-o-brinquedo', childId: null });
+    const childId = supabase.getActiveChild();
+    const sess = await supabase.startSession({ gameId:'onde-esta-o-brinquedo', childId });
     state.sessionId = sess.id;
   }catch(e){ state.sessionId = null; }
   await playRound();
