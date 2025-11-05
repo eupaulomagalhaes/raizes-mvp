@@ -96,9 +96,9 @@ body{font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Helv
 .welcome-top .title{font-family:Montserrat, Inter, system-ui, sans-serif; font-weight:800; font-size:48px; line-height:1.1; color:#234c38}
 .welcome-top .sub{font-family:Montserrat, Inter, system-ui, sans-serif; font-size:20px; letter-spacing:.08em; font-weight:700; color:#2d4a3b}
 /* Bottom section: two columns with viewport padding (8.45% of vw) */
-.welcome-bottom{position:absolute; left:0; right:0; bottom:0; display:grid; grid-template-columns: 1fr 1fr; align-items:end; gap:4vw; padding:8.45vw; padding-top:4vw}
+.welcome-bottom{position:absolute; left:0; right:0; bottom:0; display:grid; grid-template-columns: 45% 55%; align-items:end; gap:3vw; padding:8.45vw; padding-top:4vw}
 .welcome-don{align-self:end}
-.welcome-don img{display:block; width:100%; height:auto; max-width:260px}
+.welcome-don img{display:block; width:100%; height:auto; max-width:clamp(240px, 42vw, 360px)}
 .welcome-right{display:flex; flex-direction:column; align-items:center; gap:3vw; justify-content:flex-end}
 .welcome-bubble{width:100%; display:flex; justify-content:flex-start}
 .welcome-bubble .speech{max-width:min(60vw, 320px)}
