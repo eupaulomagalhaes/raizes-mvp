@@ -90,16 +90,17 @@ body{font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Helv
 
 /* Welcome specifics */
 .welcome-wrap{position:relative; min-height:100svh; min-height:100vh}
-.welcome-top{padding:1.25rem; text-align:center}
+.welcome-top{padding:1.25rem 1.25rem 0; text-align:center}
 .welcome-top .badge{display:inline-block; background:white; padding:1rem 1.25rem; border-radius:1.25rem; box-shadow:0 16px 32px rgba(0,0,0,.08)}
-.welcome-top .pre{font-weight:700; letter-spacing:.06em; color:#2b3b31; margin-bottom:.5rem}
-.welcome-top .title{font-family:Poppins, Inter, sans-serif; font-weight:800; font-size:2rem; color:#234c38}
+.welcome-top .pre{font-weight:700; letter-spacing:.06em; color:#2b3b31; margin-bottom:.5rem; text-shadow:0 2px 4px rgba(0,0,0,.12)}
+.welcome-top .title{font-family:Poppins, Inter, sans-serif; font-weight:800; font-size:2.1rem; color:#234c38}
 .welcome-top .sub{letter-spacing:.08em; font-weight:700; color:#2d4a3b}
-.welcome-don{position:absolute; left:1rem; bottom:1.5rem; width:min(40%, 220px)}
-.welcome-bubble{position:absolute; left:calc(1rem + min(40%, 220px) - 8px); bottom:calc(1.5rem + 140px);}
+.welcome-don{position:absolute; left:1rem; bottom:2rem; width:min(44%, 240px)}
+.welcome-bubble{position:absolute; left:calc(1rem + min(44%, 240px) - 8px); bottom:7.5rem;}
 .welcome-bubble .speech{max-width:260px}
-.cta-area{position:absolute; left:0; right:0; bottom:1.25rem; display:flex; flex-direction:column; align-items:center; gap:.5rem}
-.cta-area .btn{min-width:220px}
+.cta-area{position:absolute; left:0; right:0; bottom:1.5rem; display:flex; flex-direction:column; align-items:center; gap:.5rem}
+.cta-area .btn{min-width:260px; border-radius:999px; box-shadow:0 14px 28px rgba(0,0,0,.18)}
+.cta-area .cta-link{color:#ffffff; font-weight:700; opacity:.9; text-decoration:none}
 
 @media (min-width:768px){
   .brand-badge .brand-title{font-size:2rem}

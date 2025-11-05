@@ -22,12 +22,10 @@ export default {
 
         <div class="cta-area">
           <a class='btn' data-variant='primary' href='#/register'>Começar</a>
-          <a class='text-sm underline text-[var(--color-primary)]' href='#/login'>Já tenho uma conta!</a>
+          <a class='cta-link' href='#/login'>Já tenho uma conta!</a>
         </div>
       </main>
     `;
   },
-  init(){
-    window.mascot.say('Oi! Vamos começar? Você pode entrar ou se cadastrar.');
-  }
+  init(){}
 };
