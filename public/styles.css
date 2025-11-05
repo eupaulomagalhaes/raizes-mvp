@@ -91,14 +91,18 @@ body{font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Helv
 /* Welcome specifics */
 .welcome-wrap{position:relative; min-height:100svh; min-height:100vh}
 .welcome-top{padding:1.25rem 1.25rem 0; text-align:center}
-.welcome-top .badge{display:inline-block; background:white; padding:1rem 1.25rem; border-radius:1.25rem; box-shadow:0 16px 32px rgba(0,0,0,.08)}
+.welcome-top .badge{display:inline-block; background:white; border-radius:12.5%; box-shadow:0 16px 32px rgba(0,0,0,.08); width:72vw; min-height:22vw; padding:1rem 1.25rem; max-width:520px}
 .welcome-top .pre{font-family:Montserrat, Inter, system-ui, sans-serif; font-size:20px; font-weight:700; letter-spacing:.06em; color:#2b3b31; margin-bottom:.5rem; text-shadow:0 2px 4px rgba(0,0,0,.12)}
 .welcome-top .title{font-family:Montserrat, Inter, system-ui, sans-serif; font-weight:800; font-size:48px; line-height:1.1; color:#234c38}
 .welcome-top .sub{font-family:Montserrat, Inter, system-ui, sans-serif; font-size:20px; letter-spacing:.08em; font-weight:700; color:#2d4a3b}
-.welcome-don{position:absolute; left:1rem; bottom:3.25rem; width:min(44%, 240px)}
-.welcome-bubble{position:absolute; left:calc(1rem + min(44%, 240px) - 8px); bottom:9rem;}
-.welcome-bubble .speech{max-width:260px}
-.cta-area{position:absolute; left:0; right:0; bottom:1.25rem; display:flex; flex-direction:column; align-items:center; gap:.75rem}
+/* Bottom section: two columns with viewport padding (8.45% of vw) */
+.welcome-bottom{position:absolute; left:0; right:0; bottom:0; display:grid; grid-template-columns: 1fr 1fr; align-items:end; gap:4vw; padding:8.45vw; padding-top:4vw}
+.welcome-don{align-self:end}
+.welcome-don img{display:block; width:100%; height:auto; max-width:260px}
+.welcome-right{display:flex; flex-direction:column; align-items:center; gap:3vw; justify-content:flex-end}
+.welcome-bubble{width:100%; display:flex; justify-content:flex-start}
+.welcome-bubble .speech{max-width:min(60vw, 320px)}
+.cta-area{width:100%; display:flex; flex-direction:column; align-items:center; gap:.75rem}
 .cta-area .btn{min-width:260px; border-radius:999px; box-shadow:0 14px 28px rgba(0,0,0,.18)}
 .cta-area .cta-link{color:#ffffff; font-weight:700; opacity:.9; text-decoration:none}
 
