@@ -45,7 +45,7 @@ export default {
       const isPlaying = typeof playing === 'boolean' ? playing : controller.isPlaying();
       button.setAttribute('aria-pressed', isEnabled ? 'true' : 'false');
       button.setAttribute('data-playing', isPlaying ? 'true' : 'false');
-      if (icon) icon.textContent = isEnabled && isPlaying ? '♪' : '🔇';
+      if (icon) icon.textContent = isEnabled && isPlaying ? '🔊' : '🔇';
     };
 
     button.addEventListener('click', ()=>{

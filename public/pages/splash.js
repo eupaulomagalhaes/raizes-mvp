@@ -9,13 +9,15 @@ export default {
         </div>
         <div class="splash-bottom">
           <div class="splash-title">Bem Vindo.</div>
-          <div class="mt-3">${UI.ProgressBar(15, 'id="splash-progress" class="auto"')}</div>
+          <div class="mt-3">${UI.ProgressBar(0, 'id="splash-progress"')}</div>
         </div>
       </main>
     `;
   },
   init(){
-    const bar = document.querySelector('#splash-progress .bar');
+    const container = document.getElementById('splash-progress');
+    if (container) container.classList.add('auto');
+    const bar = container?.querySelector('.bar');
     if (bar){
       bar.addEventListener('animationend', ()=>{
         try { localStorage.setItem('bgm_pending','1'); } catch(e){}
