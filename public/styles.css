@@ -40,7 +40,10 @@ body{font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Helv
 .label{font-weight:600; color:var(--text-secondary)}
 
 .progress{width:100%; height:12px; background:var(--alternate); border-radius:999px; overflow:hidden}
-.progress > .bar{height:100%; background:linear-gradient(90deg, var(--color-primary), var(--color-secondary)); width:0%}
+.progress > .bar{height:100%; background:linear-gradient(90deg, var(--color-primary), var(--color-secondary)); width:0%; transition:width .08s linear}
+/* Fluid auto animation for progress */
+.progress.auto > .bar{animation: progress-fill 3s linear forwards}
+@keyframes progress-fill{from{width:0%} to{width:100%}}
 
 .mascot-bubble{position:fixed; bottom:1rem; right:1rem; display:flex; gap:.75rem; align-items:flex-end; z-index:50}
 .mascot-bubble .bubble{background:white; border-radius:1rem; padding:.75rem 1rem; box-shadow:0 10px 20px rgba(0,0,0,.08); max-width:280px}
@@ -90,8 +93,8 @@ body{font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Helv
 
 /* Welcome specifics */
 .welcome-wrap{position:relative; min-height:100svh; min-height:100vh}
-.welcome-top{padding:1.25rem 1.25rem 0; text-align:center}
-.welcome-top .badge{display:inline-block; background:white; border-radius:12.5%; box-shadow:0 16px 32px rgba(0,0,0,.08); width:72vw; min-height:22vw; padding:1rem 1.25rem; max-width:520px}
+.welcome-top{padding:2rem 1.25rem 0; text-align:center}
+.welcome-top .badge{display:inline-block; background:white; border-radius:22%; box-shadow:0 22px 44px rgba(0,0,0,.12); width:72vw; min-height:22vw; padding:1rem 1.25rem; max-width:520px}
 .welcome-top .pre{font-family:Montserrat, Inter, system-ui, sans-serif; font-size:20px; font-weight:700; letter-spacing:.06em; color:#2b3b31; margin-bottom:.5rem; text-shadow:0 2px 4px rgba(0,0,0,.12)}
 .welcome-top .title{font-family:Montserrat, Inter, system-ui, sans-serif; font-weight:800; font-size:48px; line-height:1.1; color:#234c38}
 .welcome-top .sub{font-family:Montserrat, Inter, system-ui, sans-serif; font-size:20px; letter-spacing:.08em; font-weight:700; color:#2d4a3b}
@@ -102,8 +105,11 @@ body{font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Helv
 .welcome-right{display:flex; flex-direction:column; align-items:flex-start; gap:3vw; justify-content:flex-end}
 .welcome-bubble{width:100%; display:flex; justify-content:flex-start}
 .welcome-bubble .speech{max-width:min(60vw, 320px)}
+/* Left pointer tail for welcome bubble */
+.welcome-bubble .speech:after{left:-8px; bottom:auto; top:18px; border-top:8px solid transparent; border-bottom:8px solid transparent; border-left:none; border-right:8px solid white}
 .cta-area{width:100%; display:flex; flex-direction:column; align-items:flex-start; gap:.75rem}
-.cta-area .btn{width:min(100%, 260px); border-radius:999px; box-shadow:0 14px 28px rgba(0,0,0,.18)}
+.cta-area .btn{width:min(100%, 260px); border-radius:999px; box-shadow:0 14px 28px rgba(0,0,0,.18); transform-origin:center; will-change:transform; animation: cta-pulse 1.2s ease-in-out infinite alternate}
+@keyframes cta-pulse{from{transform:scale(.95)} to{transform:scale(1.025)}}
 .cta-area .cta-link{color:#ffffff; font-weight:700; opacity:.9; text-decoration:none}
 
 @media (min-width:768px){

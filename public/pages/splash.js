@@ -9,20 +9,20 @@ export default {
         </div>
         <div class="splash-bottom">
           <div class="splash-title">Bem Vindo.</div>
-          <div class="mt-3">${UI.ProgressBar(15, 'id="splash-progress"')}</div>
+          <div class="mt-3">${UI.ProgressBar(15, 'id="splash-progress" class="auto"')}</div>
         </div>
       </main>
     `;
   },
   init(){
     const bar = document.querySelector('#splash-progress .bar');
-    let p = 0;
-    const steps = 30; // ~3s at 100ms per step
-    const tick = 100;
-    const iv = setInterval(()=>{
-      p += 100/steps;
-      bar.style.width = Math.min(100,p)+'%';
-      if (p>=100){ clearInterval(iv); setTimeout(()=> location.hash = '#/welcome', 200); }
-    }, tick);
+    if (bar){
+      bar.addEventListener('animationend', ()=>{
+        try { localStorage.setItem('bgm_pending','1'); } catch(e){}
+        location.hash = '#/welcome';
+      }, { once:true });
+    } else {
+      setTimeout(()=>{ try { localStorage.setItem('bgm_pending','1'); } catch(e){}; location.hash='#/welcome'; }, 3000);
+    }
   }
 };
