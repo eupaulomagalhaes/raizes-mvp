@@ -4,8 +4,11 @@ export default {
   template(){
     return `
       <main class="welcome-wrap bg-onboarding">
+        <button class="bgm-toggle" type="button" aria-pressed="true" aria-label="Alternar música" data-role="bgm-toggle">
+          <span class="icon" aria-hidden="true">♪</span>
+        </button>
         <div class="welcome-top">
-          <div class="pre">BOAS VINDAS AO</div>
+          <div class="pre">BEM-VINDO AO</div>
           <div class="badge">
             <div class="title">Raízes</div>
             <div class="sub">EDUCACIONAL</div>
@@ -27,5 +30,35 @@ export default {
       </main>
     `;
   },
-  init(){}
+  init(){
+    const button = document.querySelector('[data-role="bgm-toggle"]');
+    const icon = button?.querySelector('.icon');
+    const controller = window.bgmController;
+
+    if (!button || !controller){
+      if (button) button.style.display = 'none';
+      return;
+    }
+
+    const renderState = (enabled, playing)=>{
+      const isEnabled = typeof enabled === 'boolean' ? enabled : controller.isEnabled();
+      const isPlaying = typeof playing === 'boolean' ? playing : controller.isPlaying();
+      button.setAttribute('aria-pressed', isEnabled ? 'true' : 'false');
+      button.setAttribute('data-playing', isPlaying ? 'true' : 'false');
+      if (icon) icon.textContent = isEnabled && isPlaying ? '♪' : '🔇';
+    };
+
+    button.addEventListener('click', ()=>{
+      const enabled = controller.toggle();
+      renderState(enabled, controller.isPlaying());
+    });
+
+    const onChange = (event)=>{
+      const detail = event.detail || {};
+      renderState(detail.enabled, detail.playing);
+    };
+    document.addEventListener('bgm:change', onChange);
+
+    renderState();
+  }
 };

@@ -93,8 +93,8 @@ body{font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Helv
 
 /* Welcome specifics */
 .welcome-wrap{position:relative; min-height:100svh; min-height:100vh}
-.welcome-top{padding:2rem 1.25rem 0; text-align:center}
-.welcome-top .badge{display:inline-block; background:white; border-radius:22%; box-shadow:0 22px 44px rgba(0,0,0,.12); width:72vw; min-height:22vw; padding:1rem 1.25rem; max-width:520px}
+.welcome-top{padding:3rem 1.5rem 0; text-align:center}
+.welcome-top .badge{display:inline-block; background:white; border-radius:clamp(60px, 20vw, 120px); box-shadow:0 28px 56px rgba(0,0,0,.16); width:72vw; min-height:22vw; padding:1.5rem 2rem; max-width:520px}
 .welcome-top .pre{font-family:Montserrat, Inter, system-ui, sans-serif; font-size:20px; font-weight:700; letter-spacing:.06em; color:#2b3b31; margin-bottom:.5rem; text-shadow:0 2px 4px rgba(0,0,0,.12)}
 .welcome-top .title{font-family:Montserrat, Inter, system-ui, sans-serif; font-weight:800; font-size:48px; line-height:1.1; color:#234c38}
 .welcome-top .sub{font-family:Montserrat, Inter, system-ui, sans-serif; font-size:20px; letter-spacing:.08em; font-weight:700; color:#2d4a3b}
@@ -106,11 +106,17 @@ body{font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Helv
 .welcome-bubble{width:100%; display:flex; justify-content:flex-start}
 .welcome-bubble .speech{max-width:min(60vw, 320px)}
 /* Left pointer tail for welcome bubble */
-.welcome-bubble .speech:after{left:-8px; bottom:auto; top:18px; border-top:8px solid transparent; border-bottom:8px solid transparent; border-left:none; border-right:8px solid white}
+.welcome-bubble .speech:after{left:-10px; top:50%; transform:translateY(-50%); border-top:10px solid transparent; border-bottom:10px solid transparent; border-left:0; border-right:10px solid white}
 .cta-area{width:100%; display:flex; flex-direction:column; align-items:flex-start; gap:.75rem}
-.cta-area .btn{width:min(100%, 260px); border-radius:999px; box-shadow:0 14px 28px rgba(0,0,0,.18); transform-origin:center; will-change:transform; animation: cta-pulse 1.2s ease-in-out infinite alternate}
+.cta-area .btn{width:min(100%, 260px); border-radius:999px; box-shadow:0 14px 28px rgba(0,0,0,.18); transform-origin:center; will-change:transform; animation: cta-pulse .6s ease-in-out infinite alternate}
 @keyframes cta-pulse{from{transform:scale(.95)} to{transform:scale(1.025)}}
 .cta-area .cta-link{color:#ffffff; font-weight:700; opacity:.9; text-decoration:none}
+
+.bgm-toggle{position:absolute; top:1.1rem; right:1.1rem; width:52px; height:52px; border-radius:999px; display:flex; align-items:center; justify-content:center; background:rgba(35,76,56,.92); color:white; border:2px solid rgba(255,255,255,.45); box-shadow:0 18px 36px rgba(0,0,0,.22); transition:.2s transform,.2s box-shadow,.2s background,.2s color}
+.bgm-toggle:hover{transform:scale(1.05)}
+.bgm-toggle:focus-visible{outline:3px solid rgba(255,255,255,.8); outline-offset:3px}
+.bgm-toggle[aria-pressed="false"]{background:rgba(255,255,255,.86); color:var(--color-primary); border-color:rgba(35,76,56,.35)}
+.bgm-toggle .icon{font-size:1.45rem; line-height:1; display:inline-flex; align-items:center; justify-content:center}
 
 @media (min-width:768px){
   .brand-badge .brand-title{font-size:2rem}
