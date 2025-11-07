@@ -2,16 +2,16 @@ export const UI = {
   Button: ({label, variant='primary', type='button', attrs=''}) => `
     <button class="btn" data-variant="${variant}" type="${type}" ${attrs}>${label}</button>
   `,
-  Input: ({id, label, type='text', placeholder='', required=false, value=''}) => `
+  Input: ({id, label, type='text', placeholder='', required=false, value='', attrs=''}) => `
     <label class="block space-y-1">
       <span class="label">${label}${required?' *':''}</span>
-      <input id="${id}" class="input" type="${type}" placeholder="${placeholder}" ${required?'required':''} value="${value}" />
+      <input id="${id}" class="input" type="${type}" placeholder="${placeholder}" ${required?'required':''} value="${value}" ${attrs} />
     </label>
   `,
-  Select: ({id, label, options=[], required=false}) => `
+  Select: ({id, label, options=[], required=false, attrs=''}) => `
     <label class="block space-y-1">
       <span class="label">${label}${required?' *':''}</span>
-      <select id="${id}" class="select" ${required?'required':''}>
+      <select id="${id}" class="select" ${required?'required':''} ${attrs}>
         ${options.map(o=>`<option value="${o.value}">${o.label}</option>`).join('')}
       </select>
     </label>
