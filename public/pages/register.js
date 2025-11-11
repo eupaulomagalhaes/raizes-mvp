@@ -291,6 +291,13 @@ export default {
             alert(msg || 'Erro ao cadastrar');
             return;
           }
+          // Se confirmação de e-mail estiver habilitada, não haverá sessão agora
+          const hasSession = !!supabase.getCurrentUser();
+          if (!hasSession){
+            alert('Enviamos um e-mail de confirmação. Confirme e faça login para concluir seu cadastro.');
+            goTo('/login');
+            return;
+          }
           goTo('/games');
           return;
         }
