@@ -111,6 +111,9 @@ function validate(){
     }else if (id === 'u_cel' && !isValidPhone(value)){
       markError(el, 'Informe um celular válido');
       invalid.push(id);
+    }else if (id === 'u_email' && !isValidEmail(value)){
+      markError(el, 'Formato de e-mail inválido');
+      invalid.push(id);
     }
   });
 
@@ -170,7 +173,10 @@ function renderWizard(){
 
   const backButton = document.getElementById('btn-back');
   const nextButton = document.getElementById('btn-next');
-  if (backButton) backButton.disabled = state.step === 1;
+  if (backButton){
+    backButton.disabled = false;
+    backButton.removeAttribute('disabled');
+  }
   if (nextButton) nextButton.textContent = state.step === 5 ? 'Concluir' : 'Avançar';
 
   attachMasks(root);
@@ -209,11 +215,21 @@ export default {
       </main>
     `;
   },
-  init(){
+  init(ctx = {}){
     state.step = 1; state.data = {};
     const backButton = document.getElementById('btn-back');
     const nextButton = document.getElementById('btn-next');
-    if (backButton) backButton.addEventListener('click', ()=>{ if (state.step>1){ state.step--; renderWizard(); }});
+    const goTo = typeof ctx.navigate === 'function'
+      ? (path)=> ctx.navigate(path)
+      : (path)=>{ location.hash = `#${path}`; };
+    if (backButton) backButton.addEventListener('click', ()=>{
+      if (state.step>1){
+        state.step--;
+        renderWizard();
+        return;
+      }
+      goTo('/welcome');
+    });
     if (nextButton) nextButton.addEventListener('click', async ()=>{
       if (!validate()){ alert('Preencha os campos obrigatórios (*) para continuar.'); return; }
       if (state.step<5){ state.step++; renderWizard(); return; }
@@ -243,14 +259,14 @@ export default {
         if (!current){
           supabase.setPendingOnboarding({ usuario, crianca });
           await supabase.registerAndSaveProfile({ name: state.data.u_nome, email: state.data.u_email, password: state.data.u_password });
-          location.hash = '#/games';
+          goTo('/games');
           return;
         }
 
         const idUsuario = await supabase.upsertUsuario(usuario);
         await supabase.insertCrianca({ id_responsavel: idUsuario, crianca });
         window.a11yAnnounce('Cadastro concluído com sucesso');
-        location.hash = '#/games';
+        goTo('/games');
       }catch(err){ alert(err.message); }
     });
     renderWizard();
@@ -354,4 +370,8 @@ function clearErrors(){
 function isValidPhone(value){
   const digits = value.replace(/\D/g,'');
   return digits.length === 10 || digits.length === 11;
+}
+
+function isValidEmail(value){
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(value);
 }
