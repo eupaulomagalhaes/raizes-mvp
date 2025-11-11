@@ -88,9 +88,30 @@ export const supabase = {
       const authUser = (await client.auth.getUser()).data.user;
       if (!authUser) throw new Error('É necessário estar autenticado.');
       const payload = { ...usuario, uuid: authUser.id };
-      const { data, error } = await client.from('usuarios').upsert(payload, { onConflict: 'uuid' }).select('id_usuario').single();
-      if (error) throw error;
-      return data.id_usuario;
+      // 42P10 ocorre porque 'uuid' não é UNIQUE. Fazemos upsert manual por uuid.
+      const { data: found, error: selErr } = await client
+        .from('usuarios')
+        .select('id_usuario')
+        .eq('uuid', authUser.id)
+        .limit(1);
+      if (selErr) throw selErr;
+      if (Array.isArray(found) && found.length){
+        const id = found[0].id_usuario;
+        const { error: updErr } = await client
+          .from('usuarios')
+          .update(payload)
+          .eq('id_usuario', id);
+        if (updErr) throw updErr;
+        return id;
+      } else {
+        const { data: ins, error: insErr } = await client
+          .from('usuarios')
+          .insert(payload)
+          .select('id_usuario')
+          .single();
+        if (insErr) throw insErr;
+        return ins.id_usuario;
+      }
     }
     // Stub local
     const db = getDB();
