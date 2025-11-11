@@ -280,7 +280,17 @@ export default {
         const current = supabase.getCurrentUser();
         if (!current){
           supabase.setPendingOnboarding({ usuario, crianca });
-          await supabase.registerAndSaveProfile({ name: state.data.u_nome, email: state.data.u_email, password: state.data.u_password });
+          try{
+            await supabase.registerAndSaveProfile({ name: state.data.u_nome, email: state.data.u_email, password: state.data.u_password });
+          }catch(err){
+            const msg = String(err?.message||'');
+            if (/already\s+registered|already\s+exists|exists/i.test(msg)){
+              alert('E-mail já cadastrado');
+              return;
+            }
+            alert(msg || 'Erro ao cadastrar');
+            return;
+          }
           goTo('/games');
           return;
         }
@@ -289,7 +299,14 @@ export default {
         await supabase.insertCrianca({ id_responsavel: idUsuario, crianca });
         window.a11yAnnounce('Cadastro concluído com sucesso');
         goTo('/games');
-      }catch(err){ alert(err.message); }
+      }catch(err){
+        const msg = String(err?.message||'');
+        if (/already\s+registered|already\s+exists|exists/i.test(msg)){
+          alert('E-mail já cadastrado');
+        } else {
+          alert(msg || 'Erro inesperado');
+        }
+      }
     });
     renderWizard();
   }
@@ -416,7 +433,7 @@ async function setupCityAutocomplete(){
     const input = document.getElementById('u_cidade');
     const dl = document.getElementById('cities-list');
     if (!input || !dl) return;
-    const client = (supabase && (supabase.client || supabase.sb || supabase._client)) || window?.supabase?.client || null;
+    const client = (typeof supabase?.getClient === 'function') ? supabase.getClient() : ((supabase && (supabase.client || supabase.sb || supabase._client)) || window?.supabase?.client || null);
     if (!client){
       // graceful no-op if client not available
       return;
@@ -432,20 +449,30 @@ async function setupCityAutocomplete(){
     };
     const norm = (s)=> (s||'').normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase();
     const fetchCities = async (term)=>{
-      if (!term || term.length < 2) { fill([]); return; }
-      const { data, error } = await client
+      const q = client
         .from('cidades')
         .select('id_cidade, nome_cidade, uf, cidade_uf')
-        .ilike('cidade_uf', `%${term}%`)
-        .limit(50);
+        .limit(200);
+      let data, error;
+      try{
+        // Para evitar perder resultados por acentos, trazemos um lote e filtramos no cliente
+        // Se houver termo, tentamos um ilike amplo; caso contrário, apenas limitamos
+        if (term && term.length >= 1) {
+          ({ data, error } = await q.ilike('cidade_uf', `%${term}%`));
+          if (error) ({ data, error } = await q); // fallback sem filtro
+        } else {
+          ({ data, error } = await q);
+        }
+      }catch{ data = []; error = null; }
       if (error){ fill([]); return; }
-      const t = norm(term);
+      const t = norm(term||'');
       const filtered = (data||[])
-        .filter(r=> norm(r.cidade_uf||`${r.nome_cidade||''}/${r.uf||''}`).startsWith(t))
+        .filter(r=> !t || norm(r.cidade_uf||`${r.nome_cidade||''}/${r.uf||''}`).includes(t))
         .slice(0, 20);
       fill(filtered);
     };
     const onInput = debounce((ev)=> fetchCities(ev.target.value.trim()), 250);
     input.addEventListener('input', onInput);
+    input.addEventListener('focus', ()=> fetchCities(input.value.trim()));
   }catch{}
 }

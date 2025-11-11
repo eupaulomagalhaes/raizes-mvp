@@ -32,6 +32,9 @@ function defaultGames(){
 }
 
 export const supabase = {
+  getClient(){
+    return client;
+  },
   init(){
     if (!client) return;
     client.auth.getSession().then(({ data })=>{
