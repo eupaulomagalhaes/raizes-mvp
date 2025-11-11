@@ -42,24 +42,25 @@ function stepTemplate(){
         ${UI.Input({id:'u_nome', label:'Nome Completo', required:true, placeholder:'Digite seu nome aqui...', attrs:'autocomplete="name"'})}
         ${UI.Input({id:'u_nasc', label:'Data de Nascimento', required:true, placeholder:'00/00/0000', attrs:'data-mask="date" inputmode="numeric" maxlength="10"'})}
         ${UI.Input({id:'u_cel', label:'Celular', required:true, placeholder:'(00) 0 0000-0000', attrs:'data-mask="phone" inputmode="numeric" maxlength="17" autocomplete="tel" data-mask-phone="1"'})}
-        ${UI.Input({id:'u_email', label:'E-mail', type:'email', required:true, placeholder:'seunome@email.com', attrs:'autocomplete="email"'})}
         ${UI.Select({id:'u_parentesco', label:'Grau de Parentesco', required:true, options:[
           {value:'mae', label:'Mãe'}, {value:'pai', label:'Pai'}, {value:'responsavel', label:'Responsável'}, {value:'outro', label:'Outro'}
         ], attrs:'autocomplete="relationship"'})}
-      `;
-    case 2:
-      return `
-        ${UI.Input({id:'u_password', label:'Senha (para criar sua conta)', type:'password', required:true, placeholder:'Crie sua senha', attrs:'minlength="6" autocomplete="new-password" data-mask-password="1"'})}
         ${UI.Select({id:'u_escolaridade', label:'Escolaridade', required:true, options:[
           {value:'fundamental', label:'Fundamental'}, {value:'medio', label:'Médio'}, {value:'superior', label:'Superior'}, {value:'pos', label:'Pós/Outros'}
         ]})}
         ${UI.Input({id:'u_prof', label:'Profissão', required:true, placeholder:'Digite sua profissão...'})}
-        ${UI.Input({id:'u_cidade', label:'Cidade/Estado', required:true, placeholder:'Ex: São Paulo/SP'})}
+        ${UI.Input({id:'u_cidade', label:'Cidade/Estado', required:true, placeholder:'Ex: São Paulo/SP', attrs:'list="cities-list" autocomplete="off"'})}
+      `;
+    case 2:
+      return `
+        ${UI.Input({id:'u_email', label:'E-mail', type:'email', required:true, placeholder:'seunome@email.com', attrs:'autocomplete="email"'})}
+        ${UI.Input({id:'u_password', label:'Senha', type:'password', required:true, placeholder:'Crie sua senha', attrs:'minlength="6" autocomplete="new-password" data-mask-password="1"'})}
+        ${UI.Input({id:'u_password2', label:'Confirme sua senha', type:'password', required:true, placeholder:'Repita a senha', attrs:'minlength="6" autocomplete="new-password"'})}
       `;
     case 3:
       return `
         ${UI.Input({id:'c_nome', label:'Nome da criança', required:true})}
-        ${UI.Input({id:'c_nasc', label:'Data de nascimento', type:'date', required:true})}
+        ${UI.Input({id:'c_nasc', label:'Data de nascimento', required:true, placeholder:'00/00/0000', attrs:'data-mask="date" inputmode="numeric" maxlength="10"'})}
         ${UI.Select({id:'c_sexo', label:'Sexo', options:[
           {value:'f', label:'Feminino'}, {value:'m', label:'Masculino'}, {value:'n', label:'Prefiro não dizer'}
         ]})}
@@ -68,9 +69,15 @@ function stepTemplate(){
       `;
     case 4:
       return `
-        ${UI.Select({id:'c_terapia', label:'Faz algum tipo de terapia?', required:true, options:[{value:'false', label:'Não'},{value:'true', label:'Sim'}]})}
-        ${UI.Input({id:'c_tipos', label:'Tipo(s) de Terapia', placeholder:'Separe com vírgulas'})}
-        ${UI.Input({id:'c_outras', label:'Outras terapias', placeholder:'Opcional'})}
+        ${UI.Select({id:'c_terapia', label:'Faz algum tipo de terapia?', options:[{value:'false', label:'Não'},{value:'true', label:'Sim'}]})}
+        ${UI.Select({id:'c_tipos', label:'Tipo(s) de Terapia', options:[
+          {value:'fonoaudiologia', label:'Fonoaudiologia'},
+          {value:'terapia_ocupacional', label:'Terapia Ocupacional'},
+          {value:'psicologia', label:'Psicologia'},
+          {value:'psicopedagogia', label:'Psicopedagogia'},
+          {value:'outros', label:'Outros'}
+        ]})}
+        ${UI.Input({id:'c_outras', label:'Outras Terapia', placeholder:'Opcional'})}
       `;
     case 5:
       return `
@@ -114,8 +121,21 @@ function validate(){
     }else if (id === 'u_email' && !isValidEmail(value)){
       markError(el, 'Formato de e-mail inválido');
       invalid.push(id);
+    }else if ((id === 'u_nasc' || id === 'c_nasc') && !isValidDateBR(value)){
+      markError(el, 'Data inválida. Use dd/mm/aaaa');
+      invalid.push(id);
     }
   });
+
+  // senha e confirmação iguais (apenas quando presentes na etapa)
+  if (state.step === 2){
+    const p1 = document.getElementById('u_password')?.value || '';
+    const p2 = document.getElementById('u_password2')?.value || '';
+    if (p1 && p2 && p1 !== p2){
+      markError(document.getElementById('u_password2'), 'As senhas não coincidem');
+      invalid.push('u_password2');
+    }
+  }
 
   if (invalid.length>0) return false;
 
@@ -125,16 +145,16 @@ function validate(){
       u_nome:get('u_nome'),
       u_nasc:get('u_nasc'),
       u_cel:get('u_cel'),
-      u_email:get('u_email'),
-      u_parentesco:get('u_parentesco')
+      u_parentesco:get('u_parentesco'),
+      u_escolaridade:get('u_escolaridade'),
+      u_prof:get('u_prof'),
+      u_cidade:get('u_cidade')
     });
   }
   if (state.step===2){
     Object.assign(state.data, {
-      u_password:get('u_password'),
-      u_escolaridade:get('u_escolaridade'),
-      u_prof:get('u_prof'),
-      u_cidade:get('u_cidade')
+      u_email:get('u_email'),
+      u_password:get('u_password')
     });
   }
   if (state.step===3){
@@ -181,6 +201,7 @@ function renderWizard(){
 
   attachMasks(root);
   setupPasswordToggle();
+  setupCityAutocomplete();
 }
 
 export default {
@@ -212,6 +233,7 @@ export default {
             </div>
           </footer>
         </div>
+        <datalist id="cities-list"></datalist>
       </main>
     `;
   },
@@ -342,10 +364,10 @@ function setupPasswordToggle(){
 
 function getRequiredFieldsForStep(step){
   switch(step){
-    case 1: return ['u_nome','u_nasc','u_cel','u_email','u_parentesco'];
-    case 2: return ['u_password','u_escolaridade','u_prof','u_cidade'];
+    case 1: return ['u_nome','u_nasc','u_cel','u_parentesco','u_escolaridade','u_prof','u_cidade'];
+    case 2: return ['u_email','u_password','u_password2'];
     case 3: return ['c_nome','c_nasc'];
-    case 4: return ['c_terapia'];
+    case 4: return [];
     default: return [];
   }
 }
@@ -374,4 +396,56 @@ function isValidPhone(value){
 
 function isValidEmail(value){
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(value);
+}
+
+function isValidDateBR(value){
+  // dd/mm/aaaa
+  const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(value || '');
+  if (!m) return false;
+  const d = parseInt(m[1],10), mo = parseInt(m[2],10)-1, y = parseInt(m[3],10);
+  const dt = new Date(y, mo, d);
+  return dt.getFullYear()===y && dt.getMonth()===mo && dt.getDate()===d;
+}
+
+function debounce(fn, ms){
+  let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args), ms); };
+}
+
+async function setupCityAutocomplete(){
+  try{
+    const input = document.getElementById('u_cidade');
+    const dl = document.getElementById('cities-list');
+    if (!input || !dl) return;
+    const client = (supabase && (supabase.client || supabase.sb || supabase._client)) || window?.supabase?.client || null;
+    if (!client){
+      // graceful no-op if client not available
+      return;
+    }
+    const fill = (rows=[])=>{
+      dl.innerHTML = '';
+      rows.forEach(r=>{
+        const opt = document.createElement('option');
+        const value = r.cidade_uf || (r.nome_cidade ? `${r.nome_cidade}/${r.uf||''}`.replace(/\/\s*$/, '') : '');
+        opt.value = value;
+        dl.appendChild(opt);
+      });
+    };
+    const norm = (s)=> (s||'').normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase();
+    const fetchCities = async (term)=>{
+      if (!term || term.length < 2) { fill([]); return; }
+      const { data, error } = await client
+        .from('cidades')
+        .select('id_cidade, nome_cidade, uf, cidade_uf')
+        .ilike('cidade_uf', `%${term}%`)
+        .limit(50);
+      if (error){ fill([]); return; }
+      const t = norm(term);
+      const filtered = (data||[])
+        .filter(r=> norm(r.cidade_uf||`${r.nome_cidade||''}/${r.uf||''}`).startsWith(t))
+        .slice(0, 20);
+      fill(filtered);
+    };
+    const onInput = debounce((ev)=> fetchCities(ev.target.value.trim()), 250);
+    input.addEventListener('input', onInput);
+  }catch{}
 }
