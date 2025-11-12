@@ -41,7 +41,7 @@ function stepTemplate(){
       return `
         ${UI.Input({id:'u_email', label:'E-mail', type:'email', required:true, placeholder:'seunome@email.com', attrs:'autocomplete="email"'})}
         ${UI.Input({id:'u_password', label:'Senha', type:'password', required:true, placeholder:'Crie sua senha', attrs:'minlength="6" autocomplete="new-password" data-mask-password="1"'})}
-        ${UI.Input({id:'u_password2', label:'Confirme sua senha', type:'password', required:true, placeholder:'Repita a senha', attrs:'minlength="6" autocomplete="new-password"'})}
+        ${UI.Input({id:'u_password2', label:'Confirme sua senha', type:'password', required:true, placeholder:'Repita a senha', attrs:'minlength="6" autocomplete="new-password" data-mask-password="1" data-password-confirm="1"'})}
       `;
     case 2:
       return `
@@ -375,23 +375,50 @@ function attachMasks(root){
 }
 
 function setupPasswordToggle(){
-  const passwordInput = document.querySelector('[data-mask-password]');
-  if (!passwordInput || passwordInput.dataset.toggleReady) return;
-  passwordInput.dataset.toggleReady = '1';
-  const wrapper = passwordInput.parentElement;
-  wrapper.classList.add('register-password-wrapper');
-  const toggleBtn = document.createElement('button');
-  toggleBtn.type = 'button';
-  toggleBtn.className = 'register-password-toggle';
-  toggleBtn.setAttribute('aria-label', 'Mostrar ou ocultar senha');
-  toggleBtn.textContent = '👁';
-  toggleBtn.addEventListener('click', ()=>{
-    const isPassword = passwordInput.type === 'password';
-    passwordInput.type = isPassword ? 'text' : 'password';
-    toggleBtn.textContent = isPassword ? '🙈' : '👁';
+  const inputs = document.querySelectorAll('[data-mask-password]');
+  inputs.forEach((passwordInput)=>{
+    if (!passwordInput || passwordInput.dataset.toggleReady) return;
+    passwordInput.dataset.toggleReady = '1';
+    const wrapper = passwordInput.parentElement;
+    wrapper.classList.add('register-password-wrapper');
+    const toggleBtn = document.createElement('button');
+    toggleBtn.type = 'button';
+    toggleBtn.className = 'register-password-toggle';
+    toggleBtn.setAttribute('aria-label', 'Mostrar ou ocultar senha');
+    toggleBtn.textContent = '👁';
+    toggleBtn.addEventListener('click', ()=>{
+      const isPassword = passwordInput.type === 'password';
+      passwordInput.type = isPassword ? 'text' : 'password';
+      toggleBtn.textContent = isPassword ? '🙈' : '👁';
+    });
+    wrapper.style.position = 'relative';
+    wrapper.appendChild(toggleBtn);
   });
-  wrapper.style.position = 'relative';
-  wrapper.appendChild(toggleBtn);
+  const confirm = document.querySelector('[data-password-confirm]');
+  if (confirm && !confirm.dataset.matchWatcher){
+    confirm.dataset.matchWatcher = '1';
+    const renderHint = ()=>{
+      const base = confirm.parentElement;
+      let hint = base.querySelector('.input-hint');
+      const pass = document.getElementById('u_password')?.value || '';
+      const confirmValue = confirm.value || '';
+      const matches = !confirmValue || pass === confirmValue;
+      if (!matches){
+        if (!hint){
+          hint = document.createElement('div');
+          hint.className = 'input-hint';
+          base.appendChild(hint);
+        }
+        hint.textContent = '* Senha não é a mesma';
+        confirm.classList.add('has-error');
+      }else{
+        if (hint) hint.remove();
+        confirm.classList.remove('has-error');
+      }
+    };
+    confirm.addEventListener('input', renderHint);
+    document.getElementById('u_password')?.addEventListener('input', renderHint);
+  }
 }
 
 function getRequiredFieldsForStep(step){
