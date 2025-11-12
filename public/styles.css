@@ -91,13 +91,13 @@ body{font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Helv
 .login-submit:hover{transform:translateY(-1px); filter:brightness(1.03);}
 .login-submit:focus-visible{outline:3px solid rgba(255,255,255,.6); outline-offset:3px;}
 .login-footer{display:flex; flex-direction:column; gap:1.5rem; align-items:center;}
-.login-mascot-area{display:flex; align-items:flex-end; gap:1rem;}
+.login-mascot-area{display:flex; align-items:center; gap:1rem;}
 .login-mascot{width:110px; height:auto; filter:drop-shadow(0 18px 32px rgba(0,0,0,.25));}
 .login-speech{font-weight:700; color:#234c38;}
 .login-signup{font-size:.95rem; font-weight:600; color:#1f3328;}
 .login-signup a{color:#234c38; text-decoration:underline;}
 .login-mascot-area .login-speech{position:relative;}
-.login-mascot-area .login-speech:after{content:""; position:absolute; left:-14px; top:50%; transform:translateY(-50%); width:0; height:0; border-top:10px solid transparent; border-bottom:10px solid transparent; border-right:14px solid white;}
+.login-mascot-area .login-speech:after{content:""; position:absolute; left:-14px; top:46%; transform:translateY(-50%); width:0; height:0; border-top:10px solid transparent; border-bottom:10px solid transparent; border-right:14px solid white;}
 
 @media (min-width:520px){
   .login-content{max-width:460px;}
