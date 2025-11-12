@@ -66,6 +66,46 @@ body{font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Helv
 /* Form panel rounded like designs */
 .form-panel{background:white; border-radius:1.25rem; padding:1.25rem; box-shadow:0 16px 32px rgba(0,0,0,.08);}
 
+/* Login redesign */
+.login-screen{min-height:100svh; min-height:100vh; display:flex; justify-content:center; align-items:center; padding:2rem 1.5rem; position:relative; overflow:hidden;}
+.login-content{width:100%; max-width:420px; display:flex; flex-direction:column; gap:1.5rem; align-items:center; text-align:center;}
+.login-greeting{font-family:Montserrat, Inter, system-ui, sans-serif; font-size:1.25rem; font-weight:700; letter-spacing:.04em; color:#1f3328; text-transform:uppercase; text-shadow:0 4px 12px rgba(0,0,0,.18);}
+.login-card{width:100%; background:rgba(255,255,255,.95); border-radius:2.5rem; padding:2rem 1.75rem 2.25rem; box-shadow:0 28px 56px rgba(0,0,0,.22); display:flex; flex-direction:column; gap:1.75rem;}
+.login-card-brand{display:flex; flex-direction:column; gap:.15rem; align-items:center; color:#234c38;}
+.login-brand-main{font-family:Montserrat, Inter, system-ui, sans-serif; font-weight:800; font-size:2.25rem; letter-spacing:.02em;}
+.login-brand-sub{font-weight:700; letter-spacing:.28em; font-size:.95rem; color:#2d4a3b;}
+.login-form{display:flex; flex-direction:column; gap:1.15rem; text-align:left;}
+.login-field{display:flex; flex-direction:column; gap:.5rem;}
+.login-label{font-weight:700; font-size:.95rem; color:#324c3d;}
+.login-input{width:100%; border:none; border-radius:1.5rem; padding:.9rem 1.1rem; font-size:1rem; font-weight:600; background:#edf4f0; color:#1b2b21; box-shadow:inset 0 2px 6px rgba(0,0,0,.1); transition:.2s box-shadow,.2s transform;}
+.login-input:focus{outline:3px solid rgba(35,76,56,.35); box-shadow:0 0 0 4px rgba(35,76,56,.1);}
+.login-input:-webkit-autofill,
+.login-input:-webkit-autofill:hover,
+.login-input:-webkit-autofill:focus,
+.login-input:-webkit-autofill:active{-webkit-box-shadow:0 0 0 1000px #edf4f0 inset !important; box-shadow:0 0 0 1000px #edf4f0 inset !important; -webkit-text-fill-color:#1b2b21;}
+.login-password-wrapper{position:relative; display:flex; align-items:center;}
+.login-password-toggle{position:absolute; right:.85rem; background:transparent; border:none; font-size:1.35rem; cursor:pointer; line-height:1; color:#234c38; padding:.2rem; display:inline-flex; align-items:center; justify-content:center;}
+.login-password-toggle:focus-visible{outline:2px solid rgba(35,76,56,.45); border-radius:50%;}
+.login-help{font-size:.85rem; color:#3a5144; text-align:left; margin-top:.25rem;}
+.login-submit{margin-top:.5rem; width:100%; border:none; border-radius:999px; padding:1rem 1.25rem; font-weight:800; font-size:1.05rem; background:#234c38; color:white; box-shadow:0 22px 44px rgba(0,0,0,.25); cursor:pointer; transition:.2s transform,.2s filter;}
+.login-submit:hover{transform:translateY(-1px); filter:brightness(1.03);}
+.login-submit:focus-visible{outline:3px solid rgba(255,255,255,.6); outline-offset:3px;}
+.login-footer{display:flex; flex-direction:column; gap:1.5rem; align-items:center;}
+.login-mascot-area{display:flex; align-items:flex-end; gap:1rem;}
+.login-mascot{width:110px; height:auto; filter:drop-shadow(0 18px 32px rgba(0,0,0,.25));}
+.login-speech{font-weight:700; color:#234c38;}
+.login-signup{font-size:.95rem; font-weight:600; color:#1f3328;}
+.login-signup a{color:#234c38; text-decoration:underline;}
+.login-mascot-area .login-speech{position:relative;}
+.login-mascot-area .login-speech:after{content:""; position:absolute; left:-14px; top:50%; transform:translateY(-50%); width:0; height:0; border-top:10px solid transparent; border-bottom:10px solid transparent; border-right:14px solid white;}
+
+@media (min-width:520px){
+  .login-content{max-width:460px;}
+  .login-card{padding:2.25rem 2.25rem 2.5rem;}
+  .login-brand-main{font-size:2.45rem;}
+  .login-mascot{width:126px;}
+}
+
 /* Register (Cadastro) redesign */
 .bg-register{background:linear-gradient(180deg,#fde9a5 0%, #f9d97d 100%); min-height:100svh; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:2rem 1.5rem;}
 .register-wrap{width:100%; display:flex; justify-content:center;}
