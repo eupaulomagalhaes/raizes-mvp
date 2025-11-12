@@ -12,16 +12,16 @@ import { supabase } from '../supabase.js';
 
 const STEP_CONTENT = [
   {
-    heading:'Dados Pessoais',
-    speech:'Cada informação fornecida, aumentará o nosso elo!'
+    heading:'Conta de Acesso',
+    speech:'Comece criando seu login para seguir com o cadastro.'
   },
   {
-    heading:'Complemento do Responsável',
-    speech:'Conte pra gente um pouquinho mais sobre você.'
+    heading:'Dados do Responsável',
+    speech:'Agora precisamos conhecer um pouco mais sobre você.'
   },
   {
     heading:'Dados da Criança',
-    speech:'Agora vamos falar sobre a criança?'
+    speech:'Vamos falar sobre a criança?'
   },
   {
     heading:'Terapias',
@@ -33,11 +33,17 @@ const STEP_CONTENT = [
   }
 ];
 
-const state = { step:1, data:{} };
+const state = { step:1, data:{}, authEmail:null, authReady:false };
 
 function stepTemplate(){
   switch(state.step){
     case 1:
+      return `
+        ${UI.Input({id:'u_email', label:'E-mail', type:'email', required:true, placeholder:'seunome@email.com', attrs:'autocomplete="email"'})}
+        ${UI.Input({id:'u_password', label:'Senha', type:'password', required:true, placeholder:'Crie sua senha', attrs:'minlength="6" autocomplete="new-password" data-mask-password="1"'})}
+        ${UI.Input({id:'u_password2', label:'Confirme sua senha', type:'password', required:true, placeholder:'Repita a senha', attrs:'minlength="6" autocomplete="new-password"'})}
+      `;
+    case 2:
       return `
         ${UI.Input({id:'u_nome', label:'Nome Completo', required:true, placeholder:'Digite seu nome aqui...', attrs:'autocomplete="name"'})}
         ${UI.Input({id:'u_nasc', label:'Data de Nascimento', required:true, placeholder:'00/00/0000', attrs:'data-mask="date" inputmode="numeric" maxlength="10"'})}
@@ -50,12 +56,6 @@ function stepTemplate(){
         ]})}
         ${UI.Input({id:'u_prof', label:'Profissão', required:true, placeholder:'Digite sua profissão...'})}
         ${UI.Input({id:'u_cidade', label:'Cidade/Estado', required:true, placeholder:'Ex: São Paulo/SP', attrs:'list="cities-list" autocomplete="off"'})}
-      `;
-    case 2:
-      return `
-        ${UI.Input({id:'u_email', label:'E-mail', type:'email', required:true, placeholder:'seunome@email.com', attrs:'autocomplete="email"'})}
-        ${UI.Input({id:'u_password', label:'Senha', type:'password', required:true, placeholder:'Crie sua senha', attrs:'minlength="6" autocomplete="new-password" data-mask-password="1"'})}
-        ${UI.Input({id:'u_password2', label:'Confirme sua senha', type:'password', required:true, placeholder:'Repita a senha', attrs:'minlength="6" autocomplete="new-password"'})}
       `;
     case 3:
       return `
@@ -83,10 +83,10 @@ function stepTemplate(){
       return `
         <p>Revise seus dados e confirme o cadastro.</p>
         <ul class='list-disc pl-6 text-sm text-[var(--text-secondary)]'>
+          <li><strong>E-mail:</strong> ${state.data.u_email || ''}</li>
           <li><strong>Responsável:</strong> ${state.data.u_nome || ''}</li>
           <li><strong>Nascimento:</strong> ${state.data.u_nasc || ''}</li>
           <li><strong>Celular:</strong> ${state.data.u_cel || ''}</li>
-          <li><strong>E-mail:</strong> ${state.data.u_email || ''}</li>
           <li><strong>Parentesco:</strong> ${state.data.u_parentesco || ''}</li>
           <li><strong>Escolaridade:</strong> ${state.data.u_escolaridade || ''}</li>
           <li><strong>Profissão:</strong> ${state.data.u_prof || ''}</li>
@@ -128,7 +128,7 @@ function validate(){
   });
 
   // senha e confirmação iguais (apenas quando presentes na etapa)
-  if (state.step === 2){
+  if (state.step === 1){
     const p1 = document.getElementById('u_password')?.value || '';
     const p2 = document.getElementById('u_password2')?.value || '';
     if (p1 && p2 && p1 !== p2){
@@ -142,6 +142,12 @@ function validate(){
   const get = (id)=> document.getElementById(id)?.value?.trim();
   if (state.step===1){
     Object.assign(state.data, {
+      u_email:get('u_email'),
+      u_password:get('u_password')
+    });
+  }
+  if (state.step===2){
+    Object.assign(state.data, {
       u_nome:get('u_nome'),
       u_nasc:get('u_nasc'),
       u_cel:get('u_cel'),
@@ -149,12 +155,6 @@ function validate(){
       u_escolaridade:get('u_escolaridade'),
       u_prof:get('u_prof'),
       u_cidade:get('u_cidade')
-    });
-  }
-  if (state.step===2){
-    Object.assign(state.data, {
-      u_email:get('u_email'),
-      u_password:get('u_password')
     });
   }
   if (state.step===3){
@@ -254,7 +254,15 @@ export default {
     });
     if (nextButton) nextButton.addEventListener('click', async ()=>{
       if (!validate()){ alert('Preencha os campos obrigatórios (*) para continuar.'); return; }
-      if (state.step<5){ state.step++; renderWizard(); return; }
+      if (state.step<5){
+        if (state.step === 1){
+          const ok = await ensureAuthSession();
+          if (!ok) return;
+        }
+        state.step++;
+        renderWizard();
+        return;
+      }
       try{
         const usuario = {
           nome_completo: state.data.u_nome,
@@ -388,8 +396,8 @@ function setupPasswordToggle(){
 
 function getRequiredFieldsForStep(step){
   switch(step){
-    case 1: return ['u_nome','u_nasc','u_cel','u_parentesco','u_escolaridade','u_prof','u_cidade'];
-    case 2: return ['u_email','u_password','u_password2'];
+    case 1: return ['u_email','u_password','u_password2'];
+    case 2: return ['u_nome','u_nasc','u_cel','u_parentesco','u_escolaridade','u_prof','u_cidade'];
     case 3: return ['c_nome','c_nasc'];
     case 4: return [];
     default: return [];
