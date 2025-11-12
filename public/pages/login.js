@@ -29,7 +29,7 @@ export default {
           </div>
           <div class="login-footer">
             <div class="login-mascot-area">
-              <img class="login-mascot" src="https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/raizes-m-v-p-i9jdtd/assets/wbcyg6s9xdi6/don_personagem.png" alt="Mascote Don acenando" />
+              <img class="login-mascot" src="https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/inteiro.png" alt="Mascote Don acenando" />
               <div class="speech login-speech">Que bom te ver aqui de novo!</div>
             </div>
             <div class="login-signup">Novo por aqui? <a href="#/register">Cadastre-se aqui!</a></div>
