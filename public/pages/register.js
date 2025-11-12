@@ -518,3 +518,57 @@ async function setupCityAutocomplete(){
     input.addEventListener('focus', ()=> fetchCities(input.value.trim()));
   }catch{}
 }
+
+async function ensureAuthSession(){
+  const email = document.getElementById('u_email')?.value.trim();
+  const password = document.getElementById('u_password')?.value || '';
+  if (!email || !password) return false;
+
+  if (state.authReady && state.authEmail === email) return true;
+
+  const current = supabase.getCurrentUser();
+  const currentEmail = current?.user?.email;
+  if (currentEmail && currentEmail !== email){
+    try{ await supabase.signOut(); }catch{}
+  } else if (currentEmail === email){
+    state.authEmail = email;
+    state.authReady = true;
+    return true;
+  }
+
+  try{
+    await supabase.registerAndSaveProfile({ name: email.split('@')[0] || email, email, password });
+  }catch(err){
+    const msg = String(err?.message||'');
+    if (/already\s+registered|already\s+exists|exists/i.test(msg)){
+      try{
+        await supabase.login({ email, password });
+        state.authEmail = email;
+        state.authReady = true;
+        return true;
+      }catch(loginErr){
+        alert('E-mail já cadastrado. Verifique sua senha ou utilize outro e-mail.');
+        console.error(loginErr);
+        return false;
+      }
+    }
+    alert(msg || 'Erro ao cadastrar');
+    console.error(err);
+    return false;
+  }
+
+  let user = supabase.getCurrentUser();
+  if (!user){
+    try{
+      await supabase.login({ email, password });
+      user = supabase.getCurrentUser();
+    }catch(loginErr){
+      alert('Enviamos um e-mail de confirmação. Confirme e faça login para continuar.');
+      console.error(loginErr);
+      return false;
+    }
+  }
+  state.authEmail = email;
+  state.authReady = !!user;
+  return !!user;
+}
