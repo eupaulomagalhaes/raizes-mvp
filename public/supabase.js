@@ -60,6 +60,24 @@ export const supabase = {
     const raw = localStorage.getItem(SESSION_KEY);
     return raw ? JSON.parse(raw) : null;
   },
+  async emailExists(email){
+    if (!email) return false;
+    if (client){
+      try{
+        const { data, error } = await client
+          .from('usuarios')
+          .select('id_usuario')
+          .eq('email', email)
+          .limit(1);
+        if (error) throw error;
+        if (Array.isArray(data) && data.length) return true;
+      }catch(err){
+        console.warn('emailExists usuarios fallback', err);
+      }
+    }
+    const db = getDB();
+    return db.profiles.some(p=>p.email===email);
+  },
   async signOut(){
     if (client) await client.auth.signOut();
     localStorage.removeItem(SESSION_KEY);

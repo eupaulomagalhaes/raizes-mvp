@@ -33,7 +33,7 @@ const STEP_CONTENT = [
   }
 ];
 
-const state = { step:1, data:{}, authEmail:null, authReady:false };
+const state = { step:1, data:{}, authEmail:null, authReady:false, emailTaken:false };
 
 function stepTemplate(){
   switch(state.step){
@@ -135,6 +135,11 @@ function validate(){
       markError(document.getElementById('u_password2'), 'As senhas não coincidem');
       invalid.push('u_password2');
     }
+    if (state.emailTaken){
+      const emailInput = document.getElementById('u_email');
+      markError(emailInput, 'E-mail já cadastrado!');
+      invalid.push('u_email');
+    }
   }
 
   if (invalid.length>0) return false;
@@ -202,6 +207,7 @@ function renderWizard(){
   attachMasks(root);
   setupPasswordToggle();
   setupCityAutocomplete();
+  setupEmailAvailabilityChecker();
 }
 
 export default {
@@ -253,7 +259,11 @@ export default {
       goTo('/welcome');
     });
     if (nextButton) nextButton.addEventListener('click', async ()=>{
-      if (!validate()){ alert('Preencha os campos obrigatórios (*) para continuar.'); return; }
+      if (!validate()){
+        if (state.step === 1 && state.emailTaken) return;
+        alert('Preencha os campos obrigatórios (*) para continuar.');
+        return;
+      }
       if (state.step<5){
         if (state.step === 1){
           const ok = await ensureAuthSession();
@@ -421,6 +431,39 @@ function setupPasswordToggle(){
   }
 }
 
+function setupEmailAvailabilityChecker(){
+  const input = document.getElementById('u_email');
+  if (!input || input.dataset.availabilityWatcher) return;
+  input.dataset.availabilityWatcher = '1';
+  const runCheck = debounce(async ()=>{
+    const email = input.value.trim();
+    if (!email || !isValidEmail(email)){
+      state.emailTaken = false;
+      clearEmailDuplicateHint();
+      return;
+    }
+    try{
+      if (typeof supabase?.emailExists === 'function'){
+        const exists = await supabase.emailExists(email);
+        state.emailTaken = !!exists;
+        if (state.emailTaken){
+          showEmailDuplicateHint();
+        }else{
+          clearEmailDuplicateHint();
+        }
+      }
+    }catch(err){
+      console.error('Falha ao verificar e-mail', err);
+    }
+  }, 400);
+  input.addEventListener('input', ()=>{
+    state.emailTaken = false;
+    clearEmailDuplicateHint();
+    runCheck();
+  });
+  input.addEventListener('blur', ()=> runCheck());
+}
+
 function getRequiredFieldsForStep(step){
   switch(step){
     case 1: return ['u_email','u_password','u_password2'];
@@ -446,6 +489,29 @@ function markError(input, message){
 function clearErrors(){
   document.querySelectorAll('.has-error').forEach(el=> el.classList.remove('has-error'));
   document.querySelectorAll('.input-hint').forEach(el=> el.remove());
+}
+
+function showEmailDuplicateHint(){
+  const input = document.getElementById('u_email');
+  if (!input) return;
+  input.classList.add('has-error');
+  let hint = input.parentElement.querySelector('.input-hint');
+  if (!hint){
+    hint = document.createElement('div');
+    hint.className = 'input-hint';
+    input.parentElement.appendChild(hint);
+  }
+  hint.textContent = 'E-mail já cadastrado!';
+}
+
+function clearEmailDuplicateHint(){
+  const input = document.getElementById('u_email');
+  if (!input) return;
+  if (!state.emailTaken) input.classList.remove('has-error');
+  const hint = input.parentElement?.querySelector('.input-hint');
+  if (hint && hint.textContent === 'E-mail já cadastrado!'){
+    hint.remove();
+  }
 }
 
 function isValidPhone(value){
@@ -541,6 +607,8 @@ async function ensureAuthSession(){
   }catch(err){
     const msg = String(err?.message||'');
     if (/already\s+registered|already\s+exists|exists/i.test(msg)){
+      state.emailTaken = true;
+      showEmailDuplicateHint();
       try{
         await supabase.login({ email, password });
         state.authEmail = email;
