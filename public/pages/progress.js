@@ -32,7 +32,7 @@ async function draw(){
   }
   hint.textContent = '';
 
-  const children = await supabase.listChildren(user.user.id);
+  const children = await supabase.listChildren();
   if (!children.length){
     metrics.innerHTML = `<p class='text-[var(--text-secondary)]'>Nenhuma criança cadastrada ainda.</p>`;
     return;
