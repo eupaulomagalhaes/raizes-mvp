@@ -43,7 +43,11 @@ function pageTemplate(){
             </div>
             <div class="speech game-room-speech" id="game-speech">Esse é o jogo: ONDE ESTÁ O BRINQUEDO</div>
           </div>
-          <a class="btn" data-variant="ghost" href="#/games">Voltar</a>
+          <button class="game-room-menu" type="button" aria-label="Abrir menu do jogo">
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
         </header>
         <div class="game-room-body">
           <div class="game-room-stage" id="game-stage">
