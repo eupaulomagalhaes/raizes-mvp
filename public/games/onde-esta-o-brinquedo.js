@@ -144,34 +144,6 @@ async function pickBox(index){
   }
 }
 
-async function startLevel(){
-  clearTimeout(state.showToyTimeout);
-  clearTimeout(state.handTimeout);
-  hideHandHint();
-
-  state.toyUrl = ASSETS.toys[Math.floor(Math.random()*ASSETS.toys.length)];
-  state.boxCount = boxCountForLevel(state.level);
-  state.correctIndex = Math.floor(Math.random()*state.boxCount);
-
-  state.phase = PHASES.SHOW_TOY;
-  setSpeech('Olhe bem para esse brinquedo!');
-  renderScene();
-
-  const advance = ()=>{
-    state.phase = PHASES.HIDE_AND_ASK;
-    setSpeech('ONDE ESTÁ O BRINQUEDO?');
-    state.canPick = true;
-    state.startTs = performance.now();
-    renderScene();
-
-    // mão após 10s
-    state.handTimeout = setTimeout(()=>{
-      showHandHint();
-    }, 10000);
-  };
-  setTimeout(advance, 5000);
-}
-
 async function endGame(){
   try{ if (state.sessionId) await supabase.endSession(state.sessionId); }catch(e){}
   window.a11yAnnounce('Sessão finalizada');
