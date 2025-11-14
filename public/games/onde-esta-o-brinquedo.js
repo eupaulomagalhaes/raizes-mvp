@@ -39,7 +39,7 @@ function pageTemplate(){
         <header class="game-room-header">
           <div class="game-room-mascot">
             <div class="game-room-avatar">
-              <img src="https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/inteiro.png" alt="Mascote Don" />
+              <img src="https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/cabeca.png" alt="Mascote Don" />
             </div>
             <div class="speech game-room-speech" id="game-speech">Esse é o jogo: ONDE ESTÁ O BRINQUEDO</div>
           </div>
