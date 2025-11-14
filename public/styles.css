@@ -139,9 +139,9 @@ body{font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Helv
 }
 
 /* Onde está o brinquedo - cena de sala */
-.game-room-screen{min-height:100svh; min-height:100vh; padding:1rem; display:flex; justify-content:center; align-items:stretch;}
-.game-room-wrapper{width:100%; max-width:420px; padding:1.5rem 0.75rem 1.5rem; display:flex; flex-direction:column; gap:0.85rem; background:transparent; box-shadow:none; border-radius:0;}
-.game-room-header{display:flex; justify-content:space-between; align-items:center; gap:0.75rem; margin-top:1.25rem;}
+.game-room-screen{min-height:100svh; min-height:100vh; padding:0.5rem 1rem 1.5rem; display:flex; justify-content:center; align-items:stretch;}
+.game-room-wrapper{width:100%; max-width:420px; padding:2.25rem 0.75rem 1.5rem; display:flex; flex-direction:column; gap:0.9rem; background:transparent; box-shadow:none; border-radius:0;}
+.game-room-header{display:flex; justify-content:space-between; align-items:center; gap:0.75rem; margin-top:1.75rem;}
 .game-room-mascot{display:flex; align-items:center; gap:0.85rem;}
 .game-room-avatar{width:82px; height:82px; border-radius:999px; background:#ffffff; display:grid; place-items:center; box-shadow:0 18px 36px rgba(0,0,0,.18); border:3px solid #234c38; overflow:hidden;}
 .game-room-avatar img{width:74px; height:auto;}
@@ -150,9 +150,9 @@ body{font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Helv
 .game-room-menu{width:40px; height:40px; border-radius:999px; border:none; background:#234c38; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:0; cursor:pointer; box-shadow:0 10px 22px rgba(0,0,0,.24);} 
 .game-room-menu span{width:18px; height:2px; border-radius:999px; background:#ffffff; display:block;}
 .game-room-body{position:relative; border-radius:0; overflow:visible; background:transparent; min-height:260px;}
-.game-room-stage{position:relative; width:100%; height:100%; min-height:260px; display:flex; align-items:flex-end; justify-content:center; padding:1rem 1rem 1.25rem; cursor:pointer;}
-.game-room-toy{position:absolute; inset-inline:0; bottom:0.75rem; margin-inline:auto; width:110px; height:auto; z-index:2;}
-.game-room-boxes{position:absolute; inset-inline:0; bottom:1rem; display:flex; justify-content:center; gap:1rem; z-index:3;}
+.game-room-stage{position:relative; width:100%; height:100%; min-height:260px; display:flex; align-items:flex-end; justify-content:center; padding:0.75rem 1rem 0.5rem; cursor:pointer;}
+.game-room-toy{position:absolute; inset-inline:0; bottom:0.3rem; margin-inline:auto; width:110px; height:auto; z-index:2;}
+.game-room-boxes{position:absolute; inset-inline:0; bottom:0.6rem; display:flex; justify-content:center; gap:1rem; z-index:3;}
 .game-room-box{background:transparent; border:none; padding:0; cursor:pointer; transition:transform .15s ease, box-shadow .15s ease;}
 .game-room-box img{width:120px; height:auto; display:block;}
 .game-room-box:hover{transform:translateY(-3px);}
