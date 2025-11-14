@@ -140,31 +140,31 @@ body{font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Helv
 
 /* Onde está o brinquedo - cena de sala */
 .game-room-screen{min-height:100svh; min-height:100vh; padding:0.5rem 1rem 1.5rem; display:flex; justify-content:center; align-items:center;}
-.game-room-wrapper{width:100%; max-width:420px; padding:0 0.75rem; display:flex; flex-direction:column; gap:1rem; background:transparent; box-shadow:none; border-radius:0;}
-.game-room-header{display:flex; justify-content:space-between; align-items:center; gap:0.75rem; margin-top:0.75rem;}
+.game-room-wrapper{position:relative; width:100%; max-width:420px; padding:0 0.75rem; display:flex; flex-direction:column; gap:1rem; background:transparent; box-shadow:none; border-radius:0;}
+.game-room-header{display:flex; justify-content:flex-start; align-items:center; gap:0.9rem; margin-top:0.25rem;}
 .game-room-mascot{display:flex; align-items:center; gap:0.85rem;}
-.game-room-avatar{width:82px; height:82px; border-radius:999px; background:#ffffff; display:grid; place-items:center; box-shadow:0 18px 36px rgba(0,0,0,.18); border:3px solid #234c38; overflow:hidden;}
-.game-room-avatar img{width:74px; height:auto;}
+.game-room-avatar{width:96px; height:96px; border-radius:999px; background:#ffffff; display:grid; place-items:center; box-shadow:0 18px 36px rgba(0,0,0,.18); border:3px solid #234c38; overflow:visible;}
+.game-room-avatar img{width:92px; height:auto;}
 .game-room-speech{position:relative; max-width:240px; font-size:.9rem; font-weight:600; background:#ffffff; border:3px solid #111111; border-radius:18px; box-shadow:none; padding:.55rem .9rem;}
 .game-room-speech::after{content:""; position:absolute; left:18%; bottom:-11px; border-width:10px 11px 0 11px; border-style:solid; border-color:#111111 transparent transparent transparent;}
-.game-room-menu{width:40px; height:40px; border-radius:999px; border:none; background:#234c38; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:0; cursor:pointer; box-shadow:0 10px 22px rgba(0,0,0,.24);} 
+.game-room-menu{position:absolute; top:0.5rem; right:0.75rem; width:40px; height:40px; border-radius:999px; border:none; background:#234c38; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:0; cursor:pointer; box-shadow:0 10px 22px rgba(0,0,0,.24);} 
 .game-room-menu span{width:18px; height:2px; border-radius:999px; background:#ffffff; display:block;}
 .game-room-body{position:relative; border-radius:0; overflow:visible; background:transparent; min-height:260px; display:flex; flex-direction:column; justify-content:flex-start;}
 .game-room-stage{position:relative; width:100%; flex:1; min-height:260px; display:flex; align-items:flex-end; justify-content:center; padding:0 1rem 1rem; cursor:pointer;}
-.game-room-toy{position:absolute; inset-inline:0; bottom:1rem; margin-inline:auto; width:110px; height:auto; z-index:2;}
-.game-room-boxes{position:absolute; inset-inline:0; bottom:1rem; display:flex; justify-content:center; gap:1rem; z-index:3;}
+.game-room-toy{position:absolute; inset-inline:0; bottom:0.75rem; margin-inline:auto; width:110px; height:auto; z-index:2;}
+.game-room-boxes{position:absolute; inset-inline:0; bottom:0.75rem; display:flex; justify-content:center; gap:1rem; z-index:3;}
 .game-room-box{background:transparent; border:none; padding:0; cursor:pointer; transition:transform .15s ease, box-shadow .15s ease;}
 .game-room-box img{width:120px; height:auto; display:block;}
 .game-room-box:hover{transform:translateY(-3px);}
 .game-box-correct{filter:drop-shadow(0 0 0 rgba(0,0,0,0));}
 .game-box-wrong{filter:grayscale(.8);}
-.game-room-hand{position:absolute; inset-inline:0; bottom:1.1rem; margin-inline:auto; width:80px; height:80px; display:none; pointer-events:none; z-index:4;}
+.game-room-hand{position:absolute; inset-inline:0; bottom:0.9rem; margin-inline:auto; width:80px; height:80px; display:none; pointer-events:none; z-index:4;}
 
 @media (min-width:520px){
-  .game-room-wrapper{max-width:460px; padding:1.25rem 1rem 2rem;}
-  .game-room-avatar{width:92px; height:92px;}
-  .game-room-avatar img{width:84px;}
-  .game-room-toy{width:130px; bottom:0.9rem;}
+  .game-room-wrapper{max-width:460px; padding:0 1rem;}
+  .game-room-avatar{width:108px; height:108px;}
+  .game-room-avatar img{width:102px;}
+  .game-room-toy{width:130px; bottom:0.85rem;}
   .game-room-box img{width:140px;}
 }
 
