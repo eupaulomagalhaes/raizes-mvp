@@ -1,171 +1,175 @@
-import { UI } from '../components/ui.js';
 import { supabase } from '../supabase.js';
 
 const ASSETS = {
   toys: [
-    'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/raizes-m-v-p-i9jdtd/assets/6phciygomokz/girafa.png',
-    'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/raizes-m-v-p-i9jdtd/assets/56m4fn589h6t/robo.png',
-    'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/raizes-m-v-p-i9jdtd/assets/wesizm8ja38i/dinossauro.png',
+    'https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/girafa.png',
+    'https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/robo.png',
+    'https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/dinossauro.png',
   ],
-  box: 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/raizes-m-v-p-i9jdtd/assets/58m14sn7bf1j/mistery_box_01.png',
+  box: 'https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/mistery_box_01.png',
+};
+
+const PHASES = {
+  INTRO: 'intro',
+  SHOW_TOY: 'show-toy',
+  HIDE_AND_ASK: 'hide-and-ask',
 };
 
 const state = {
-  level: 1, // 1=>3x3, 2=>4x4, 3=>5x5
+  level: 1, // 1 => 1 caixa, 2 => 2 caixas, 3 => 3 caixas
   round: 0,
-  maxRounds: 10,
+  maxRounds: 9,
   sessionId: null,
-  targetIndex: -1,
+  phase: PHASES.INTRO,
+  toyUrl: '',
+  boxCount: 1,
+  correctIndex: 0,
   canPick: false,
   startTs: 0,
   demo: false,
-  focused: 0,
-  size: 3,
+  introTimeout: null,
+  showToyTimeout: null,
+  handTimeout: null,
 };
-
-function gridSize(){ return [3,4,5][Math.min(2, state.level-1)] || 3; }
-function cellCount(){ const n = gridSize(); return n*n; }
 
 function pageTemplate(){
   return `
-    <main class='space-y-4 bg-room p-4 md:p-6 rounded-2xl' aria-label='Jogo Onde está o brinquedo'>
-      <div class='flex items-center justify-between'>
-        <h1 class='h1'>Onde está o brinquedo!</h1>
-        <a class='btn' data-variant='ghost' href='#/games'>Voltar</a>
-      </div>
-      ${UI.Card(`
-        <div class='space-y-3'>
-          <div class='flex items-center justify-between'>
-            <div class='h3'>Rodada <span id='round'>0</span> / <span id='max'>${state.maxRounds}</span></div>
-            <div class='text-sm text-[var(--text-secondary)]'>Nível: <span id='level'>${state.level}</span> (${gridSize()}x${gridSize()})</div>
+    <main class="game-room-screen bg-room" aria-label="Jogo Onde está o brinquedo">
+      <div class="game-room-wrapper">
+        <header class="game-room-header">
+          <div class="game-room-mascot">
+            <div class="game-room-avatar">
+              <img src="https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/inteiro.png" alt="Mascote Don" />
+            </div>
+            <div class="speech game-room-speech" id="game-speech">Esse é o jogo: ONDE ESTÁ O BRINQUEDO</div>
           </div>
-          <div id='grid-wrap' class='relative'>
-            <div class='grid-game' id='grid' style='grid-template-columns: repeat(${gridSize()}, minmax(0, 1fr));'></div>
-            <div id='hand-hint' aria-hidden='true' style='position:absolute; left:0; top:0; width:100px; height:100px; display:none; pointer-events:none'></div>
+          <a class="btn" data-variant="ghost" href="#/games">Voltar</a>
+        </header>
+        <div class="game-room-body">
+          <div class="game-room-stage" id="game-stage">
+            <img id="game-toy" class="game-room-toy" alt="Brinquedo" />
+            <div id="game-boxes" class="game-room-boxes"></div>
+            <div id="hand-hint" aria-hidden="true" class="game-room-hand"></div>
           </div>
         </div>
-      `)}
+      </div>
     </main>
   `;
 }
 
-function randomTarget(){ return Math.floor(Math.random()*cellCount()); }
+function boxCountForLevel(level){
+  return Math.min(3, Math.max(1, level));
+}
+
+function setSpeech(text){
+  const el = document.getElementById('game-speech');
+  if (el) el.textContent = text;
+}
+
+function renderScene(){
+  const stage = document.getElementById('game-stage');
+  const toy = document.getElementById('game-toy');
+  const boxesWrap = document.getElementById('game-boxes');
+  if (!stage || !toy || !boxesWrap) return;
+
+  boxesWrap.innerHTML = '';
+  toy.style.display = 'none';
+
+  if (state.phase === PHASES.INTRO){
+    // nada na área central, só fala
+  } else if (state.phase === PHASES.SHOW_TOY){
+    toy.src = state.toyUrl;
+    toy.style.display = 'block';
+  } else if (state.phase === PHASES.HIDE_AND_ASK){
+    const count = state.boxCount;
+    for (let i=0;i<count;i++){
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'game-room-box';
+      btn.setAttribute('aria-label', `Caixa ${i+1}`);
+      btn.addEventListener('click', ()=> pickBox(i));
+      const img = document.createElement('img');
+      img.src = ASSETS.box;
+      img.alt = 'Caixa misteriosa';
+      btn.appendChild(img);
+      boxesWrap.appendChild(btn);
+    }
+  }
+}
+
 const sleep = (ms)=> new Promise(r=>setTimeout(r,ms));
 
-async function playRound(){
-  state.round++;
-  updateHeader();
-  state.targetIndex = randomTarget();
-  const toyUrl = ASSETS.toys[Math.floor(Math.random()*ASSETS.toys.length)];
-  const grid = document.getElementById('grid');
-  const cells = [...grid.children];
-  // Mostrar alvo por 1s
-  cells.forEach(c => c.style.backgroundImage = `url(${ASSETS.box})`);
-  cells[state.targetIndex].style.backgroundImage = `url(${toyUrl})`;
-  cells[state.targetIndex].classList.add('correct');
-  window.mascot.say('Olhe com atenção...');
-  await sleep(1000);
-  cells[state.targetIndex].classList.remove('correct');
-  cells.forEach(c => c.style.backgroundImage = `url(${ASSETS.box})`);
-  // Embaralhar ordem visual
-  for (let i=0;i<cells.length;i++){ cells[i].style.order = Math.floor(Math.random()*1000); }
-  state.canPick = true;
-  state.startTs = performance.now();
-  window.a11yAnnounce('Brinquedo escondido, escolha um quadrado');
-  focusIndex(state.focused);
-  showHandHint();
-}
-
-function updateHeader(){
-  const roundEl = document.getElementById('round');
-  const levelEl = document.getElementById('level');
-  if (roundEl) roundEl.textContent = state.round;
-  if (levelEl) levelEl.textContent = state.level;
-}
-
-function buildGrid(){
-  const grid = document.getElementById('grid');
-  grid.innerHTML = '';
-  const n = cellCount();
-  for (let i=0;i<n;i++){
-    const btn = document.createElement('button');
-    btn.className = 'cell';
-    btn.setAttribute('aria-label', `Quadrado ${i+1}`);
-    btn.addEventListener('click', ()=> pick(i));
-    grid.appendChild(btn);
-  }
-  grid.tabIndex = 0;
-  grid.addEventListener('keydown', onGridKey);
-  state.focused = 0;
-  focusIndex(0);
-}
-
-function onGridKey(e){
-  const size = gridSize();
-  let i = state.focused;
-  if (e.key === 'ArrowRight'){ e.preventDefault(); i = (i+1)%cellCount(); }
-  else if (e.key === 'ArrowLeft'){ e.preventDefault(); i = (i-1+cellCount())%cellCount(); }
-  else if (e.key === 'ArrowDown'){ e.preventDefault(); i = (i+size)%cellCount(); }
-  else if (e.key === 'ArrowUp'){ e.preventDefault(); i = (i-size+cellCount())%cellCount(); }
-  else if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); pick(i); return; }
-  else return;
-  focusIndex(i);
-}
-
-function focusIndex(i){
-  state.focused = i;
-  const grid = document.getElementById('grid');
-  const cell = grid.children[i];
-  if (cell) cell.focus();
-}
-
-async function pick(i){
-  if (!state.canPick) return;
+async function pickBox(index){
+  if (!state.canPick || state.phase !== PHASES.HIDE_AND_ASK) return;
   state.canPick = false;
-  const rt = Math.max(0, Math.round(performance.now() - state.startTs));
-  const correct = i === state.targetIndex;
-  const grid = document.getElementById('grid');
-  const cells = [...grid.children];
-  if (correct){
-    const toyUrl = ASSETS.toys[Math.floor(Math.random()*ASSETS.toys.length)];
-    cells[i].style.backgroundImage = `url(${toyUrl})`;
-    cells[i].classList.add('correct');
-  } else {
-    cells[i].classList.add('wrong');
-  }
+  clearTimeout(state.handTimeout);
   hideHandHint();
+
+  const rt = Math.max(0, Math.round(performance.now() - state.startTs));
+  const correct = index === state.correctIndex;
+
+  // Revela brinquedo na caixa escolhida
+  const boxesWrap = document.getElementById('game-boxes');
+  const boxes = boxesWrap ? [...boxesWrap.children] : [];
+  if (boxes[index]){
+    const img = boxes[index].querySelector('img');
+    if (img) img.src = state.toyUrl;
+    boxes[index].classList.add(correct ? 'game-box-correct' : 'game-box-wrong');
+  }
+
   try{
     if (state.sessionId){
       await supabase.logEvent(state.sessionId, Date.now(), {
         level: state.level,
-        targetIndex: state.targetIndex,
-        guessIndex: i,
+        targetIndex: state.correctIndex,
+        guessIndex: index,
         correct,
         reactionTimeMs: rt,
       });
     }
   }catch(err){ /* noop */ }
 
-  // Ajuste de nível
-  const prevSize = gridSize();
-  if (correct && state.level < 3) state.level++;
-  if (!correct && state.level > 1) state.level--;
+  await sleep(800);
 
-  await sleep(600);
+  // simples: avança nível até 3, depois mantém
+  if (correct && state.level < 3){
+    state.level++;
+  }
 
+  state.round++;
   if (state.round >= state.maxRounds){
     await endGame();
   } else {
-    // reconstruir grid se mudou o tamanho
-    const newSize = gridSize();
-    if (newSize !== prevSize){
-      state.size = newSize;
-      document.querySelector('main').innerHTML = pageTemplate();
-      buildGrid();
-    }
-    updateHeader();
-    await playRound();
+    await startLevel();
   }
+}
+
+async function startLevel(){
+  clearTimeout(state.showToyTimeout);
+  clearTimeout(state.handTimeout);
+  hideHandHint();
+
+  state.toyUrl = ASSETS.toys[Math.floor(Math.random()*ASSETS.toys.length)];
+  state.boxCount = boxCountForLevel(state.level);
+  state.correctIndex = Math.floor(Math.random()*state.boxCount);
+
+  state.phase = PHASES.SHOW_TOY;
+  setSpeech('Olhe bem para esse brinquedo!');
+  renderScene();
+
+  const advance = ()=>{
+    state.phase = PHASES.HIDE_AND_ASK;
+    setSpeech('ONDE ESTÁ O BRINQUEDO?');
+    state.canPick = true;
+    state.startTs = performance.now();
+    renderScene();
+
+    // mão após 10s
+    state.handTimeout = setTimeout(()=>{
+      showHandHint();
+    }, 10000);
+  };
+  setTimeout(advance, 5000);
 }
 
 async function endGame(){
@@ -181,46 +185,99 @@ async function endGame(){
 async function start(){
   const user = supabase.getCurrentUser();
   state.demo = !user;
-  state.maxRounds = state.demo ? 3 : 10;
+  state.maxRounds = state.demo ? 3 : 9;
   document.getElementById('app').innerHTML = pageTemplate();
-  document.getElementById('max').textContent = state.maxRounds;
-  state.size = gridSize();
-  buildGrid();
+  renderScene();
   try{
     const childId = supabase.getActiveChild();
     const sess = await supabase.startSession({ gameId:'onde-esta-o-brinquedo', childId });
     state.sessionId = sess.id;
   }catch(e){ state.sessionId = null; }
-  await playRound();
+  setupIntroFlow();
 }
 
 export default {
   template(){ return pageTemplate(); },
   async init(){
-    state.level = 1; state.round = 0; state.targetIndex=-1; state.canPick=false;
+    state.level = 1; state.round = 0; state.phase = PHASES.INTRO; state.canPick=false;
     await start();
     window.addEventListener('beforeunload', ()=>{ if (state.sessionId) supabase.endSession(state.sessionId); }, { once:true });
   }
 };
 
+// fluxos de cena
+function setupIntroFlow(){
+  state.phase = PHASES.INTRO;
+  setSpeech('Esse é o jogo: ONDE ESTÁ O BRINQUEDO');
+  renderScene();
+  const stage = document.getElementById('game-stage');
+  if (!stage) return;
+  const startLevelOnce = ()=>{
+    stage.removeEventListener('click', startLevelOnce);
+    startLevel();
+  };
+  stage.addEventListener('click', startLevelOnce);
+}
+
+async function startLevel(){
+  clearTimeout(state.showToyTimeout);
+  clearTimeout(state.handTimeout);
+  hideHandHint();
+
+  state.toyUrl = ASSETS.toys[Math.floor(Math.random()*ASSETS.toys.length)];
+  state.boxCount = boxCountForLevel(state.level);
+  state.correctIndex = Math.floor(Math.random()*state.boxCount);
+
+  state.phase = PHASES.SHOW_TOY;
+  setSpeech('Olhe bem para esse brinquedo!');
+  renderScene();
+
+  const stage = document.getElementById('game-stage');
+  if (!stage) return;
+
+  const advance = ()=>{
+    stage.removeEventListener('click', advance);
+    showBoxesAndAsk();
+  };
+  stage.addEventListener('click', advance);
+
+  state.showToyTimeout = setTimeout(advance, 5000);
+}
+
+function showBoxesAndAsk(){
+  clearTimeout(state.showToyTimeout);
+  hideHandHint();
+
+  state.phase = PHASES.HIDE_AND_ASK;
+  setSpeech('ONDE ESTÁ O BRINQUEDO?');
+  state.canPick = true;
+  state.startTs = performance.now();
+  renderScene();
+
+  // mão após 10s
+  state.handTimeout = setTimeout(()=>{
+    showHandHint();
+  }, 10000);
+}
+
 // Lottie hand hint
 let handAnim = null;
-const HAND_URL = 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/raizes-m-v-p-i9jdtd/assets/ok5fryn6t39e/Click_hand2.json';
+const HAND_URL = 'https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/Click_hand2.json';
 function showHandHint(){
-  const wrap = document.getElementById('grid-wrap');
-  const grid = document.getElementById('grid');
+  const boxesWrap = document.getElementById('game-boxes');
   const hint = document.getElementById('hand-hint');
-  if (!wrap || !grid || !hint) return;
-  const cells = [...grid.children];
-  const idx = Math.floor(Math.random()*cells.length);
-  const rectWrap = wrap.getBoundingClientRect();
-  const rect = cells[idx].getBoundingClientRect();
-  const x = rect.left - rectWrap.left + rect.width*0.4;
-  const y = rect.top - rectWrap.top + rect.height*0.4;
+  if (!boxesWrap || !hint) return;
+  const boxes = [...boxesWrap.children];
+  if (!boxes.length) return;
+  const idx = state.correctIndex < boxes.length ? state.correctIndex : 0;
+  const rectWrap = boxesWrap.getBoundingClientRect();
+  const rect = boxes[idx].getBoundingClientRect();
+  const x = rect.left - rectWrap.left + rect.width*0.25;
+  const y = rect.top - rectWrap.top + rect.height*0.1;
   hint.style.left = `${x}px`;
   hint.style.top = `${y}px`;
-  hint.style.width = `${Math.max(60, rect.width*0.4)}px`;
-  hint.style.height = `${Math.max(60, rect.height*0.4)}px`;
+  hint.style.width = `${Math.max(80, rect.width*0.6)}px`;
+  hint.style.height = `${Math.max(80, rect.height*0.6)}px`;
   hint.style.display = 'block';
   if (window.lottie){
     if (!handAnim){
@@ -229,9 +286,6 @@ function showHandHint(){
       handAnim.setDirection(1); handAnim.play();
     }
   }
-  const stop = ()=> hideHandHint();
-  grid.addEventListener('click', stop, { once:true, capture:true });
-  grid.addEventListener('keydown', stop, { once:true, capture:true });
 }
 function hideHandHint(){
   const hint = document.getElementById('hand-hint');
