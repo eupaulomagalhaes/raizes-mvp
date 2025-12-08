@@ -9,6 +9,9 @@ const BGM_PENDING_KEY = 'bgm_pending';
 let bgmEl;
 let bgmDesired = true;
 let unlockPending = false;
+let bgmToggleEl = null;
+let bgmToggleIcon = null;
+let bgmChangeListenerAttached = false;
 
 try{
   const stored = localStorage.getItem(BGM_STATE_KEY);
@@ -22,6 +25,58 @@ function emitBgmChange(){
     playing: !!(bgmEl && !bgmEl.paused && bgmEl.currentTime > 0)
   };
   document.dispatchEvent(new CustomEvent('bgm:change', { detail }));
+}
+
+function renderBgmToggle(enabled, playing){
+  if (!bgmToggleEl && !ensureBgmToggle()) return;
+  const isEnabled = typeof enabled === 'boolean' ? enabled : bgmDesired;
+  const isPlaying = typeof playing === 'boolean' ? playing : !!(bgmEl && !bgmEl.paused && bgmEl.currentTime > 0);
+  bgmToggleEl.setAttribute('aria-pressed', isEnabled ? 'true' : 'false');
+  bgmToggleEl.setAttribute('data-playing', isPlaying ? 'true' : 'false');
+  if (bgmToggleIcon) bgmToggleIcon.textContent = isEnabled && isPlaying ? '🔊' : '🔇';
+}
+
+function ensureBgmToggle(){
+  if (bgmToggleEl) return bgmToggleEl;
+  if (!document.body){
+    if (document.readyState === 'loading'){
+      document.addEventListener('DOMContentLoaded', ensureBgmToggle, { once:true });
+    }
+    return null;
+  }
+
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'bgm-toggle';
+  btn.setAttribute('aria-label', 'Alternar música');
+  btn.setAttribute('aria-pressed', 'true');
+  btn.dataset.role = 'bgm-toggle';
+
+  const icon = document.createElement('span');
+  icon.className = 'icon';
+  icon.setAttribute('aria-hidden', 'true');
+  icon.textContent = '♪';
+  btn.appendChild(icon);
+
+  btn.addEventListener('click', ()=>{
+    const enabled = toggleBgm();
+    renderBgmToggle(enabled, !!(bgmEl && !bgmEl.paused && bgmEl.currentTime > 0));
+  });
+
+  document.body.appendChild(btn);
+  bgmToggleEl = btn;
+  bgmToggleIcon = icon;
+  renderBgmToggle();
+
+  if (!bgmChangeListenerAttached){
+    document.addEventListener('bgm:change', (event)=>{
+      const detail = event.detail || {};
+      renderBgmToggle(detail.enabled, detail.playing);
+    });
+    bgmChangeListenerAttached = true;
+  }
+
+  return btn;
 }
 
 function ensureBgm(){
