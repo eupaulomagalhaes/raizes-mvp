@@ -147,6 +147,66 @@ window.bgmController = {
   isPlaying: () => !!(bgmEl && !bgmEl.paused && bgmEl.currentTime > 0)
 };
 
+// Navbar inferior global
+let navbarEl = null;
+const NAVBAR_ROUTES = ['#/games', '#/children', '#/settings'];
+const NAVBAR_HIDDEN_ROUTES = ['#/', '#/welcome', '#/login', '#/register'];
+
+function ensureNavbar(){
+  if (navbarEl) return navbarEl;
+  if (!document.body) return null;
+
+  const nav = document.createElement('nav');
+  nav.className = 'bottom-navbar';
+  nav.setAttribute('aria-label', 'Navegação principal');
+  nav.innerHTML = `
+    <a href="#/games" class="nav-item" data-route="#/games">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="2" y="6" width="20" height="12" rx="2"/>
+        <circle cx="8" cy="12" r="2"/>
+        <path d="M14 10h4M16 8v4"/>
+      </svg>
+      <span>Jogos</span>
+    </a>
+    <a href="#/children" class="nav-item" data-route="#/children">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="8" r="4"/>
+        <path d="M6 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/>
+      </svg>
+      <span>Crianças</span>
+    </a>
+    <a href="#/settings" class="nav-item" data-route="#/settings">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
+      </svg>
+      <span>Config</span>
+    </a>
+  `;
+  document.body.appendChild(nav);
+  navbarEl = nav;
+  updateNavbarActive();
+  return nav;
+}
+
+function updateNavbarActive(){
+  if (!navbarEl) return;
+  const current = location.hash || '#/';
+  navbarEl.querySelectorAll('.nav-item').forEach(item => {
+    const route = item.dataset.route;
+    item.classList.toggle('active', current.startsWith(route));
+  });
+}
+
+function updateNavbarVisibility(){
+  if (!navbarEl) ensureNavbar();
+  if (!navbarEl) return;
+  const current = location.hash || '#/';
+  const shouldHide = NAVBAR_HIDDEN_ROUTES.some(r => current === r || current.startsWith(r + '/'));
+  navbarEl.style.display = shouldHide ? 'none' : 'flex';
+  updateNavbarActive();
+}
+
 // PWA: registrar SW
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -166,7 +226,7 @@ window.appNavigate = navigate;
 // Exemplo de sessão persistida
 supabase.init();
 
-// Iniciar BGM após Splash
+// Iniciar BGM após Splash e atualizar navbar
 window.addEventListener('hashchange', ()=>{
   try{
     if (location.hash === '#/welcome' && localStorage.getItem('bgm_pending') === '1'){
@@ -174,7 +234,12 @@ window.addEventListener('hashchange', ()=>{
       tryPlayBgm();
     }
   }catch{}
+  updateNavbarVisibility();
 });
+
+// Inicializar navbar
+ensureNavbar();
+updateNavbarVisibility();
 
 // Caso a rota inicial já seja welcome com flag pendente
 try{

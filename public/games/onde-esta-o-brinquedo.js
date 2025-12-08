@@ -103,32 +103,61 @@ function speak(text){
   window.speechSynthesis.speak(utterance);
 }
 
-// Comemoração com confetti
+// Comemoração com confetti/balões
 let celebrationAnim = null;
 function showCelebration(){
   const container = document.getElementById('celebration-container');
   if (!container) return;
+  
+  // Limpa conteúdo anterior
+  container.innerHTML = '';
   container.style.display = 'block';
-  if (window.lottie && !celebrationAnim){
-    celebrationAnim = window.lottie.loadAnimation({
-      container,
-      renderer: 'svg',
-      loop: false,
-      autoplay: true,
-      path: ASSETS.celebration
-    });
-    celebrationAnim.addEventListener('complete', ()=>{
-      container.style.display = 'none';
-    });
-  } else if (celebrationAnim){
-    celebrationAnim.goToAndPlay(0);
-    container.style.display = 'block';
+  
+  // Tenta usar Lottie se disponível
+  if (window.lottie){
+    try {
+      celebrationAnim = window.lottie.loadAnimation({
+        container,
+        renderer: 'svg',
+        loop: false,
+        autoplay: true,
+        path: ASSETS.celebration
+      });
+      celebrationAnim.addEventListener('complete', ()=>{
+        container.style.display = 'none';
+      });
+      return;
+    } catch(e){ /* fallback */ }
   }
+  
+  // Fallback: animação CSS com emojis
+  const emojis = ['🎉', '⭐', '🎈', '🌟', '✨', '🎊', '💫', '🏆'];
+  for (let i = 0; i < 20; i++){
+    const particle = document.createElement('div');
+    particle.className = 'celebration-particle';
+    particle.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    particle.style.left = `${Math.random() * 100}%`;
+    particle.style.animationDelay = `${Math.random() * 0.5}s`;
+    particle.style.fontSize = `${1.5 + Math.random() * 1.5}rem`;
+    container.appendChild(particle);
+  }
+  
+  // Remove após animação
+  setTimeout(()=>{
+    container.style.display = 'none';
+    container.innerHTML = '';
+  }, 2000);
 }
 
 function hideCelebration(){
   const container = document.getElementById('celebration-container');
-  if (container) container.style.display = 'none';
+  if (container){
+    container.style.display = 'none';
+    container.innerHTML = '';
+  }
+  if (celebrationAnim){
+    try { celebrationAnim.stop(); } catch(e){}
+  }
 }
 
 function setSpeech(text){
@@ -171,32 +200,94 @@ const sleep = (ms)=> new Promise(r=>setTimeout(r,ms));
 
 async function pickBox(index){
   if (!state.canPick || state.phase !== PHASES.HIDE_AND_ASK) return;
-  state.canPick = false;
+  
+  const boxesWrap = document.getElementById('game-boxes');
+  const boxes = boxesWrap ? [...boxesWrap.children] : [];
+  const clickedBox = boxes[index];
+  
+  // Se a caixa já foi clicada (está escondida), ignora
+  if (clickedBox?.classList.contains('box-hidden')) return;
+  
   clearTimeout(state.handTimeout);
   hideHandHint();
 
   const rt = Math.max(0, Math.round(performance.now() - state.startTs));
   const correct = index === state.correctIndex;
 
-  // Revela brinquedo na caixa escolhida
-  const boxesWrap = document.getElementById('game-boxes');
-  const boxes = boxesWrap ? [...boxesWrap.children] : [];
-  if (boxes[index]){
-    const img = boxes[index].querySelector('img');
-    if (img) img.src = state.toyUrl;
-    boxes[index].classList.add(correct ? 'game-box-correct' : 'game-box-wrong');
-  }
-
   if (correct){
-    // Comemoração ao acertar
+    // ACERTOU! Comemoração
+    state.canPick = false;
     state.correctCount++;
+    
+    // Revela o brinquedo na caixa correta
+    if (clickedBox){
+      const img = clickedBox.querySelector('img');
+      if (img) img.src = state.toyUrl;
+      clickedBox.classList.add('game-box-correct');
+    }
+    
     showCelebration();
     setSpeech('MUITO BEM! 🎉');
     speak('Muito bem! Você encontrou!');
+    
+    // Log do acerto
+    try{
+      if (state.sessionId){
+        await supabase.logEvent(state.sessionId, Date.now(), {
+          level: state.level,
+          targetIndex: state.correctIndex,
+          guessIndex: index,
+          correct: true,
+          reactionTimeMs: rt,
+          attempts: state.attempts || 1,
+        });
+      }
+    }catch(err){ /* noop */ }
+    
+    await sleep(1800);
+    hideCelebration();
+    
+    // Avança nível
+    if (state.level < 3) state.level++;
+    
+    state.round++;
+    if (state.round >= state.maxRounds){
+      await endGame();
+    } else {
+      await startLevel();
+    }
+    
   } else {
-    // Mostra mão apontando para a caixa correta ao errar
-    setSpeech('Ops! Tente de novo!');
-    speak('Ops! Não era essa. Veja onde está!');
+    // ERROU - comportamento diferente por nível
+    state.attempts = (state.attempts || 0) + 1;
+    
+    // Esconde a caixa errada (some, não fica P&B)
+    if (clickedBox){
+      clickedBox.classList.add('box-hidden');
+      clickedBox.style.opacity = '0';
+      clickedBox.style.pointerEvents = 'none';
+    }
+    
+    // Nos níveis 2 e 3, permite tentar novamente nas outras caixas
+    if (state.level >= 2 && state.boxCount > 1){
+      const remainingBoxes = boxes.filter(b => !b.classList.contains('box-hidden'));
+      
+      if (remainingBoxes.length > 1){
+        // Ainda há mais de uma caixa, pode tentar de novo
+        setSpeech('Ops! Tente outra caixa!');
+        speak('Ops! Tente outra caixa!');
+        showHandHint();
+        // Mantém canPick = true para permitir nova tentativa
+        state.handTimeout = setTimeout(()=> showHandHint(), 5000);
+        return; // Não avança rodada ainda
+      }
+    }
+    
+    // Nível 1 OU última caixa errada: revela onde estava
+    state.canPick = false;
+    setSpeech('Ops! Veja onde estava!');
+    speak('Ops! Veja onde estava o brinquedo!');
+    
     // Revela a caixa correta
     if (boxes[state.correctIndex]){
       const correctImg = boxes[state.correctIndex].querySelector('img');
@@ -204,34 +295,30 @@ async function pickBox(index){
       boxes[state.correctIndex].classList.add('game-box-correct');
     }
     showHandHint();
-  }
-
-  try{
-    if (state.sessionId){
-      await supabase.logEvent(state.sessionId, Date.now(), {
-        level: state.level,
-        targetIndex: state.correctIndex,
-        guessIndex: index,
-        correct,
-        reactionTimeMs: rt,
-      });
+    
+    // Log do erro final
+    try{
+      if (state.sessionId){
+        await supabase.logEvent(state.sessionId, Date.now(), {
+          level: state.level,
+          targetIndex: state.correctIndex,
+          guessIndex: index,
+          correct: false,
+          reactionTimeMs: rt,
+          attempts: state.attempts,
+        });
+      }
+    }catch(err){ /* noop */ }
+    
+    await sleep(2500);
+    hideHandHint();
+    
+    state.round++;
+    if (state.round >= state.maxRounds){
+      await endGame();
+    } else {
+      await startLevel();
     }
-  }catch(err){ /* noop */ }
-
-  await sleep(correct ? 1500 : 2000);
-  hideCelebration();
-  hideHandHint();
-
-  // simples: avança nível até 3, depois mantém
-  if (correct && state.level < 3){
-    state.level++;
-  }
-
-  state.round++;
-  if (state.round >= state.maxRounds){
-    await endGame();
-  } else {
-    await startLevel();
   }
 }
 
@@ -325,6 +412,9 @@ async function startLevel(){
   clearTimeout(state.showToyTimeout);
   clearTimeout(state.handTimeout);
   hideHandHint();
+
+  // Reset tentativas para nova rodada
+  state.attempts = 0;
 
   const toy = ASSETS.toys[Math.floor(Math.random()*ASSETS.toys.length)];
   state.toyUrl = toy.url;

@@ -315,6 +315,154 @@ export const supabase = {
     if (s) s.ended_at = Date.now();
     setDB(db);
   },
+  async addChild({ name, birthdate }){
+    const session = this.getCurrentUser();
+    if (!session) throw new Error('Usuário não logado');
+    
+    if (client){
+      try{
+        // Buscar id_usuario pelo uuid
+        const { data: userData, error: userErr } = await client
+          .from('usuarios')
+          .select('id_usuario')
+          .eq('uuid', session.user.id)
+          .single();
+        if (userErr) throw userErr;
+        
+        const { data, error } = await client
+          .from('criancas')
+          .insert({
+            id_responsavel: userData.id_usuario,
+            nome_completo: name,
+            data_nascimento: birthdate
+          })
+          .select('id_crianca')
+          .single();
+        if (error) throw error;
+        return { id: data.id_crianca };
+      } catch(e){
+        console.error('Erro ao adicionar criança no Supabase', e);
+        throw e;
+      }
+    }
+    
+    // Fallback local
+    const db = getDB();
+    const id = 'child_'+Math.random().toString(36).slice(2,9);
+    db.children.push({ id, profile_id: session.user.id, nome_completo: name, data_nascimento: birthdate });
+    setDB(db);
+    return { id };
+  },
+  
+  async getChildStats(childId){
+    if (!childId) return null;
+    
+    if (client){
+      try{
+        // Buscar sessões da criança
+        const { data: sessions, error: sessErr } = await client
+          .from('game_sessions')
+          .select('id, started_at')
+          .eq('child_id', childId);
+        if (sessErr) throw sessErr;
+        
+        if (!sessions || sessions.length === 0){
+          return { totalSessions: 0, accuracy: 0, avgReactionTime: 0, maxLevel: 0 };
+        }
+        
+        const sessionIds = sessions.map(s => s.id);
+        
+        // Buscar eventos dessas sessões
+        const { data: events, error: evtErr } = await client
+          .from('game_events')
+          .select('payload')
+          .in('session_id', sessionIds);
+        if (evtErr) throw evtErr;
+        
+        let total = 0, hits = 0, rtSum = 0, maxLevel = 0;
+        (events || []).forEach(e => {
+          const p = e.payload || {};
+          if (typeof p.correct === 'boolean'){
+            total++;
+            if (p.correct) hits++;
+          }
+          if (typeof p.reactionTimeMs === 'number') rtSum += p.reactionTimeMs;
+          if (typeof p.level === 'number' && p.level > maxLevel) maxLevel = p.level;
+        });
+        
+        return {
+          totalSessions: sessions.length,
+          accuracy: total ? Math.round((hits / total) * 100) : 0,
+          avgReactionTime: total ? Math.round(rtSum / total) : 0,
+          maxLevel
+        };
+      } catch(e){
+        console.error('Erro ao buscar stats', e);
+      }
+    }
+    
+    // Fallback local
+    const db = getDB();
+    const sessions = db.game_sessions.filter(s => s.child_id === childId);
+    const events = db.game_events.filter(e => sessions.some(s => s.id === e.session_id));
+    
+    let total = 0, hits = 0, rtSum = 0, maxLevel = 0;
+    events.forEach(e => {
+      const p = e.payload || {};
+      if (typeof p.correct === 'boolean'){
+        total++;
+        if (p.correct) hits++;
+      }
+      if (typeof p.reactionTimeMs === 'number') rtSum += p.reactionTimeMs;
+      if (typeof p.level === 'number' && p.level > maxLevel) maxLevel = p.level;
+    });
+    
+    return {
+      totalSessions: sessions.length,
+      accuracy: total ? Math.round((hits / total) * 100) : 0,
+      avgReactionTime: total ? Math.round(rtSum / total) : 0,
+      maxLevel
+    };
+  },
+  
+  async getWeeklyProgress(childId){
+    const result = [0, 0, 0, 0, 0, 0, 0]; // Dom-Sáb
+    if (!childId) return result;
+    
+    const now = new Date();
+    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    
+    if (client){
+      try{
+        const { data: sessions, error } = await client
+          .from('game_sessions')
+          .select('started_at')
+          .eq('child_id', childId)
+          .gte('started_at', weekAgo.toISOString());
+        if (error) throw error;
+        
+        (sessions || []).forEach(s => {
+          const d = new Date(s.started_at);
+          result[d.getDay()]++;
+        });
+        return result;
+      } catch(e){
+        console.error('Erro ao buscar progresso semanal', e);
+      }
+    }
+    
+    // Fallback local
+    const db = getDB();
+    db.game_sessions
+      .filter(s => s.child_id === childId && s.started_at >= weekAgo.getTime())
+      .forEach(s => {
+        const d = new Date(s.started_at);
+        result[d.getDay()]++;
+      });
+    
+    return result;
+  },
+  
   async getGameProgress({childId, gameId}){
     if (client){
       try{

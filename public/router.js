@@ -6,6 +6,8 @@ const routes = {
   '/games': () => import('./pages/games.js'),
   '/games/onde-esta-o-brinquedo': () => import('./games/onde-esta-o-brinquedo.js'),
   '/progress': () => import('./pages/progress.js'),
+  '/children': () => import('./pages/children.js'),
+  '/settings': () => import('./pages/settings.js'),
 };
 
 const appRoot = () => document.getElementById('app');
