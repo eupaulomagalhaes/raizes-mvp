@@ -57,7 +57,6 @@ function pageTemplate(){
           <div class="game-room-stage" id="game-stage">
             <img id="game-toy" class="game-room-toy" alt="Brinquedo" />
             <div id="game-boxes" class="game-room-boxes"></div>
-            <div id="hand-hint" aria-hidden="true" class="game-room-hand"></div>
             <div id="celebration-container" class="game-celebration" style="display:none;"></div>
           </div>
         </div>
@@ -272,18 +271,22 @@ async function pickBox(index){
     if (state.level >= 2 && state.boxCount > 1){
       const remainingBoxes = boxes.filter(b => !b.classList.contains('box-hidden'));
       
+      // Permite tentar até restar apenas 1 caixa (a correta)
       if (remainingBoxes.length > 1){
         // Ainda há mais de uma caixa, pode tentar de novo
         setSpeech('Ops! Tente outra caixa!');
         speak('Ops! Tente outra caixa!');
-        showHandHint();
         // Mantém canPick = true para permitir nova tentativa
-        state.handTimeout = setTimeout(()=> showHandHint(), 5000);
         return; // Não avança rodada ainda
+      } else {
+        // Última caixa restante - deixa a criança clicar nela para "acertar"
+        setSpeech('Só resta uma! Clique nela!');
+        speak('Só resta uma caixa! Clique nela!');
+        return;
       }
     }
     
-    // Nível 1 OU última caixa errada: revela onde estava
+    // Nível 1: revela onde estava
     state.canPick = false;
     setSpeech('Ops! Veja onde estava!');
     speak('Ops! Veja onde estava o brinquedo!');
@@ -294,7 +297,6 @@ async function pickBox(index){
       if (correctImg) correctImg.src = state.toyUrl;
       boxes[state.correctIndex].classList.add('game-box-correct');
     }
-    showHandHint();
     
     // Log do erro final
     try{
@@ -455,42 +457,8 @@ function showBoxesAndAsk(){
 
   // Falar a pergunta via TTS
   speak(`Onde está ${state.toyArticle} ${state.toyName}?`);
-
-  // mão após 10s
-  state.handTimeout = setTimeout(()=>{
-    showHandHint();
-  }, 10000);
 }
 
-// Lottie hand hint
-let handAnim = null;
-const HAND_URL = 'https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/Click_hand2.json';
-function showHandHint(){
-  const boxesWrap = document.getElementById('game-boxes');
-  const hint = document.getElementById('hand-hint');
-  if (!boxesWrap || !hint) return;
-  const boxes = [...boxesWrap.children];
-  if (!boxes.length) return;
-  const idx = state.correctIndex < boxes.length ? state.correctIndex : 0;
-  const rectWrap = boxesWrap.getBoundingClientRect();
-  const rect = boxes[idx].getBoundingClientRect();
-  const x = rect.left - rectWrap.left + rect.width*0.25;
-  const y = rect.top - rectWrap.top + rect.height*0.1;
-  hint.style.left = `${x}px`;
-  hint.style.top = `${y}px`;
-  hint.style.width = `${Math.max(80, rect.width*0.6)}px`;
-  hint.style.height = `${Math.max(80, rect.height*0.6)}px`;
-  hint.style.display = 'block';
-  if (window.lottie){
-    if (!handAnim){
-      handAnim = window.lottie.loadAnimation({ container: hint, renderer: 'svg', loop: true, autoplay: true, path: HAND_URL });
-    } else {
-      handAnim.setDirection(1); handAnim.play();
-    }
-  }
-}
-function hideHandHint(){
-  const hint = document.getElementById('hand-hint');
-  if (hint) hint.style.display = 'none';
-  if (handAnim){ handAnim.stop(); }
-}
+// Funções de hand hint removidas - não são mais usadas
+function showHandHint(){}
+function hideHandHint(){}

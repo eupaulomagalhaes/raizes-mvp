@@ -202,6 +202,9 @@ async function showChildDetails(childId){
     const stats = await supabase.getChildStats(childId);
     
     if (stats && stats.totalSessions > 0){
+      // Converter ms para segundos
+      const avgTimeSeconds = (stats.avgReactionTime / 1000).toFixed(1);
+      
       statsEl.innerHTML = `
         <div class="stat-grid">
           <div class="stat-card">
@@ -213,7 +216,7 @@ async function showChildDetails(childId){
             <div class="stat-label">Taxa de acerto</div>
           </div>
           <div class="stat-card">
-            <div class="stat-value">${stats.avgReactionTime}ms</div>
+            <div class="stat-value">${avgTimeSeconds}s</div>
             <div class="stat-label">Tempo médio</div>
           </div>
           <div class="stat-card">
@@ -244,14 +247,22 @@ function renderWeekChart(container, data){
   if (!container) return;
   
   const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-  const today = new Date().getDay();
+  const today = new Date();
   
   // Reorganiza para começar de hoje - 6 dias
   const orderedDays = [];
   for (let i = 6; i >= 0; i--){
-    const dayIndex = (today - i + 7) % 7;
+    const date = new Date(today);
+    date.setDate(today.getDate() - i);
+    const dayIndex = date.getDay();
+    
+    // Formatar data como dd/mm
+    const dd = String(date.getDate()).padStart(2, '0');
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    
     orderedDays.push({
-      label: days[dayIndex],
+      dayName: days[dayIndex],
+      dateStr: `${dd}/${mm}`,
       value: data?.[dayIndex] || 0,
       isToday: i === 0
     });
@@ -266,7 +277,10 @@ function renderWeekChart(container, data){
           <div class="chart-bar" style="height: ${(day.value / maxValue) * 100}%">
             <span class="chart-value">${day.value}</span>
           </div>
-          <span class="chart-label ${day.isToday ? 'today' : ''}">${day.label}</span>
+          <div class="chart-label-stack ${day.isToday ? 'today' : ''}">
+            <span class="chart-date">${day.dateStr}</span>
+            <span class="chart-day">${day.dayName}</span>
+          </div>
         </div>
       `).join('')}
     </div>
