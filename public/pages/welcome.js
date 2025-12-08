@@ -10,8 +10,7 @@ export default {
         <div class="welcome-top">
           <div class="pre">BEM-VINDO AO</div>
           <div class="badge">
-            <div class="title">Raízes</div>
-            <div class="sub">EDUCACIONAL</div>
+            <img src="https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/logo_raizes_educacional.png" alt="Raízes Educacional" class="welcome-logo" />
           </div>
         </div>
 

@@ -159,6 +159,20 @@ body{font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Helv
 .game-box-correct{filter:drop-shadow(0 0 0 rgba(0,0,0,0));}
 .game-box-wrong{filter:grayscale(.8);}
 .game-room-hand{position:absolute; inset-inline:0; bottom:-0.9rem; margin-inline:auto; width:80px; height:80px; display:none; pointer-events:none; z-index:4;}
+.game-celebration{position:absolute; inset:0; pointer-events:none; z-index:10;}
+
+/* Modal de fim de jogo */
+.game-end-modal{position:fixed; inset:0; background:rgba(0,0,0,.6); display:flex; align-items:center; justify-content:center; padding:1rem; z-index:100;}
+.game-end-content{background:white; border-radius:1.5rem; padding:1.5rem; max-width:400px; width:100%; max-height:90vh; overflow-y:auto; box-shadow:0 24px 48px rgba(0,0,0,.25);}
+.game-end-header{display:flex; align-items:center; gap:1rem; margin-bottom:1rem;}
+.game-end-avatar{width:64px; height:64px; border-radius:999px; border:3px solid #234c38;}
+.game-end-header h2{font-family:Montserrat, Inter, system-ui, sans-serif; font-size:1.5rem; font-weight:800; color:#234c38; margin:0;}
+.game-end-content > p{font-size:1rem; color:#333; margin-bottom:1rem;}
+.game-end-tip{background:#f0f7f4; border-radius:1rem; padding:1rem; margin-bottom:1.25rem; border-left:4px solid #234c38;}
+.game-end-tip h3{font-size:.95rem; font-weight:700; color:#234c38; margin:0 0 .5rem;}
+.game-end-tip p{font-size:.85rem; color:#444; line-height:1.5; margin:0;}
+.game-end-actions{display:flex; flex-direction:column; gap:.75rem;}
+.game-end-actions .btn{width:100%; text-align:center;}
 
 @media (min-width:520px){
   .game-room-wrapper{max-width:460px; padding:1.5rem 1rem 0;}
@@ -250,6 +264,7 @@ body{font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Helv
 .welcome-top .pre{font-family:Montserrat, Inter, system-ui, sans-serif; font-size:20px; font-weight:700; letter-spacing:.06em; color:#2b3b31; margin-bottom:.5rem; text-shadow:0 2px 4px rgba(0,0,0,.12)}
 .welcome-top .title{font-family:Montserrat, Inter, system-ui, sans-serif; font-weight:800; font-size:48px; line-height:1.1; color:#234c38}
 .welcome-top .sub{font-family:Montserrat, Inter, system-ui, sans-serif; font-size:20px; letter-spacing:.08em; font-weight:700; color:#2d4a3b}
+.welcome-logo{width:100%; max-width:280px; height:auto; display:block; margin:0 auto}
 /* Bottom section: two columns with viewport padding (8.45% of vw) */
 .welcome-bottom{position:absolute; left:0; right:0; bottom:0; display:grid; grid-template-columns: 45% 55%; align-items:end; gap:3vw; padding:8.45vw; padding-top:4vw}
 .welcome-don{align-self:end}
