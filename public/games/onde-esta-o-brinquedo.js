@@ -1,13 +1,16 @@
 import { supabase } from '../supabase.js';
 
 const ASSETS = {
+  // Sequência fixa: Girafa (1 caixa) → Robô (2 caixas) → Dinossauro (3 caixas)
   toys: [
-    { url: 'https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/girafa.png', name: 'girafa', article: 'a' },
-    { url: 'https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/robo.png', name: 'robô', article: 'o' },
-    { url: 'https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/dinossauro.png', name: 'dinossauro', article: 'o' },
+    { url: 'https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/girafa.png', name: 'girafa', article: 'a', intro: 'Olha uma girafa!' },
+    { url: 'https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/robo.png', name: 'robô', article: 'o', intro: 'Este é um robô.' },
+    { url: 'https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/dinossauro.png', name: 'dinossauro', article: 'o', intro: 'Agora vemos um dinossauro!' },
   ],
   box: 'https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/mistery_box_01.png',
+  boxEmpty: 'https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/mistery_box_empty.png',
   celebration: 'https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/confetti.json',
+  celebrationSound: 'https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/audios/celebration.mp3',
 };
 
 const PHASES = {
@@ -17,14 +20,15 @@ const PHASES = {
 };
 
 const state = {
-  level: 1, // 1 => 1 caixa, 2 => 2 caixas, 3 => 3 caixas
+  level: 1, // 1 => 1 caixa (girafa), 2 => 2 caixas (robô), 3 => 3 caixas (dinossauro)
   round: 0,
-  maxRounds: 9,
+  maxRounds: 3, // Apenas 3 fases fixas
   sessionId: null,
   phase: PHASES.INTRO,
   toyUrl: '',
   toyName: '',
   toyArticle: '',
+  toyIntro: '',
   boxCount: 1,
   correctIndex: 0,
   canPick: false,
@@ -34,6 +38,7 @@ const state = {
   showToyTimeout: null,
   handTimeout: null,
   correctCount: 0,
+  attempts: 0,
 };
 
 function pageTemplate(){
@@ -100,6 +105,19 @@ function speak(text){
   const ptVoice = voices.find(v => v.lang.startsWith('pt'));
   if (ptVoice) utterance.voice = ptVoice;
   window.speechSynthesis.speak(utterance);
+}
+
+// Som de comemoração
+let celebrationAudio = null;
+function playCelebrationSound(){
+  try {
+    if (!celebrationAudio){
+      celebrationAudio = new Audio(ASSETS.celebrationSound);
+      celebrationAudio.volume = 0.5;
+    }
+    celebrationAudio.currentTime = 0;
+    celebrationAudio.play().catch(()=>{});
+  } catch(e){}
 }
 
 // Comemoração com confetti/balões
@@ -204,8 +222,8 @@ async function pickBox(index){
   const boxes = boxesWrap ? [...boxesWrap.children] : [];
   const clickedBox = boxes[index];
   
-  // Se a caixa já foi clicada (está escondida), ignora
-  if (clickedBox?.classList.contains('box-hidden')) return;
+  // Se a caixa já foi clicada (está aberta/vazia), ignora
+  if (clickedBox?.classList.contains('box-opened')) return;
   
   clearTimeout(state.handTimeout);
   hideHandHint();
@@ -225,6 +243,8 @@ async function pickBox(index){
       clickedBox.classList.add('game-box-correct');
     }
     
+    // Som e animação de comemoração
+    playCelebrationSound();
     showCelebration();
     setSpeech('MUITO BEM! 🎉');
     speak('Muito bem! Você encontrou!');
@@ -233,21 +253,19 @@ async function pickBox(index){
     try{
       if (state.sessionId){
         await supabase.logEvent(state.sessionId, Date.now(), {
-          level: state.level,
+          level: state.boxCount,
           targetIndex: state.correctIndex,
           guessIndex: index,
           correct: true,
           reactionTimeMs: rt,
           attempts: state.attempts || 1,
+          toy: state.toyName,
         });
       }
     }catch(err){ /* noop */ }
     
-    await sleep(1800);
+    await sleep(2000);
     hideCelebration();
-    
-    // Avança nível
-    if (state.level < 3) state.level++;
     
     state.round++;
     if (state.round >= state.maxRounds){
@@ -257,39 +275,39 @@ async function pickBox(index){
     }
     
   } else {
-    // ERROU - comportamento diferente por nível
+    // ERROU - abre a caixa vazia
     state.attempts = (state.attempts || 0) + 1;
     
-    // Esconde a caixa errada (some, não fica P&B)
+    // Mostra caixa vazia (aberta)
     if (clickedBox){
-      clickedBox.classList.add('box-hidden');
-      clickedBox.style.opacity = '0';
+      const img = clickedBox.querySelector('img');
+      // Usa imagem de caixa vazia ou apenas escurece
+      clickedBox.classList.add('box-opened');
+      clickedBox.style.opacity = '0.4';
       clickedBox.style.pointerEvents = 'none';
     }
     
-    // Nos níveis 2 e 3, permite tentar novamente nas outras caixas
-    if (state.level >= 2 && state.boxCount > 1){
-      const remainingBoxes = boxes.filter(b => !b.classList.contains('box-hidden'));
+    // Permite tentar novamente nas outras caixas (níveis 2 e 3)
+    if (state.boxCount > 1){
+      const remainingBoxes = boxes.filter(b => !b.classList.contains('box-opened'));
       
-      // Permite tentar até restar apenas 1 caixa (a correta)
       if (remainingBoxes.length > 1){
         // Ainda há mais de uma caixa, pode tentar de novo
         setSpeech('Ops! Tente outra caixa!');
-        speak('Ops! Tente outra caixa!');
-        // Mantém canPick = true para permitir nova tentativa
+        speak('Tente outra caixa!');
         return; // Não avança rodada ainda
-      } else {
-        // Última caixa restante - deixa a criança clicar nela para "acertar"
+      } else if (remainingBoxes.length === 1){
+        // Última caixa restante - deixa a criança clicar nela
         setSpeech('Só resta uma! Clique nela!');
-        speak('Só resta uma caixa! Clique nela!');
+        speak('Só resta uma caixa!');
         return;
       }
     }
     
-    // Nível 1: revela onde estava
+    // Nível 1 (1 caixa): revela onde estava
     state.canPick = false;
     setSpeech('Ops! Veja onde estava!');
-    speak('Ops! Veja onde estava o brinquedo!');
+    speak('Veja onde estava o brinquedo!');
     
     // Revela a caixa correta
     if (boxes[state.correctIndex]){
@@ -336,34 +354,35 @@ async function endGame(){
   const playAgainBtn = document.getElementById('btn-play-again');
   
   if (modal){
-    const percentage = Math.round((state.correctCount / state.maxRounds) * 100);
+    title.textContent = 'Parabéns! 🎉';
+    message.textContent = `Você completou todas as ${state.maxRounds} fases da atividade!`;
     
-    if (state.demo){
-      title.textContent = 'Gostou do jogo?';
-      message.textContent = 'Cadastre-se para jogar mais e salvar o progresso do seu filho!';
-    } else {
-      title.textContent = percentage >= 70 ? 'Parabéns! 🎉' : 'Bom trabalho!';
-      message.textContent = `Você acertou ${state.correctCount} de ${state.maxRounds} rodadas (${percentage}%)!`;
-    }
-    
-    // Dica educacional para os pais
+    // Explicação cognitiva e dicas para os pais
     tipText.innerHTML = `
-      <strong>O que trabalhamos:</strong> Memória visual, atenção sustentada e permanência do objeto.<br><br>
-      <strong>Atividade concreta:</strong> Em casa, esconda um brinquedo favorito sob um pano ou caixa enquanto a criança observa. 
-      Pergunte "Onde está o(a) [nome do brinquedo]?" e incentive-a a encontrar. 
-      Aumente gradualmente o número de esconderijos para desafiar a memória.<br><br>
-      <strong>Por que é importante:</strong> Nomear objetos ajuda no desenvolvimento da linguagem e vocabulário. 
-      A busca pelo objeto escondido fortalece a memória de trabalho e a compreensão de que objetos continuam existindo mesmo quando não os vemos.
+      <strong>🧠 O que trabalhamos nesta atividade:</strong><br>
+      • <strong>Atenção e Foco:</strong> A criança precisa prestar atenção ao brinquedo e às caixas.<br>
+      • <strong>Memória Visual:</strong> Lembrar onde viu o brinquedo pela última vez.<br>
+      • <strong>Permanência do Objeto:</strong> Entender que objetos continuam existindo mesmo quando não visíveis.<br>
+      • <strong>Tomada de Decisão:</strong> Escolher uma caixa e aprender com acertos e erros.<br>
+      • <strong>Coordenação Motora Fina:</strong> Tocar na caixa pratica movimentos de precisão.<br><br>
+      
+      <strong>🏠 Sugestão prática para casa:</strong><br>
+      Esconda um brinquedo dentro de caixas, copos ou paninhos. Peça para a criança encontrar. 
+      Celebre quando ela acertar! Se errar, incentive com calma: "Tente novamente!"<br><br>
+      
+      <strong>💡 Por que é importante:</strong><br>
+      Esse tipo de brincadeira simples fortalece o cérebro da criança de forma divertida e afetuosa, 
+      desenvolvendo habilidades essenciais para a aprendizagem futura.
     `;
     
     modal.style.display = 'flex';
-    speak(state.demo ? 'Gostou do jogo? Cadastre-se para jogar mais!' : `Parabéns! Você acertou ${state.correctCount} de ${state.maxRounds}!`);
+    speak('Parabéns! Você completou todas as fases!');
     
     playAgainBtn?.addEventListener('click', ()=>{
       modal.style.display = 'none';
-      state.level = 1;
       state.round = 0;
       state.correctCount = 0;
+      state.attempts = 0;
       state.phase = PHASES.INTRO;
       setupIntroFlow();
     }, { once: true });
@@ -373,7 +392,7 @@ async function endGame(){
 async function start(){
   const user = supabase.getCurrentUser();
   state.demo = !user;
-  state.maxRounds = state.demo ? 3 : 9;
+  state.maxRounds = 3; // Sempre 3 fases: Girafa, Robô, Dinossauro
   document.getElementById('app').innerHTML = pageTemplate();
   renderScene();
   try{
@@ -418,19 +437,22 @@ async function startLevel(){
   // Reset tentativas para nova rodada
   state.attempts = 0;
 
-  const toy = ASSETS.toys[Math.floor(Math.random()*ASSETS.toys.length)];
+  // Sequência fixa: round 0 = girafa (1 caixa), round 1 = robô (2 caixas), round 2 = dinossauro (3 caixas)
+  const toyIndex = Math.min(state.round, ASSETS.toys.length - 1);
+  const toy = ASSETS.toys[toyIndex];
   state.toyUrl = toy.url;
   state.toyName = toy.name;
   state.toyArticle = toy.article;
-  state.boxCount = boxCountForLevel(state.level);
-  state.correctIndex = Math.floor(Math.random()*state.boxCount);
+  state.toyIntro = toy.intro;
+  state.boxCount = toyIndex + 1; // 1, 2, 3 caixas
+  state.correctIndex = Math.floor(Math.random() * state.boxCount);
 
   state.phase = PHASES.SHOW_TOY;
-  setSpeech(`Olhe bem! Ess${state.toyArticle === 'a' ? 'a' : 'e'} é ${state.toyArticle} ${state.toyName.toUpperCase()}!`);
+  setSpeech(state.toyIntro.toUpperCase());
   renderScene();
   
-  // Falar o nome do brinquedo via TTS
-  speak(`Olhe bem! ${state.toyArticle === 'a' ? 'Essa' : 'Esse'} é ${state.toyArticle} ${state.toyName}!`);
+  // Falar a introdução do brinquedo via TTS
+  speak(state.toyIntro);
 
   const stage = document.getElementById('game-stage');
   if (!stage) return;
@@ -441,7 +463,7 @@ async function startLevel(){
   };
   stage.addEventListener('click', advance);
 
-  state.showToyTimeout = setTimeout(advance, 5000);
+  state.showToyTimeout = setTimeout(advance, 4000);
 }
 
 function showBoxesAndAsk(){

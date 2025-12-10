@@ -269,12 +269,24 @@ function renderWeekChart(container, data){
   }
   
   const maxValue = Math.max(...orderedDays.map(d => d.value), 1);
+  const totalSessions = orderedDays.reduce((sum, d) => sum + d.value, 0);
+  const activeDays = orderedDays.filter(d => d.value > 0).length;
   
   container.innerHTML = `
+    <div class="chart-summary">
+      <div class="chart-summary-item">
+        <span class="chart-summary-value">${totalSessions}</span>
+        <span class="chart-summary-label">sessões na semana</span>
+      </div>
+      <div class="chart-summary-item">
+        <span class="chart-summary-value">${activeDays}</span>
+        <span class="chart-summary-label">dias ativos</span>
+      </div>
+    </div>
     <div class="chart-bars">
       ${orderedDays.map(day => `
-        <div class="chart-bar-wrap">
-          <div class="chart-bar" style="height: ${(day.value / maxValue) * 100}%">
+        <div class="chart-bar-wrap ${day.value > 0 ? 'has-activity' : ''}">
+          <div class="chart-bar" style="height: ${Math.max((day.value / maxValue) * 100, day.value > 0 ? 15 : 5)}%">
             <span class="chart-value">${day.value}</span>
           </div>
           <div class="chart-label-stack ${day.isToday ? 'today' : ''}">
@@ -284,6 +296,6 @@ function renderWeekChart(container, data){
         </div>
       `).join('')}
     </div>
-    <p class="chart-legend">Sessões por dia</p>
+    <p class="chart-legend">Atividades realizadas nos últimos 7 dias</p>
   `;
 }

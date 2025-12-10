@@ -271,7 +271,8 @@ body{font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Helv
 .welcome-top .pre{font-family:Montserrat, Inter, system-ui, sans-serif; font-size:20px; font-weight:700; letter-spacing:.06em; color:#2b3b31; margin-bottom:.5rem; text-shadow:0 2px 4px rgba(0,0,0,.12)}
 .welcome-top .title{font-family:Montserrat, Inter, system-ui, sans-serif; font-weight:800; font-size:48px; line-height:1.1; color:#234c38}
 .welcome-top .sub{font-family:Montserrat, Inter, system-ui, sans-serif; font-size:20px; letter-spacing:.08em; font-weight:700; color:#2d4a3b}
-.welcome-logo{width:100%; max-width:280px; height:auto; display:block; margin:0 auto}
+.welcome-logo{width:100%; max-width:220px; height:auto; display:block; margin:0 auto}
+.badge-text{font-family:Montserrat, Inter, system-ui, sans-serif; font-weight:800; font-size:clamp(1.1rem, 4vw, 1.5rem); color:#234c38; margin-top:.5rem; text-align:center}
 /* Bottom section: two columns with viewport padding (8.45% of vw) */
 .welcome-bottom{position:absolute; left:0; right:0; bottom:0; display:grid; grid-template-columns: 45% 55%; align-items:end; gap:3vw; padding:8.45vw; padding-top:4vw}
 .welcome-don{align-self:end}
@@ -355,11 +356,16 @@ body{font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Helv
 .chart-bar-wrap{flex:1; display:flex; flex-direction:column; align-items:center; gap:4px;}
 .chart-bar{width:100%; background:#234c38; border-radius:4px 4px 0 0; min-height:4px; position:relative; transition:height .3s;}
 .chart-value{position:absolute; top:-20px; left:50%; transform:translateX(-50%); font-size:.7rem; font-weight:600; color:#234c38;}
+.chart-summary{display:flex; justify-content:space-around; margin-bottom:1rem; padding:.75rem; background:#e8f5e9; border-radius:.75rem;}
+.chart-summary-item{text-align:center;}
+.chart-summary-value{display:block; font-size:1.5rem; font-weight:800; color:#234c38;}
+.chart-summary-label{font-size:.7rem; color:#666;}
 .chart-label-stack{display:flex; flex-direction:column; align-items:center; gap:2px;}
 .chart-date{font-size:.6rem; color:#999;}
 .chart-day{font-size:.65rem; color:#666;}
 .chart-label-stack.today .chart-date{color:#234c38; font-weight:600;}
 .chart-label-stack.today .chart-day{color:#234c38; font-weight:700;}
+.chart-bar-wrap.has-activity .chart-bar{background:linear-gradient(180deg, #4caf50 0%, #234c38 100%);}
 .chart-legend{text-align:center; font-size:.75rem; color:#999; margin-top:.75rem;}
 
 /* Settings Page */
