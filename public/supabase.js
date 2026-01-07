@@ -8,8 +8,8 @@ const PENDING_ONBOARD_KEY = 'mvp_pending_onboard_v1';
 const ACTIVE_CHILD_KEY = 'mvp_active_child_v1';
 
 // Configuração Supabase real (auth)
-const SUPABASE_URL = 'https://vjeizqpzzfgdxbhetfdc.supabase.co'; // TODO: [CHAVES]
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqZWl6cXB6emZnZHhiaGV0ZmRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg2MzIwMTYsImV4cCI6MjA3NDIwODAxNn0.dYhRjGVZscO2npH35Zbe5_ZrMMAKeFuqmu2w4hLbrkE'; // TODO: [CHAVES]
+const SUPABASE_URL = 'https://zckhmhseisrodmbyhllh.supabase.co'; // Projeto Raízes Educacional
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpja2htaHNlaXNyb2RtYnlobGxoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3OTEwOTUsImV4cCI6MjA4MzM2NzA5NX0.iJcK0sdZNTNRC2hhvkcMdc7rCn_7NqJXlByc9EMEkZ8'; // Projeto Raízes Educacional
 const REAL_AUTH = !!(SUPABASE_URL && SUPABASE_ANON_KEY);
 const client = REAL_AUTH ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
