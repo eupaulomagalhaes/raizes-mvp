@@ -12,7 +12,7 @@ export default {
 
         <section class="welcome-bottom">
           <div class="welcome-don">
-            <img src="https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/don_inteiro.png" alt="DON" />
+            <img src="https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/don_mascote_final.png" alt="DON" />
           </div>
           <div class="welcome-right">
             <div class="welcome-bubble"><div class="speech" id="don-speech">Eu sou o Don!</div></div>
