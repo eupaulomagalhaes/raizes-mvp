@@ -7,7 +7,7 @@ export default {
         <div class="games-wrapper">
           <div class="games-mascot">
             <div class="games-mascot-avatar">
-              <img src="https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/inteiro.png" alt="Mascote Don" />
+              <img src="https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/don_mascote_final.png" alt="Mascote Don" />
             </div>
             <div class="speech games-speech">VAMOS BRINCAR!</div>
           </div>
