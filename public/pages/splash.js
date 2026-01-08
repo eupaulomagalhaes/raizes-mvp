@@ -5,7 +5,7 @@ export default {
     return `
       <main class="splash-wrap bg-onboarding" aria-label="Splash">
         <div class="splash-don">
-          <img src="https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/raizes-m-v-p-i9jdtd/assets/5m2imr90fuaf/inteiro.png" alt="DON"/>
+          <img src="https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/don_mascote_final.png" alt="DON"/>
         </div>
         <div class="splash-bottom">
           <div class="splash-title">Bem Vindo.</div>

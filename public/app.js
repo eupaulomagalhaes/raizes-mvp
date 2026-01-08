@@ -85,7 +85,7 @@ function ensureBgm(){
   bgmEl.src = BGM_URL;
   bgmEl.loop = true;
   bgmEl.preload = 'auto';
-  bgmEl.volume = 0.15; // Volume mais suave
+  bgmEl.volume = 0.5; // Volume 50%
   bgmEl.setAttribute('aria-hidden','true');
   bgmEl.style.display = 'none';
   bgmEl.addEventListener('play', emitBgmChange);
