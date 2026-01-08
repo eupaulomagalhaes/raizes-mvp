@@ -45,10 +45,23 @@ async function draw(){
   async function update(){
     const childId = document.getElementById(selectId).value;
     const gp = await supabase.getGameProgress({ childId, gameId: 'onde-esta-o-brinquedo' });
+    const tempoSegundos = (gp.avgReaction / 1000).toFixed(1);
     metrics.innerHTML = `
       <div class='card p-4'>
         <div class='h3'>Sessões</div>
         <div class='text-2xl font-extrabold'>${gp.sessions}</div>
+      </div>
+      <div class='card p-4'>
+        <div class='h3'>Acertos</div>
+        <div class='text-2xl font-extrabold'>${gp.totalCorrect || 0}</div>
+      </div>
+      <div class='card p-4'>
+        <div class='h3'>Erros</div>
+        <div class='text-2xl font-extrabold'>${gp.totalErrors || 0}</div>
+      </div>
+      <div class='card p-4'>
+        <div class='h3'>Tentativas</div>
+        <div class='text-2xl font-extrabold'>${gp.totalAttempts || 0}</div>
       </div>
       <div class='card p-4'>
         <div class='h3'>Acerto médio</div>
@@ -56,7 +69,7 @@ async function draw(){
       </div>
       <div class='card p-4'>
         <div class='h3'>Tempo médio reação</div>
-        <div class='text-2xl font-extrabold'>${gp.avgReaction.toFixed(0)} ms</div>
+        <div class='text-2xl font-extrabold'>${tempoSegundos} s</div>
       </div>
       <div class='card p-4'>
         <div class='h3'>Nível médio</div>
@@ -73,8 +86,8 @@ async function draw(){
 function drawChart(canvas, gp){
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0,0,canvas.width,canvas.height);
-  const labels = ['Sessões','Acerto %','Reação ms','Nível'];
-  const values = [gp.sessions, gp.accuracy*100, gp.avgReaction, gp.avgLevel];
+  const labels = ['Sessões','Acerto %','Reação s','Nível'];
+  const values = [gp.sessions, gp.accuracy*100, (gp.avgReaction/1000), gp.avgLevel];
   const max = Math.max(1, ...values);
   const w = canvas.width, h = canvas.height, pad=40;
   const barW = (w - pad*2) / values.length * 0.6;

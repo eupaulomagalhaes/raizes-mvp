@@ -472,14 +472,27 @@ export const supabase = {
           const ids = sess.map(s=>s.id);
           const { data: evts, error: e2 } = await client.from('game_events').select('session_id, ts, payload').in('session_id', ids);
           if (!e2){
-            let total=0, hits=0, rt=0, levelSum=0;
+            let total=0, hits=0, errors=0, rt=0, levelSum=0, totalAttempts=0;
             evts.forEach(e=>{
-              const { level, correct, reactionTimeMs } = e.payload || {};
+              const { level, correct, reactionTimeMs, attempts } = e.payload || {};
               if (typeof level === 'number') levelSum += level;
               if (typeof reactionTimeMs === 'number') rt += reactionTimeMs;
-              if (typeof correct === 'boolean') { total++; if (correct) hits++; }
+              if (typeof attempts === 'number') totalAttempts += attempts;
+              if (typeof correct === 'boolean') { 
+                total++; 
+                if (correct) hits++; 
+                else errors++;
+              }
             });
-            return { sessions: sess.length, accuracy: total? (hits/total):0, avgReaction: total? (rt/total):0, avgLevel: evts.length? (levelSum/Math.max(1,evts.length)):0 };
+            return { 
+              sessions: sess.length, 
+              accuracy: total? (hits/total):0, 
+              avgReaction: total? (rt/total):0, 
+              avgLevel: evts.length? (levelSum/Math.max(1,evts.length)):0,
+              totalCorrect: hits,
+              totalErrors: errors,
+              totalAttempts: totalAttempts
+            };
           }
         }
       }catch(e){ /* fallback */ }
@@ -488,18 +501,26 @@ export const supabase = {
     const sessions = db.game_sessions.filter(s => (childId? s.child_id===childId : true) && s.game_id===gameId);
     const events = db.game_events.filter(e => sessions.some(s=>s.id===e.session_id));
     // métricas simples
-    let total=0, hits=0, rt=0, levelSum=0;
+    let total=0, hits=0, errors=0, rt=0, levelSum=0, totalAttempts=0;
     events.forEach(e=>{
-      const { level, correct, reactionTimeMs } = e.payload || {};
+      const { level, correct, reactionTimeMs, attempts } = e.payload || {};
       if (typeof level === 'number') levelSum += level;
       if (typeof reactionTimeMs === 'number') rt += reactionTimeMs;
-      if (typeof correct === 'boolean') { total++; if (correct) hits++; }
+      if (typeof attempts === 'number') totalAttempts += attempts;
+      if (typeof correct === 'boolean') { 
+        total++; 
+        if (correct) hits++; 
+        else errors++;
+      }
     });
     return {
       sessions: sessions.length,
       accuracy: total? (hits/total) : 0,
       avgReaction: total? (rt/total) : 0,
       avgLevel: events.length? (levelSum/Math.max(1,events.length)) : 0,
+      totalCorrect: hits,
+      totalErrors: errors,
+      totalAttempts: totalAttempts
     };
   },
 };

@@ -63,6 +63,7 @@ function pageTemplate(){
             <img id="game-toy" class="game-room-toy" alt="Brinquedo" />
             <div id="game-boxes" class="game-room-boxes"></div>
             <div id="celebration-container" class="game-celebration" style="display:none;"></div>
+            <button id="btn-next-level" class="btn" data-variant="primary" style="display:none; margin-top: 20px; z-index: 1000; position: relative;">Próximo Nível</button>
           </div>
         </div>
       </div>
@@ -264,14 +265,23 @@ async function pickBox(index){
       }
     }catch(err){ /* noop */ }
     
+    // Aguardar 2s e então mostrar botão "Próximo Nível"
     await sleep(2000);
     hideCelebration();
     
-    state.round++;
-    if (state.round >= state.maxRounds){
-      await endGame();
-    } else {
-      await startLevel();
+    // Mostrar botão para avançar
+    const btnNext = document.getElementById('btn-next-level');
+    if (btnNext){
+      btnNext.style.display = 'block';
+      btnNext.onclick = async () => {
+        btnNext.style.display = 'none';
+        state.round++;
+        if (state.round >= state.maxRounds){
+          await endGame();
+        } else {
+          await startLevel();
+        }
+      };
     }
     
   } else {
