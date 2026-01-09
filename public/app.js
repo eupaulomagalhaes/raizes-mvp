@@ -229,7 +229,8 @@ supabase.init();
 // Iniciar BGM após Splash e atualizar navbar
 window.addEventListener('hashchange', ()=>{
   try{
-    if (location.hash === '#/welcome' && localStorage.getItem('bgm_pending') === '1'){
+    const hash = location.hash;
+    if ((hash === '#/welcome' || hash === '#/games') && localStorage.getItem('bgm_pending') === '1'){
       localStorage.removeItem('bgm_pending');
       tryPlayBgm();
     }
@@ -241,9 +242,10 @@ window.addEventListener('hashchange', ()=>{
 ensureNavbar();
 updateNavbarVisibility();
 
-// Caso a rota inicial já seja welcome com flag pendente
+// Caso a rota inicial já seja welcome ou games com flag pendente
 try{
-  if (location.hash === '#/welcome' && localStorage.getItem('bgm_pending') === '1'){
+  const hash = location.hash;
+  if ((hash === '#/welcome' || hash === '#/games') && localStorage.getItem('bgm_pending') === '1'){
     localStorage.removeItem('bgm_pending');
     tryPlayBgm();
   }

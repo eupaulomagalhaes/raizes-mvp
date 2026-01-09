@@ -60,7 +60,7 @@ export default {
             <div class="setting-item">
               <div class="setting-info">
                 <span class="setting-label">Versão</span>
-                <span class="setting-desc">1.0.0</span>
+                <span class="setting-desc">1.0.1</span>
               </div>
             </div>
             <div class="setting-item clickable" id="btn-privacy">

@@ -57,12 +57,9 @@ export default {
         await supabase.login({email, password});
         window.a11yAnnounce('Login realizado com sucesso');
         // Iniciar música de fundo ao fazer login
-        if (window.bgmController && window.bgmController.isEnabled()){
-          try{
-            const bgmEl = document.querySelector('audio[src*="difacil_audio_track"]');
-            if (bgmEl) await bgmEl.play().catch(()=>{});
-          }catch{}
-        }
+        try{
+          localStorage.setItem('bgm_pending', '1');
+        }catch{}
         location.hash = '#/games';
       }catch(err){
         alert(err.message);

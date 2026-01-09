@@ -273,15 +273,19 @@ async function pickBox(index){
     const btnNext = document.getElementById('btn-next-level');
     if (btnNext){
       btnNext.style.display = 'block';
-      btnNext.onclick = async () => {
-        btnNext.style.display = 'none';
+      // Remover listeners anteriores clonando o botão
+      const newBtn = btnNext.cloneNode(true);
+      btnNext.parentNode.replaceChild(newBtn, btnNext);
+      
+      newBtn.addEventListener('click', async () => {
+        newBtn.style.display = 'none';
         state.round++;
         if (state.round >= state.maxRounds){
           await endGame();
         } else {
           await startLevel();
         }
-      };
+      }, { once: true });
     }
     
   } else {
