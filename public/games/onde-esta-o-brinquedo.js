@@ -461,6 +461,18 @@ async function startLevel(){
   setSpeech(state.toyIntro.toUpperCase());
   renderScene();
   
+  // Garantir que as vozes estejam carregadas antes de falar
+  if ('speechSynthesis' in window){
+    const voices = window.speechSynthesis.getVoices();
+    if (voices.length === 0){
+      // Aguardar vozes carregarem
+      await new Promise(resolve => {
+        window.speechSynthesis.onvoiceschanged = () => resolve();
+        setTimeout(resolve, 500); // timeout de segurança
+      });
+    }
+  }
+  
   // Falar a introdução do brinquedo via TTS
   speak(state.toyIntro);
 
@@ -473,7 +485,7 @@ async function startLevel(){
   };
   stage.addEventListener('click', advance);
 
-  state.showToyTimeout = setTimeout(advance, 4000);
+  state.showToyTimeout = setTimeout(advance, 5000); // Aumentado para 5s para dar tempo da fala
 }
 
 function showBoxesAndAsk(){
