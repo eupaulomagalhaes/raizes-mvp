@@ -13,6 +13,18 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const REAL_AUTH = !!(SUPABASE_URL && SUPABASE_ANON_KEY);
 const client = REAL_AUTH ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
+// Helper: Convert game slug to id_jogo
+async function getIdJogoFromSlug(gameIdOrSlug){
+  if (!client) return gameIdOrSlug;
+  if (typeof gameIdOrSlug === 'number') return gameIdOrSlug;
+  if (typeof gameIdOrSlug === 'string' && !isNaN(Number(gameIdOrSlug))) return Number(gameIdOrSlug);
+  try {
+    const { data, error } = await client.from('jogos').select('id_jogo').eq('slug', gameIdOrSlug).maybeSingle();
+    if (!error && data) return data.id_jogo;
+  } catch(e) { console.error('[DEBUG] getIdJogoFromSlug error:', e); }
+  return gameIdOrSlug;
+}
+
 function getDB(){
   const raw = localStorage.getItem(DB_KEY);
   if (raw) return JSON.parse(raw);
@@ -494,7 +506,9 @@ export const supabase = {
     if (client){
       try{
         const started_at = new Date().toISOString();
-        const { data, error } = await client.from('sessoes_jogo').insert({ id_jogo: gameId, id_crianca: childId || null, data_hora: started_at }).select('id_sessao, data_hora').single();
+        // Convert slug to id_jogo
+        const idJogo = await getIdJogoFromSlug(gameId);
+        const { data, error } = await client.from('sessoes_jogo').insert({ id_jogo: idJogo, id_crianca: childId || null, data_hora: started_at }).select('id_sessao, data_hora').single();
         if (error) throw error;
         return { id: data.id_sessao, started_at: new Date(data.data_hora).getTime?.() || Date.now() };
       }catch(e){ /* fallback to local */ }
@@ -566,7 +580,7 @@ export const supabase = {
         const query = client
           .from('sessoes_jogo')
           .select('id_sessao, id_crianca, id_jogo, data_hora')
-          .eq('id_jogo', gameId)
+          .eq('id_jogo', await getIdJogoFromSlug(gameId))
           .order('data_hora', { ascending: true });
         const { data, error } = normalizedChild ? await query.eq('id_crianca', normalizedChild) : await query;
         if (error) throw error;
@@ -604,7 +618,9 @@ export const supabase = {
     if (client){
       try{
         const started_at = new Date().toISOString();
-        const { data, error } = await client.from('sessoes_jogo').insert({ id_jogo: gameId, id_crianca: childId || null, data_hora: started_at }).select('id_sessao, data_hora').single();
+        // Convert slug to id_jogo
+        const idJogo = await getIdJogoFromSlug(gameId);
+        const { data, error } = await client.from('sessoes_jogo').insert({ id_jogo: idJogo, id_crianca: childId || null, data_hora: started_at }).select('id_sessao, data_hora').single();
         if (error) throw error;
         return { id: data.id_sessao, started_at: new Date(data.data_hora).getTime?.() || Date.now() };
       }catch(e){ /* fallback to local */ }
@@ -791,7 +807,7 @@ export const supabase = {
   async getGameProgress({childId, gameId}){
     if (client){
       try{
-        const q1 = client.from('sessoes_jogo').select('id_sessao, id_crianca, id_jogo').eq('id_jogo', gameId);
+        const q1 = client.from('sessoes_jogo').select('id_sessao, id_crianca, id_jogo').eq('id_jogo', await getIdJogoFromSlug(gameId));
         const { data: sess, error: e1 } = childId ? await q1.eq('id_crianca', childId) : await q1;
         if (!e1 && sess && sess.length){
           const ids = sess.map(s=>s.id_sessao);
@@ -859,7 +875,7 @@ export const supabase = {
     
     if (client){
       try{
-        const q1 = client.from('sessoes_jogo').select('id_sessao, id_crianca, id_jogo, data_hora').eq('id_jogo', gameId);
+        const q1 = client.from('sessoes_jogo').select('id_sessao, id_crianca, id_jogo, data_hora').eq('id_jogo', await getIdJogoFromSlug(gameId));
         const { data: sess, error: e1 } = childId ? await q1.eq('id_crianca', childId) : await q1;
         if (!e1 && sess && sess.length){
           const ids = sess.map(s=>s.id_sessao);
