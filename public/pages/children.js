@@ -105,11 +105,14 @@ export default {
 };
 
 async function loadChildren(){
+  console.log("[DEBUG] loadChildren - INICIANDO");
   const list = document.getElementById('children-list');
   if (!list) return;
   
   try {
+    console.log("[DEBUG] loadChildren - chamando supabase.listChildren()");
     const children = await supabase.listChildren();
+    console.log("[DEBUG] loadChildren - children retornados:", children);
     
     if (!children || children.length === 0){
       list.innerHTML = `
