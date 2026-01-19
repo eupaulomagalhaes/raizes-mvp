@@ -568,13 +568,13 @@ export const supabase = {
           .select('id_sessao, id_crianca, id_jogo, data_hora')
           .eq('id_jogo', gameId)
           .order('data_hora', { ascending: true });
-        const { data, error } = normalizedChild ? await query.eq('child_id', normalizedChild) : await query;
+        const { data, error } = normalizedChild ? await query.eq('id_crianca', normalizedChild) : await query;
         if (error) throw error;
         return (data || []).map(row => ({
-        id: row.id_sessao,
-        child_id: row.id_crianca,
-        game_id: row.id_jogo,
-        started_at: row.data_hora ? new Date(row.started_at).getTime?.() || Date.parse(row.started_at) || Date.now() : Date.now(),
+          id: row.id_sessao,
+          child_id: row.id_crianca,
+          game_id: row.id_jogo,
+          started_at: row.data_hora ? new Date(row.data_hora).getTime() : Date.now(),
         }));
       }catch(err){ /* fallback */ }
     }
