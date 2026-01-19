@@ -440,15 +440,22 @@ export const supabase = {
   async listChildren(){
     const session = this.getCurrentUser();
     if (!session) return [];
+
+    const { criancas } = await this.getUserBundle();
+    if (Array.isArray(criancas) && criancas.length) return criancas.map(c=>({
+      ...c,
+      id: c.id ?? c.id_crianca ?? c.uuid ?? c.id,
+      name: c.name || c.nome_completo || 'Criança',
+    }));
+
     const db = getDB();
-    const criancas = db.children
+    return db.children
       .filter(c=>c.profile_id === session.user.id)
       .map(c=>({
         ...c,
         id: c.id,
         name: c.nome_completo || c.name || c.nome || 'Criança'
       }));
-    return criancas;
   },
   setActiveChild(childId){
     this.ensureActiveChild(childId);
