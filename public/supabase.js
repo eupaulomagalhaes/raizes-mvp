@@ -158,12 +158,17 @@ export const supabase = {
     if (client){
       try{
         const { data: evts, error } = await client
-          .from('game_events')
+          .from('eventos_jogo')
           .select('session_id, ts, payload')
-          .in('session_id', sessionIds)
-          .order('ts', { ascending: true });
+          .in('id_sessao', sessionIds)
+          .order('data_hora', { ascending: true });
         if (error) throw error;
-        return compute(evts || []);
+        const mappedEvents = (evts || []).map(e => ({
+          session_id: e.id_sessao,
+          ts: new Date(e.data_hora).getTime(),
+          payload: e.dados_adicionais
+        }));
+        return compute(mappedEvents);
       }catch(err){ /* fallback */ }
     }
 
@@ -182,12 +187,17 @@ export const supabase = {
     if (client){
       try{
         const { data: evts, error } = await client
-          .from('game_events')
+          .from('eventos_jogo')
           .select('session_id, ts, payload')
-          .in('session_id', sessionIds)
-          .order('ts', { ascending: true });
+          .in('id_sessao', sessionIds)
+          .order('data_hora', { ascending: true });
         if (error) throw error;
-        return normalizeAttemptTimeline(evts || []);
+        const mappedEvents = (evts || []).map(e => ({
+          session_id: e.id_sessao,
+          ts: new Date(e.data_hora).getTime(),
+          payload: e.dados_adicionais
+        }));
+        return normalizeAttemptTimeline(mappedEvents);
       }catch(err){ /* fallback */ }
     }
 
@@ -484,9 +494,9 @@ export const supabase = {
     if (client){
       try{
         const started_at = new Date().toISOString();
-        const { data, error } = await client.from('game_sessions').insert({ game_id: gameId, child_id: childId || null, started_at }).select('id, started_at').single();
+        const { data, error } = await client.from('sessoes_jogo').insert({ id_jogo: gameId, id_crianca: childId || null, data_hora: started_at }).select('id_sessao, data_hora').single();
         if (error) throw error;
-        return { id: data.id, started_at: new Date(data.started_at).getTime?.() || Date.now() };
+        return { id: data.id_sessao, started_at: new Date(data.data_hora).getTime?.() || Date.now() };
       }catch(e){ /* fallback to local */ }
     }
     const db = getDB();
@@ -527,12 +537,17 @@ export const supabase = {
     if (client){
       try{
         const { data: evts, error } = await client
-          .from('game_events')
+          .from('eventos_jogo')
           .select('session_id, ts, payload')
-          .in('session_id', sessionIds)
-          .order('ts', { ascending: true });
+          .in('id_sessao', sessionIds)
+          .order('data_hora', { ascending: true });
         if (error) throw error;
-        return compute(evts || []);
+        const mappedEvents = (evts || []).map(e => ({
+          session_id: e.id_sessao,
+          ts: new Date(e.data_hora).getTime(),
+          payload: e.dados_adicionais
+        }));
+        return compute(mappedEvents);
       }catch(err){ /* fallback */ }
     }
 
@@ -549,15 +564,17 @@ export const supabase = {
     if (client){
       try{
         const query = client
-          .from('game_sessions')
-          .select('id, child_id, game_id, started_at')
-          .eq('game_id', gameId)
-          .order('started_at', { ascending: true });
+          .from('sessoes_jogo')
+          .select('id_sessao, id_crianca, id_jogo, data_hora')
+          .eq('id_jogo', gameId)
+          .order('data_hora', { ascending: true });
         const { data, error } = normalizedChild ? await query.eq('child_id', normalizedChild) : await query;
         if (error) throw error;
         return (data || []).map(row => ({
-          ...row,
-          started_at: row.started_at ? new Date(row.started_at).getTime?.() || Date.parse(row.started_at) || Date.now() : Date.now(),
+        id: row.id_sessao,
+        child_id: row.id_crianca,
+        game_id: row.id_jogo,
+        started_at: row.data_hora ? new Date(row.started_at).getTime?.() || Date.parse(row.started_at) || Date.now() : Date.now(),
         }));
       }catch(err){ /* fallback */ }
     }
@@ -780,9 +797,9 @@ export const supabase = {
     if (client){
       try{
         const started_at = new Date().toISOString();
-        const { data, error } = await client.from('game_sessions').insert({ game_id: gameId, child_id: childId || null, started_at }).select('id, started_at').single();
+        const { data, error } = await client.from('sessoes_jogo').insert({ id_jogo: gameId, id_crianca: childId || null, data_hora: started_at }).select('id_sessao, data_hora').single();
         if (error) throw error;
-        return { id: data.id, started_at: new Date(data.started_at).getTime?.() || Date.now() };
+        return { id: data.id_sessao, started_at: new Date(data.data_hora).getTime?.() || Date.now() };
       }catch(e){ /* fallback to local */ }
     }
     const db = getDB();
@@ -795,7 +812,7 @@ export const supabase = {
   async logEvent(sessionId, ts, payload){
     if (client){
       try{
-        const { error } = await client.from('game_events').insert({ session_id: sessionId, ts: new Date(ts).toISOString?.() || new Date().toISOString(), payload });
+        const { error } = await client.from('eventos_jogo').insert({ id_sessao: sessionId, data_hora: new Date(ts).toISOString?.() || new Date().toISOString(), dados_adicionais: payload, tipo_evento: 'game_action' });
         if (!error) return;
       }catch(e){ /* fallback */ }
     }
@@ -807,7 +824,7 @@ export const supabase = {
     if (client){
       try{
         const ended_at = new Date().toISOString();
-        await client.from('game_sessions').update({ ended_at }).eq('id', sessionId);
+        await client.from('sessoes_jogo').update({ finalizada: true }).eq('id_sessao', sessionId);
         return;
       }catch(e){ /* fallback */ }
     }
@@ -862,22 +879,22 @@ export const supabase = {
       try{
         // Buscar sessões da criança
         const { data: sessions, error } = await client
-          .from('game_sessions')
-          .select('id, started_at')
-          .eq('child_id', childId);
+          .from('sessoes_jogo')
+          .select('id_sessao, data_hora')
+          .eq('id_crianca', childId);
         if (error) throw error;
         
         if (!sessions || sessions.length === 0){
           return { totalSessions: 0, accuracy: 0, avgReactionTime: 0, maxLevel: 0 };
         }
         
-        const sessionIds = sessions.map(s => s.id);
+        const sessionIds = sessions.map(s => s.id_sessao);
         
         // Buscar eventos dessas sessões
         const { data: events, error: evtErr } = await client
-          .from('game_events')
-          .select('payload')
-          .in('session_id', sessionIds);
+          .from('eventos_jogo')
+          .select('dados_adicionais')
+          .in('id_sessao', sessionIds);
         if (evtErr) throw evtErr;
         
         let total = 0, hits = 0, rtSum = 0, maxLevel = 0;
@@ -936,10 +953,10 @@ export const supabase = {
     if (client){
       try{
         const { data: sessions, error } = await client
-          .from('game_sessions')
-          .select('started_at')
-          .eq('child_id', childId)
-          .gte('started_at', weekAgo.toISOString());
+          .from('sessoes_jogo')
+          .select('data_hora')
+          .eq('id_crianca', childId)
+          .gte('data_hora', weekAgo.toISOString());
         if (error) throw error;
         
         (sessions || []).forEach(s => {
@@ -967,15 +984,16 @@ export const supabase = {
   async getGameProgress({childId, gameId}){
     if (client){
       try{
-        const q1 = client.from('game_sessions').select('id, child_id, game_id').eq('game_id', gameId);
-        const { data: sess, error: e1 } = childId ? await q1.eq('child_id', childId) : await q1;
+        const q1 = client.from('sessoes_jogo').select('id_sessao, id_crianca, id_jogo').eq('id_jogo', gameId);
+        const { data: sess, error: e1 } = childId ? await q1.eq('id_crianca', childId) : await q1;
         if (!e1 && sess && sess.length){
-          const ids = sess.map(s=>s.id);
-          const { data: evts, error: e2 } = await client.from('game_events').select('session_id, ts, payload').in('session_id', ids);
+          const ids = sess.map(s=>s.id_sessao);
+          const { data: evts, error: e2 } = await client.from('eventos_jogo').select('id_sessao, data_hora, dados_adicionais').in('id_sessao', ids);
           if (!e2){
             let total=0, hits=0, errors=0, rt=0, levelSum=0, totalAttempts=0;
             evts.forEach(e=>{
-              const { level, correct, reactionTimeMs, attempts } = e.payload || {};
+              const payload = e.dados_adicionais || e.payload || {};
+              const { level, correct, reactionTimeMs, attempts } = payload;
               if (typeof level === 'number') levelSum += level;
               if (typeof reactionTimeMs === 'number') rt += reactionTimeMs;
               if (typeof attempts === 'number') totalAttempts += attempts;
@@ -1005,8 +1023,9 @@ export const supabase = {
     // métricas simples
     let total=0, hits=0, errors=0, rt=0, levelSum=0, totalAttempts=0;
     events.forEach(e=>{
-      const { level, correct, reactionTimeMs, attempts } = e.payload || {};
-      if (typeof level === 'number') levelSum += level;
+      const payload = e.dados_adicionais || e.payload || {};
+              const { level, correct, reactionTimeMs, attempts } = payload;
+              if (typeof level === 'number') levelSum += level;
       if (typeof reactionTimeMs === 'number') rt += reactionTimeMs;
       if (typeof attempts === 'number') totalAttempts += attempts;
       if (typeof correct === 'boolean') { 
@@ -1033,21 +1052,22 @@ export const supabase = {
     
     if (client){
       try{
-        const q1 = client.from('game_sessions').select('id, child_id, game_id, started_at').eq('game_id', gameId);
-        const { data: sess, error: e1 } = childId ? await q1.eq('child_id', childId) : await q1;
+        const q1 = client.from('sessoes_jogo').select('id_sessao, id_crianca, id_jogo, data_hora').eq('id_jogo', gameId);
+        const { data: sess, error: e1 } = childId ? await q1.eq('id_crianca', childId) : await q1;
         if (!e1 && sess && sess.length){
-          const ids = sess.map(s=>s.id);
-          const { data: evts, error: e2 } = await client.from('game_events').select('session_id, ts, payload').in('session_id', ids);
+          const ids = sess.map(s=>s.id_sessao);
+          const { data: evts, error: e2 } = await client.from('eventos_jogo').select('id_sessao, data_hora, dados_adicionais').in('id_sessao', ids);
           if (!e2 && evts){
             // Agrupar eventos por dia
             const byDay = {};
             evts.forEach(e=>{
-              const ts = new Date(e.ts);
+              const ts = new Date(e.data_hora || e.ts);
               const dayKey = ts.toISOString().split('T')[0]; // YYYY-MM-DD
               if (!byDay[dayKey]){
                 byDay[dayKey] = { date: dayKey, total: 0, hits: 0, errors: 0, rt: 0, levelSum: 0, attempts: 0 };
               }
-              const { level, correct, reactionTimeMs, attempts } = e.payload || {};
+              const payload = e.dados_adicionais || e.payload || {};
+              const { level, correct, reactionTimeMs, attempts } = payload;
               if (typeof level === 'number') byDay[dayKey].levelSum += level;
               if (typeof reactionTimeMs === 'number') byDay[dayKey].rt += reactionTimeMs;
               if (typeof attempts === 'number') byDay[dayKey].attempts += attempts;
@@ -1089,8 +1109,9 @@ export const supabase = {
       if (!byDay[dayKey]){
         byDay[dayKey] = { date: dayKey, total: 0, hits: 0, errors: 0, rt: 0, levelSum: 0, attempts: 0 };
       }
-      const { level, correct, reactionTimeMs, attempts } = e.payload || {};
-      if (typeof level === 'number') byDay[dayKey].levelSum += level;
+      const payload = e.dados_adicionais || e.payload || {};
+              const { level, correct, reactionTimeMs, attempts } = payload;
+              if (typeof level === 'number') byDay[dayKey].levelSum += level;
       if (typeof reactionTimeMs === 'number') byDay[dayKey].rt += reactionTimeMs;
       if (typeof attempts === 'number') byDay[dayKey].attempts += attempts;
       if (typeof correct === 'boolean'){
