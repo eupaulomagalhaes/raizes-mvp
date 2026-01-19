@@ -45,7 +45,8 @@ async function draw(){
   async function update(){
     const childId = document.getElementById(selectId).value;
     const gp = await supabase.getGameProgress({ childId, gameId: 'onde-esta-o-brinquedo' });
-    const tempoSegundos = (gp.avgReaction / 1000).toFixed(1);
+    const progressByDay = await supabase.getGameProgressByDay({ childId, gameId: 'onde-esta-o-brinquedo' });
+    const tempoSegundos = gp.avgReactionMs ? (gp.avgReactionMs / 1000).toFixed(1) : (gp.avgReaction / 1000).toFixed(1);
     metrics.innerHTML = `
       <div class='card p-4'>
         <div class='h3'>Sessões</div>
@@ -76,46 +77,184 @@ async function draw(){
         <div class='text-2xl font-extrabold'>${gp.avgLevel.toFixed(1)}</div>
       </div>
     `;
-    drawChart(document.getElementById('chart'), gp);
+    drawChart(document.getElementById('chart'), gp, progressByDay);
   }
 
   document.getElementById(selectId).addEventListener('change', update);
   await update();
 }
 
-function drawChart(canvas, gp){
+function drawChart(canvas, gp, progressByDay = []){
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0,0,canvas.width,canvas.height);
-  const labels = ['Sessões','Acerto %','Reação s','Nível'];
-  const values = [gp.sessions, gp.accuracy*100, (gp.avgReaction/1000), gp.avgLevel];
-  const max = Math.max(1, ...values);
-  const w = canvas.width, h = canvas.height, pad=40;
-  const barW = (w - pad*2) / values.length * 0.6;
-  ctx.font = '14px Poppins, sans-serif';
+  
+  if (!progressByDay || progressByDay.length === 0){
+    // Se não há dados por dia, mostrar gráfico simples
+    const labels = ['Sessões','Acerto %','Reação s','Nível'];
+    const avgReactionSec = gp.avgReactionMs ? (gp.avgReactionMs / 1000) : (gp.avgReaction / 1000);
+    const values = [gp.sessions, gp.accuracy*100, avgReactionSec, gp.avgLevel];
+    const max = Math.max(1, ...values);
+    const w = canvas.width, h = canvas.height, pad=40;
+    const barW = (w - pad*2) / values.length * 0.6;
+    ctx.font = '14px Poppins, sans-serif';
+    ctx.fillStyle = '#3a5144';
+    ctx.strokeStyle = '#234c38';
+
+    // axes
+    ctx.beginPath();
+    ctx.moveTo(pad, pad);
+    ctx.lineTo(pad, h-pad);
+    ctx.lineTo(w-pad, h-pad);
+    ctx.stroke();
+
+    values.forEach((v, i)=>{
+      const x = pad + (i+0.5)*((w - pad*2)/values.length) - barW/2;
+      const y = h - pad;
+      const bh = (v/max) * (h - pad*2);
+      // bar
+      const grad = ctx.createLinearGradient(0, y-bh, 0, y);
+      grad.addColorStop(0, '#234c38');
+      grad.addColorStop(1, '#f0a500');
+      ctx.fillStyle = grad;
+      ctx.fillRect(x, y-bh, barW, bh);
+      // label
+      ctx.fillStyle = '#1b2b21';
+      ctx.fillText(labels[i], x, y+18);
+    });
+    return;
+  }
+  
+  // Gráfico de evolução por dia
+  const w = canvas.width, h = canvas.height, pad = 50;
+  const chartW = w - pad * 2;
+  const chartH = h - pad * 2;
+  
+  // Formatar datas para exibição
+  const formatDate = (dateStr) => {
+    const date = new Date(dateStr + 'T00:00:00');
+    const day = date.getDate();
+    const month = date.getMonth() + 1;
+    return `${day}/${month}`;
+  };
+  
+  // Preparar dados - usar acurácia como métrica principal
+  const accuracyData = progressByDay.map(d => d.accuracy * 100);
+  const maxAccuracy = Math.max(100, ...accuracyData, 1);
+  const minAccuracy = Math.min(...accuracyData, 0);
+  const range = maxAccuracy - minAccuracy || 100;
+  
+  ctx.font = '12px Inter, sans-serif';
   ctx.fillStyle = '#3a5144';
   ctx.strokeStyle = '#234c38';
-
-  // axes
+  
+  // Desenhar eixos
   ctx.beginPath();
   ctx.moveTo(pad, pad);
-  ctx.lineTo(pad, h-pad);
-  ctx.lineTo(w-pad, h-pad);
+  ctx.lineTo(pad, h - pad);
+  ctx.lineTo(w - pad, h - pad);
   ctx.stroke();
-
-  values.forEach((v, i)=>{
-    const x = pad + (i+0.5)*((w - pad*2)/values.length) - barW/2;
-    const y = h - pad;
-    const bh = (v/max) * (h - pad*2);
-    // bar
-    const grad = ctx.createLinearGradient(0, y-bh, 0, y);
-    grad.addColorStop(0, '#234c38');
-    grad.addColorStop(1, '#f0a500');
-    ctx.fillStyle = grad;
-    ctx.fillRect(x, y-bh, barW, bh);
-    // label
-    ctx.fillStyle = '#1b2b21';
-    ctx.fillText(labels[i], x, y+18);
+  
+  // Desenhar escala do eixo Y (acurácia %)
+  ctx.textAlign = 'right';
+  ctx.fillStyle = '#666';
+  const ySteps = 5;
+  for (let i = 0; i <= ySteps; i++){
+    const y = pad + (chartH / ySteps) * (ySteps - i);
+    const value = minAccuracy + (range / ySteps) * i;
+    ctx.fillText(Math.round(value) + '%', pad - 8, y + 4);
+    // Linha de grade
+    ctx.strokeStyle = '#e0e0e0';
+    ctx.beginPath();
+    ctx.moveTo(pad, y);
+    ctx.lineTo(w - pad, y);
+    ctx.stroke();
+    ctx.strokeStyle = '#234c38';
+  }
+  
+  // Desenhar linha de evolução
+  ctx.strokeStyle = '#234c38';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  
+  const pointSpacing = chartW / Math.max(1, progressByDay.length - 1);
+  
+  progressByDay.forEach((day, i) => {
+    const x = pad + (i * pointSpacing);
+    const accuracy = day.accuracy * 100;
+    const y = pad + chartH - ((accuracy - minAccuracy) / range) * chartH;
+    
+    if (i === 0){
+      ctx.moveTo(x, y);
+    } else {
+      ctx.lineTo(x, y);
+    }
   });
+  
+  ctx.stroke();
+  
+  // Desenhar pontos
+  ctx.fillStyle = '#234c38';
+  progressByDay.forEach((day, i) => {
+    const x = pad + (i * pointSpacing);
+    const accuracy = day.accuracy * 100;
+    const y = pad + chartH - ((accuracy - minAccuracy) / range) * chartH;
+    
+    ctx.beginPath();
+    ctx.arc(x, y, 5, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Mostrar valor no primeiro e último dia
+    if (i === 0 || i === progressByDay.length - 1){
+      ctx.fillStyle = '#234c38';
+      ctx.font = '10px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(Math.round(accuracy) + '%', x, y - 12);
+      ctx.fillStyle = '#234c38';
+    }
+  });
+  
+  // Desenhar labels do eixo X (datas)
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#666';
+  ctx.font = '10px Inter, sans-serif';
+  
+  // Mostrar primeiro dia, último dia e alguns intermediários
+  const labelIndices = [];
+  if (progressByDay.length > 0) labelIndices.push(0);
+  if (progressByDay.length > 1) labelIndices.push(progressByDay.length - 1);
+  if (progressByDay.length > 2) {
+    const mid = Math.floor(progressByDay.length / 2);
+    if (!labelIndices.includes(mid)) labelIndices.push(mid);
+  }
+  
+  labelIndices.forEach(i => {
+    const x = pad + (i * pointSpacing);
+    const dateStr = formatDate(progressByDay[i].date);
+    ctx.fillText(dateStr, x, h - pad + 20);
+    
+    // Marca no eixo
+    ctx.strokeStyle = '#234c38';
+    ctx.beginPath();
+    ctx.moveTo(x, h - pad);
+    ctx.lineTo(x, h - pad + 5);
+    ctx.stroke();
+  });
+  
+  // Título do gráfico
+  ctx.fillStyle = '#1b2b21';
+  ctx.font = 'bold 14px Inter, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('Evolução da Acurácia (%)', w / 2, pad - 10);
+  
+  // Legenda
+  ctx.font = '11px Inter, sans-serif';
+  ctx.fillStyle = '#666';
+  ctx.textAlign = 'left';
+  if (progressByDay.length > 0){
+    const firstDay = formatDate(progressByDay[0].date);
+    const lastDay = formatDate(progressByDay[progressByDay.length - 1].date);
+    ctx.fillText(`Primeiro dia: ${firstDay} → Último dia: ${lastDay}`, pad, h - pad + 40);
+  }
 }
 
 export default {

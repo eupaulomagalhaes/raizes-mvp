@@ -190,14 +190,22 @@ function renderScene(){
   if (!stage || !toy || !boxesWrap) return;
 
   boxesWrap.innerHTML = '';
-  toy.style.display = 'none';
 
   if (state.phase === PHASES.INTRO){
     // nada na área central, só fala
+    toy.style.display = 'none';
   } else if (state.phase === PHASES.SHOW_TOY){
+    // Mostrar o brinquedo claramente
     toy.src = state.toyUrl;
     toy.style.display = 'block';
+    toy.style.opacity = '1';
+    toy.style.visibility = 'visible';
   } else if (state.phase === PHASES.HIDE_AND_ASK){
+    // Esconder o brinquedo antes de mostrar as caixas
+    toy.style.display = 'none';
+    toy.style.opacity = '0';
+    toy.style.visibility = 'hidden';
+    
     const count = state.boxCount;
     for (let i=0;i<count;i++){
       const btn = document.createElement('button');
@@ -495,6 +503,14 @@ async function startLevel(){
 function showBoxesAndAsk(){
   clearTimeout(state.showToyTimeout);
   hideHandHint();
+
+  // Garantir que o brinquedo seja escondido antes de mostrar as caixas
+  const toy = document.getElementById('game-toy');
+  if (toy) {
+    toy.style.display = 'none';
+    toy.style.opacity = '0';
+    toy.style.visibility = 'hidden';
+  }
 
   state.phase = PHASES.HIDE_AND_ASK;
   const question = `ONDE ESTÁ ${state.toyArticle.toUpperCase()} ${state.toyName.toUpperCase()}?`;

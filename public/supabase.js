@@ -491,7 +491,8 @@ export const supabase = {
               avgLevel: evts.length? (levelSum/Math.max(1,evts.length)):0,
               totalCorrect: hits,
               totalErrors: errors,
-              totalAttempts: totalAttempts
+              totalAttempts: totalAttempts,
+              avgReactionMs: total? rt : 0
             };
           }
         }
@@ -520,7 +521,96 @@ export const supabase = {
       avgLevel: events.length? (levelSum/Math.max(1,events.length)) : 0,
       totalCorrect: hits,
       totalErrors: errors,
-      totalAttempts: totalAttempts
+      totalAttempts: totalAttempts,
+      avgReactionMs: total? rt : 0
     };
+  },
+  
+  async getGameProgressByDay({childId, gameId}){
+    // Retorna progresso agrupado por dia, começando do primeiro dia
+    const result = [];
+    
+    if (client){
+      try{
+        const q1 = client.from('game_sessions').select('id, child_id, game_id, started_at').eq('game_id', gameId);
+        const { data: sess, error: e1 } = childId ? await q1.eq('child_id', childId) : await q1;
+        if (!e1 && sess && sess.length){
+          const ids = sess.map(s=>s.id);
+          const { data: evts, error: e2 } = await client.from('game_events').select('session_id, ts, payload').in('session_id', ids);
+          if (!e2 && evts){
+            // Agrupar eventos por dia
+            const byDay = {};
+            evts.forEach(e=>{
+              const ts = new Date(e.ts);
+              const dayKey = ts.toISOString().split('T')[0]; // YYYY-MM-DD
+              if (!byDay[dayKey]){
+                byDay[dayKey] = { date: dayKey, total: 0, hits: 0, errors: 0, rt: 0, levelSum: 0, attempts: 0 };
+              }
+              const { level, correct, reactionTimeMs, attempts } = e.payload || {};
+              if (typeof level === 'number') byDay[dayKey].levelSum += level;
+              if (typeof reactionTimeMs === 'number') byDay[dayKey].rt += reactionTimeMs;
+              if (typeof attempts === 'number') byDay[dayKey].attempts += attempts;
+              if (typeof correct === 'boolean'){
+                byDay[dayKey].total++;
+                if (correct) byDay[dayKey].hits++;
+                else byDay[dayKey].errors++;
+              }
+            });
+            
+            // Converter para array e ordenar por data
+            const days = Object.keys(byDay).sort();
+            return days.map(dayKey => {
+              const d = byDay[dayKey];
+              return {
+                date: dayKey,
+                accuracy: d.total ? (d.hits / d.total) : 0,
+                avgReaction: d.total ? (d.rt / d.total) : 0,
+                avgLevel: d.total ? (d.levelSum / d.total) : 0,
+                totalCorrect: d.hits,
+                totalErrors: d.errors,
+                totalAttempts: d.attempts
+              };
+            });
+          }
+        }
+      }catch(e){ /* fallback */ }
+    }
+    
+    // Fallback local
+    const db = getDB();
+    const sessions = db.game_sessions.filter(s => (childId? s.child_id===childId : true) && s.game_id===gameId);
+    const events = db.game_events.filter(e => sessions.some(s=>s.id===e.session_id));
+    
+    const byDay = {};
+    events.forEach(e=>{
+      const ts = new Date(e.ts);
+      const dayKey = ts.toISOString().split('T')[0];
+      if (!byDay[dayKey]){
+        byDay[dayKey] = { date: dayKey, total: 0, hits: 0, errors: 0, rt: 0, levelSum: 0, attempts: 0 };
+      }
+      const { level, correct, reactionTimeMs, attempts } = e.payload || {};
+      if (typeof level === 'number') byDay[dayKey].levelSum += level;
+      if (typeof reactionTimeMs === 'number') byDay[dayKey].rt += reactionTimeMs;
+      if (typeof attempts === 'number') byDay[dayKey].attempts += attempts;
+      if (typeof correct === 'boolean'){
+        byDay[dayKey].total++;
+        if (correct) byDay[dayKey].hits++;
+        else byDay[dayKey].errors++;
+      }
+    });
+    
+    const days = Object.keys(byDay).sort();
+    return days.map(dayKey => {
+      const d = byDay[dayKey];
+      return {
+        date: dayKey,
+        accuracy: d.total ? (d.hits / d.total) : 0,
+        avgReaction: d.total ? (d.rt / d.total) : 0,
+        avgLevel: d.total ? (d.levelSum / d.total) : 0,
+        totalCorrect: d.hits,
+        totalErrors: d.errors,
+        totalAttempts: d.attempts
+      };
+    });
   },
 };
