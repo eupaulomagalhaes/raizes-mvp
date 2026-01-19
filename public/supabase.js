@@ -260,19 +260,23 @@ export const supabase = {
         nome_completo: profile.name,
         email: profile.email
       } : null;
-      return { usuario, criancas };
+      console.log("[DEBUG] getUserBundle - returning criancas:", criancas);
+        return { usuario, criancas };
     };
 
     if (client){
       try{
         const authId = session.user.id;
+        console.log("[DEBUG] getUserBundle - authId:", authId);
         const { data: usuarioData, error: usuarioError } = await client
           .from('usuarios')
           .select('id_usuario, uuid, nome_completo, data_nascimento, parentesco, escolaridade, profissao, email, celular, cidade_estado')
           .eq('uuid', authId)
           .maybeSingle();
         if (usuarioError && usuarioError.code !== 'PGRST116') throw usuarioError;
+        console.log("[DEBUG] getUserBundle - usuarioData:", usuarioData);
 
+        console.log("[DEBUG] getUserBundle - usuario.id:", usuarioData?.id_usuario);
         const usuario = usuarioData ? {
           id: usuarioData.id_usuario,
           ...usuarioData
@@ -285,6 +289,7 @@ export const supabase = {
             .select('id_crianca, nome_completo, data_nascimento, sexo, estuda, tipo_escola, terapia, tipos_terapia, outras_terapias')
             .eq('id_responsavel', usuario.id);
           if (criError) throw criError;
+          console.log("[DEBUG] getUserBundle - criData:", criData);
           criancas = (criData||[]).map(c=>({
             ...c,
             id: c.id_crianca,
@@ -293,6 +298,7 @@ export const supabase = {
           }));
         }
 
+        console.log("[DEBUG] getUserBundle - returning criancas:", criancas);
         return { usuario, criancas };
       }catch(err){
         console.error('Erro ao buscar dados do usuário no Supabase', err);
@@ -444,6 +450,8 @@ export const supabase = {
     if (!session) return [];
 
     const { criancas } = await this.getUserBundle();
+    console.log("[DEBUG] listChildren - criancas from getUserBundle:", criancas);
+    console.log("[DEBUG] listChildren - criancas is array with length:", criancas?.length);
     if (Array.isArray(criancas) && criancas.length) return criancas.map(c=>({
       ...c,
       id: c.id ?? c.id_crianca ?? c.uuid ?? c.id,
