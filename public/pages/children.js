@@ -122,7 +122,13 @@ async function loadChildren(){
       return;
     }
     
-    list.innerHTML = children.map(child => `
+    const activeChildId = supabase.getActiveChild();
+    
+    list.innerHTML = children.map(child => {
+      const birthdate = child.birthdate || child.data_nascimento;
+      const isActive = String(activeChildId) === String(child.id);
+      
+      return `
       <div class="child-card" data-child-id="${child.id}">
         <div class="child-avatar">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -132,20 +138,29 @@ async function loadChildren(){
         </div>
         <div class="child-info">
           <h3>${child.name}</h3>
-          <p class="child-age">${calculateAge(child.birthdate)}</p>
+          <p class="child-age">${calculateAge(birthdate)}</p>
         </div>
-        <button class="btn-select-child ${supabase.getActiveChild() === child.id ? 'active' : ''}" 
-                data-select-child="${child.id}" aria-label="Selecionar ${child.name}">
-          ${supabase.getActiveChild() === child.id ? '✓' : 'Selecionar'}
-        </button>
+        <div class="child-actions">
+          <button class="btn-details" data-details-child="${child.id}" aria-label="Ver detalhes de ${child.name}" title="Ver estatísticas">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 3v18h18"/>
+              <path d="M18 17V9M13 17v-6M8 17v-3"/>
+            </svg>
+          </button>
+          <button class="btn-select-child ${isActive ? 'active' : ''}" 
+                  data-select-child="${child.id}" aria-label="Selecionar ${child.name}">
+            ${isActive ? '✓' : 'Selecionar'}
+          </button>
+        </div>
       </div>
-    `).join('');
+    `;
+    }).join('');
     
-    // Event listeners para cards
-    list.querySelectorAll('.child-card').forEach(card => {
-      card.addEventListener('click', (e)=>{
-        if (e.target.closest('.btn-select-child')) return;
-        const childId = card.dataset.childId;
+    // Event listeners para botão de detalhes
+    list.querySelectorAll('.btn-details').forEach(btn => {
+      btn.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        const childId = btn.dataset.detailsChild;
         showChildDetails(childId);
       });
     });
@@ -156,7 +171,7 @@ async function loadChildren(){
         e.stopPropagation();
         const childId = btn.dataset.selectChild;
         supabase.setActiveChild(childId);
-        loadChildren(); // Recarrega para atualizar visual
+        loadChildren();
       });
     });
     
