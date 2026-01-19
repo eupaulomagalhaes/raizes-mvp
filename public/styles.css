@@ -391,6 +391,17 @@ body{font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Helv
 .toggle-switch input:checked + .toggle-slider{background:#234c38;}
 .toggle-switch input:checked + .toggle-slider:before{transform:translateX(24px);}
 
+/* Progress Screen Styles */
+.progress-screen{padding:1rem; padding-top:2rem; padding-bottom:calc(80px + 2rem); min-height:100vh; display:flex; flex-direction:column;}
+.progress-header{display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem;}
+.progress-content{display:flex; flex-direction:column; gap:1.5rem; padding:1.5rem;}
+.progress-metrics{display:grid; grid-template-columns:repeat(2, 1fr); gap:1rem;}
+.progress-metric-card{background:var(--card); border-radius:1rem; padding:1rem; box-shadow:0 4px 12px rgba(0,0,0,.08);}
+.progress-metric-card .h3{font-size:0.95rem; font-weight:600; color:var(--text-secondary); margin-bottom:0.5rem;}
+.progress-metric-card .text-2xl{font-size:1.75rem; font-weight:800; color:var(--color-primary);}
+.progress-metric-full{grid-column:1 / -1;}
+.progress-chart-container{margin-top:1rem; padding-top:1rem; padding-bottom:1rem;}
+
 /* Otimizações para mobile - reduzir espaçamentos verticais */
 @media (max-width: 640px) {
   /* Login screen */
@@ -426,6 +437,13 @@ body{font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Helv
   /* Progress screen */
   main.space-y-6{gap:1rem;}
   .card{padding:1rem;}
+  .progress-screen{padding:1rem; padding-top:1.5rem; padding-bottom:calc(80px + 1.5rem);}
+  .progress-content{padding:1.25rem; gap:1.25rem;}
+  .progress-metrics{gap:0.75rem;}
+  .progress-metric-card{padding:0.85rem;}
+  .progress-metric-card .h3{font-size:0.85rem; margin-bottom:0.4rem;}
+  .progress-metric-card .text-2xl{font-size:1.5rem;}
+  .progress-chart-container{margin-top:0.75rem; padding-top:0.75rem; padding-bottom:0.75rem;}
   
   /* Buttons e inputs */
   .btn{padding:0.65rem 0.9rem;}

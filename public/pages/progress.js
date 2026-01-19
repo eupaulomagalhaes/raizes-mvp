@@ -3,17 +3,19 @@ import { supabase } from '../supabase.js';
 
 function tpl(){
   return `
-    <main class='space-y-6'>
-      <div class='flex items-center justify-between'>
+    <main class='progress-screen'>
+      <div class='progress-header'>
         <h1 class='h1'>Progresso</h1>
         <a class='btn' data-variant='ghost' href='#/games'>Voltar</a>
       </div>
       ${UI.Card(`
-        <div class='space-y-4'>
+        <div class='progress-content'>
           <div id='auth-hint' class='text-[var(--text-secondary)]'></div>
           <div id='child-picker' class='hidden'></div>
-          <div id='metrics' class='grid gap-3 md:grid-cols-2'></div>
-          <canvas id='chart' width='600' height='280' class='w-full'></canvas>
+          <div id='metrics' class='progress-metrics'></div>
+          <div class='progress-chart-container'>
+            <canvas id='chart' width='600' height='280' class='w-full'></canvas>
+          </div>
         </div>
       `)}
     </main>
@@ -48,31 +50,35 @@ async function draw(){
     const progressByDay = await supabase.getGameProgressByDay({ childId, gameId: 'onde-esta-o-brinquedo' });
     const tempoSegundos = gp.avgReactionMs ? (gp.avgReactionMs / 1000).toFixed(1) : (gp.avgReaction / 1000).toFixed(1);
     metrics.innerHTML = `
-      <div class='card p-4'>
+      <!-- Linha 1: Sessões | Tentativas -->
+      <div class='progress-metric-card'>
         <div class='h3'>Sessões</div>
         <div class='text-2xl font-extrabold'>${gp.sessions}</div>
       </div>
-      <div class='card p-4'>
-        <div class='h3'>Acertos</div>
-        <div class='text-2xl font-extrabold'>${gp.totalCorrect || 0}</div>
-      </div>
-      <div class='card p-4'>
-        <div class='h3'>Erros</div>
-        <div class='text-2xl font-extrabold'>${gp.totalErrors || 0}</div>
-      </div>
-      <div class='card p-4'>
+      <div class='progress-metric-card'>
         <div class='h3'>Tentativas</div>
         <div class='text-2xl font-extrabold'>${gp.totalAttempts || 0}</div>
       </div>
-      <div class='card p-4'>
+      <!-- Linha 2: Acertos | Erros -->
+      <div class='progress-metric-card'>
+        <div class='h3'>Acertos</div>
+        <div class='text-2xl font-extrabold'>${gp.totalCorrect || 0}</div>
+      </div>
+      <div class='progress-metric-card'>
+        <div class='h3'>Erros</div>
+        <div class='text-2xl font-extrabold'>${gp.totalErrors || 0}</div>
+      </div>
+      <!-- Linha 3: Acerto Médio | Tempo Médio de Reação -->
+      <div class='progress-metric-card'>
         <div class='h3'>Acerto médio</div>
         <div class='text-2xl font-extrabold'>${(gp.accuracy*100).toFixed(0)}%</div>
       </div>
-      <div class='card p-4'>
+      <div class='progress-metric-card'>
         <div class='h3'>Tempo médio reação</div>
         <div class='text-2xl font-extrabold'>${tempoSegundos} s</div>
       </div>
-      <div class='card p-4'>
+      <!-- Linha 4: Nível Médio (sozinho) -->
+      <div class='progress-metric-card progress-metric-full'>
         <div class='h3'>Nível médio</div>
         <div class='text-2xl font-extrabold'>${gp.avgLevel.toFixed(1)}</div>
       </div>
