@@ -3,9 +3,9 @@ import { supabase } from '../supabase.js';
 const ASSETS = {
   // Sequência fixa: Girafa (1 caixa) → Robô (2 caixas) → Dinossauro (3 caixas)
   toys: [
-    { url: 'https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/girafa.png', name: 'girafa', article: 'a', intro: 'Olha uma girafa!' },
-    { url: 'https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/robo.png', name: 'robô', article: 'o', intro: 'Este é um robô.' },
-    { url: 'https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/dinossauro.png', name: 'dinossauro', article: 'o', intro: 'Agora vemos um dinossauro!' },
+    { url: 'https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/girafa.png', name: 'girafa', article: 'a', intro: 'Olhe para a girafa!' },
+    { url: 'https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/robo.png', name: 'robô', article: 'o', intro: 'Olhe para o robô!' },
+    { url: 'https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/dinossauro.png', name: 'dinossauro', article: 'o', intro: 'Olhe para o dinossauro!' },
   ],
   box: 'https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/mistery_box_01.png',
   boxEmpty: 'https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/mistery_box_empty.png',
@@ -455,24 +455,37 @@ async function startLevel(){
   clearTimeout(state.showToyTimeout);
   clearTimeout(state.handTimeout);
   hideHandHint();
+  hideCelebration();
+
+  // Esconder botão "Próximo Nível" se estiver visível
+  const btnNext = document.getElementById('btn-next-level');
+  if (btnNext) btnNext.style.display = 'none';
+
+  // Limpar caixas anteriores
+  const boxesWrap = document.getElementById('game-boxes');
+  if (boxesWrap) boxesWrap.innerHTML = '';
+
+  // Esconder brinquedo anterior antes de mostrar o novo
+  const toy = document.getElementById('game-toy');
+  if (toy) {
+    toy.style.display = 'none';
+    toy.style.opacity = '0';
+    toy.style.visibility = 'hidden';
+  }
 
   // Reset tentativas para nova rodada
   state.attempts = 0;
 
   // Sequência fixa: round 0 = girafa (1 caixa), round 1 = robô (2 caixas), round 2 = dinossauro (3 caixas)
   const toyIndex = Math.min(state.round, ASSETS.toys.length - 1);
-  const toy = ASSETS.toys[toyIndex];
-  state.toyUrl = toy.url;
-  state.toyName = toy.name;
-  state.toyArticle = toy.article;
-  state.toyIntro = toy.intro;
+  const toyData = ASSETS.toys[toyIndex];
+  state.toyUrl = toyData.url;
+  state.toyName = toyData.name;
+  state.toyArticle = toyData.article;
+  state.toyIntro = toyData.intro;
   state.boxCount = toyIndex + 1; // 1, 2, 3 caixas
   state.correctIndex = Math.floor(Math.random() * state.boxCount);
 
-  state.phase = PHASES.SHOW_TOY;
-  setSpeech(state.toyIntro.toUpperCase());
-  renderScene();
-  
   // Garantir que as vozes estejam carregadas antes de falar
   if ('speechSynthesis' in window){
     const voices = window.speechSynthesis.getVoices();
@@ -484,6 +497,14 @@ async function startLevel(){
       });
     }
   }
+
+  // Mostrar o brinquedo e falar "Olhe para o [brinquedo]"
+  state.phase = PHASES.SHOW_TOY;
+  setSpeech(state.toyIntro.toUpperCase());
+  renderScene();
+  
+  // Pequeno delay para garantir que o brinquedo apareça antes de falar
+  await new Promise(resolve => setTimeout(resolve, 300));
   
   // Falar a introdução do brinquedo via TTS
   speak(state.toyIntro);
@@ -497,7 +518,7 @@ async function startLevel(){
   };
   stage.addEventListener('click', advance);
 
-  state.showToyTimeout = setTimeout(advance, 5000); // Aumentado para 5s para dar tempo da fala
+  state.showToyTimeout = setTimeout(advance, 5000); // 5s para dar tempo da fala e visualização
 }
 
 function showBoxesAndAsk(){
