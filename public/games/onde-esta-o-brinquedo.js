@@ -84,6 +84,80 @@ function pageTemplate(){
           </div>
         </div>
       </div>
+      
+      <div id="parent-feedback-modal" class="parent-feedback-modal" style="display:none;">
+        <div class="parent-feedback-content">
+          <div class="parent-feedback-header">
+            <img src="https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/cabeca.png" alt="Don" class="parent-feedback-avatar" />
+            <h2>Momento do Responsável</h2>
+          </div>
+          
+          <div class="parent-feedback-message">
+            <p class="feedback-highlight">O Raízes não substitui o adulto.</p>
+            <p>Ele organiza o estímulo, orienta o pai e transforma minutos comuns do dia em <strong>desenvolvimento cerebral intencional</strong>.</p>
+          </div>
+          
+          <form id="parent-feedback-form" class="parent-feedback-form">
+            <div class="feedback-question">
+              <label>Meu filho:</label>
+              <div class="feedback-options">
+                <label class="feedback-option">
+                  <input type="radio" name="child_behavior" value="found_alone" required />
+                  <span>Achou sozinho</span>
+                </label>
+                <label class="feedback-option">
+                  <input type="radio" name="child_behavior" value="needed_help" />
+                  <span>Precisou de ajuda</span>
+                </label>
+                <label class="feedback-option">
+                  <input type="radio" name="child_behavior" value="not_interested" />
+                  <span>Não se interessou</span>
+                </label>
+              </div>
+            </div>
+            
+            <div class="feedback-question">
+              <label>Durante a atividade, ele:</label>
+              <div class="feedback-options">
+                <label class="feedback-option">
+                  <input type="radio" name="child_interaction" value="looked_at_me" required />
+                  <span>Olhou para mim</span>
+                </label>
+                <label class="feedback-option">
+                  <input type="radio" name="child_interaction" value="pointed" />
+                  <span>Apontou</span>
+                </label>
+                <label class="feedback-option">
+                  <input type="radio" name="child_interaction" value="vocalized" />
+                  <span>Vocalizou/fez som</span>
+                </label>
+              </div>
+            </div>
+            
+            <div class="feedback-question">
+              <label>Como foi pra mim:</label>
+              <div class="feedback-options">
+                <label class="feedback-option">
+                  <input type="radio" name="parent_difficulty" value="easy" required />
+                  <span>Fácil</span>
+                </label>
+                <label class="feedback-option">
+                  <input type="radio" name="parent_difficulty" value="medium" />
+                  <span>Médio</span>
+                </label>
+                <label class="feedback-option">
+                  <input type="radio" name="parent_difficulty" value="hard" />
+                  <span>Difícil</span>
+                </label>
+              </div>
+            </div>
+            
+            <div class="parent-feedback-actions">
+              <button type="submit" class="btn" data-variant="primary">Enviar Feedback</button>
+            </div>
+          </form>
+        </div>
+      </div>
     </main>
   `;
 }
@@ -368,7 +442,67 @@ async function endGame(){
   try{ if (state.sessionId) await supabase.endSession(state.sessionId); }catch(e){}
   window.a11yAnnounce?.('Sessão finalizada');
   
-  // Mostra modal de fim de jogo com sugestões para os pais
+  // Primeiro mostra o modal de feedback dos pais
+  await showParentFeedbackModal();
+  
+  // Depois mostra o modal de fim de jogo
+  showGameEndModal();
+}
+
+// Modal de feedback dos pais
+function showParentFeedbackModal(){
+  return new Promise((resolve) => {
+    const feedbackModal = document.getElementById('parent-feedback-modal');
+    const feedbackForm = document.getElementById('parent-feedback-form');
+    
+    if (!feedbackModal || !feedbackForm){
+      resolve();
+      return;
+    }
+    
+    // Reset form
+    feedbackForm.reset();
+    feedbackModal.style.display = 'flex';
+    
+    // Handle form submission
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      
+      const formData = new FormData(feedbackForm);
+      const feedback = {
+        child_behavior: formData.get('child_behavior'),
+        child_interaction: formData.get('child_interaction'),
+        parent_difficulty: formData.get('parent_difficulty'),
+        session_id: state.sessionId,
+        game_slug: 'onde-esta-o-brinquedo',
+        completed_levels: state.round,
+        correct_count: state.correctCount,
+        timestamp: new Date().toISOString()
+      };
+      
+      // Salvar feedback no Supabase
+      try {
+        if (state.sessionId){
+          await supabase.logEvent(state.sessionId, Date.now(), {
+            type: 'parent_feedback',
+            ...feedback
+          });
+        }
+      } catch(err){
+        console.error('[DEBUG] Error saving parent feedback:', err);
+      }
+      
+      feedbackModal.style.display = 'none';
+      feedbackForm.removeEventListener('submit', handleSubmit);
+      resolve();
+    };
+    
+    feedbackForm.addEventListener('submit', handleSubmit);
+  });
+}
+
+// Modal de fim de jogo com dicas
+function showGameEndModal(){
   const modal = document.getElementById('game-end-modal');
   const title = document.getElementById('game-end-title');
   const message = document.getElementById('game-end-message');

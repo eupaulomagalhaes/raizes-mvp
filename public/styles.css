@@ -181,6 +181,27 @@ body{font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Helv
 .game-end-actions{display:flex; flex-direction:column; gap:.75rem;}
 .game-end-actions .btn{width:100%; text-align:center;}
 
+/* Modal de feedback dos pais */
+.parent-feedback-modal{position:fixed; inset:0; background:rgba(0,0,0,.7); display:flex; align-items:center; justify-content:center; padding:1rem; z-index:200;}
+.parent-feedback-content{background:white; border-radius:1.5rem; padding:1.5rem; max-width:420px; width:100%; max-height:90vh; overflow-y:auto; box-shadow:0 24px 48px rgba(0,0,0,.3);}
+.parent-feedback-header{display:flex; align-items:center; gap:1rem; margin-bottom:1rem;}
+.parent-feedback-avatar{width:56px; height:56px; border-radius:999px; border:3px solid #234c38;}
+.parent-feedback-header h2{font-family:Montserrat, Inter, system-ui, sans-serif; font-size:1.25rem; font-weight:800; color:#234c38; margin:0;}
+.parent-feedback-message{background:linear-gradient(135deg, #f0f7f4 0%, #e8f5e9 100%); border-radius:1rem; padding:1rem; margin-bottom:1.25rem; border-left:4px solid #234c38;}
+.parent-feedback-message .feedback-highlight{font-size:1.1rem; font-weight:700; color:#234c38; margin:0 0 .5rem;}
+.parent-feedback-message p{font-size:.9rem; color:#444; line-height:1.5; margin:0;}
+.parent-feedback-form{display:flex; flex-direction:column; gap:1.25rem;}
+.feedback-question{display:flex; flex-direction:column; gap:.5rem;}
+.feedback-question > label{font-weight:700; color:#234c38; font-size:.95rem;}
+.feedback-options{display:flex; flex-direction:column; gap:.5rem;}
+.feedback-option{display:flex; align-items:center; gap:.75rem; padding:.75rem 1rem; background:#f8f9fa; border-radius:.75rem; cursor:pointer; transition:all .2s; border:2px solid transparent;}
+.feedback-option:hover{background:#e8f5e9; border-color:#234c38;}
+.feedback-option input[type="radio"]{width:18px; height:18px; accent-color:#234c38; cursor:pointer;}
+.feedback-option input[type="radio"]:checked + span{font-weight:600; color:#234c38;}
+.feedback-option span{font-size:.9rem; color:#333;}
+.parent-feedback-actions{margin-top:.5rem;}
+.parent-feedback-actions .btn{width:100%; padding:.875rem 1.5rem; font-size:1rem;}
+
 @media (min-width:520px){
   .game-room-wrapper{max-width:460px; padding:1.5rem 1rem 0;}
   .game-room-avatar{width:122px; height:122px;}
