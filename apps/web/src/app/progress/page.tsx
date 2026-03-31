@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ArrowLeft, FileText } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { ParentReportModal } from '@/components/parent-report-modal';
+import { ProgressChart } from '@/components/progress-chart';
 
 interface Child {
   id_crianca: string;
@@ -20,6 +21,13 @@ interface GameProgress {
   totalCorrect: number;
   totalErrors: number;
   avgReactionMs: number;
+  avgLevel: number;
+  progressByDay: Array<{
+    date: string;
+    accuracy: number;
+    correct: number;
+    errors: number;
+  }>;
 }
 
 export default function ProgressPage() {
@@ -27,6 +35,7 @@ export default function ProgressPage() {
   const [children, setChildren] = useState<Child[]>([]);
   const [selectedChildId, setSelectedChildId] = useState<string>('');
   const [progress, setProgress] = useState<GameProgress | null>(null);
+  const [showChart, setShowChart] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showParentReport, setShowParentReport] = useState(false);
 
@@ -77,22 +86,23 @@ export default function ProgressPage() {
     try {
       const supabase = createClient();
       
-      // Buscar sessões do jogo "Onde está o brinquedo"
+      // Buscar sessões do jogo "Onde está o brinquedo" com data
       const { data: sessions, error: sessionsError } = await supabase
         .from('sessoes_jogo')
-        .select('id_sessao, pontos, acertos, tentativas')
+        .select('id_sessao, pontos, acertos, tentativas, data_inicio')
         .eq('id_crianca', childId)
-        .eq('finalizada', true);
+        .eq('finalizada', true)
+        .order('data_inicio', { ascending: true });
 
       if (sessionsError) throw sessionsError;
 
-      // Buscar eventos para calcular tempo médio de reação
+      // Buscar eventos para calcular tempo médio de reação e nível
+      const sessionIds = sessions?.map(s => s.id_sessao) || [];
+      
       const { data: events, error: eventsError } = await supabase
         .from('eventos_jogo')
-        .select('tempo_reacao_ms')
-        .in('id_sessao', sessions?.map(s => s.id_sessao) || [])
-        .eq('evento', 'click')
-        .not('tempo_reacao_ms', 'is', null);
+        .select('tempo_reacao_ms, tipo_evento, dados_adicionais, id_sessao, data_hora')
+        .in('id_sessao', sessionIds);
 
       if (eventsError) throw eventsError;
 
@@ -101,17 +111,55 @@ export default function ProgressPage() {
       const totalCorrect = sessions?.reduce((sum, s) => sum + (s.acertos || 0), 0) || 0;
       const totalErrors = totalAttempts - totalCorrect;
       
-      const avgReactionMs = events && events.length > 0
-        ? events.reduce((sum, e) => sum + (e.tempo_reacao_ms || 0), 0) / events.length
+      const reactionEvents = events?.filter(e => e.tempo_reacao_ms) || [];
+      const avgReactionMs = reactionEvents.length > 0
+        ? reactionEvents.reduce((sum, e) => sum + (e.tempo_reacao_ms || 0), 0) / reactionEvents.length
         : 0;
+
+      // Calcular nível médio dos eventos
+      const levelEvents = events?.filter(e => e.dados_adicionais?.level !== undefined) || [];
+      const avgLevel = levelEvents.length > 0
+        ? levelEvents.reduce((sum, e) => sum + (e.dados_adicionais?.level || 0), 0) / levelEvents.length
+        : 0;
+
+      // Agrupar dados por dia
+      const dayMap = new Map<string, { correct: number; errors: number; total: number }>();
+      
+      events?.forEach(event => {
+        if (event.tipo_evento === 'correct_answer' || event.tipo_evento === 'wrong_answer') {
+          const date = new Date(event.data_hora).toISOString().split('T')[0];
+          const existing = dayMap.get(date) || { correct: 0, errors: 0, total: 0 };
+          
+          if (event.tipo_evento === 'correct_answer') {
+            existing.correct++;
+          } else {
+            existing.errors++;
+          }
+          existing.total++;
+          dayMap.set(date, existing);
+        }
+      });
+
+      const progressByDay = Array.from(dayMap.entries())
+        .map(([date, stats]) => ({
+          date,
+          accuracy: stats.total > 0 ? stats.correct / stats.total : 0,
+          correct: stats.correct,
+          errors: stats.errors
+        }))
+        .sort((a, b) => a.date.localeCompare(b.date));
 
       setProgress({
         sessions: totalSessions,
         totalAttempts,
         totalCorrect,
         totalErrors,
-        avgReactionMs
+        avgReactionMs,
+        avgLevel,
+        progressByDay
       });
+      
+      setShowChart(progressByDay.length > 0);
     } catch (error) {
       console.error('Erro ao carregar progresso:', error);
       setProgress(null);
@@ -244,6 +292,23 @@ export default function ProgressPage() {
                           {((progress.totalCorrect / progress.totalAttempts) * 100).toFixed(0)}%
                         </div>
                       </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {showChart && progress.progressByDay && progress.progressByDay.length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Evolução do Desempenho</CardTitle>
+                    </CardHeader>
+                    <CardContent className="overflow-x-auto">
+                      <ProgressChart
+                        data={progress.progressByDay}
+                        sessions={progress.sessions}
+                        accuracy={progress.totalAttempts > 0 ? progress.totalCorrect / progress.totalAttempts : 0}
+                        avgReaction={progress.avgReactionMs}
+                        avgLevel={progress.avgLevel}
+                      />
                     </CardContent>
                   </Card>
                 )}

@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { BottomNav } from "@/components/bottom-nav";
 import { BGMProvider } from "@/components/bgm-provider";
 import { BGMToggle } from "@/components/bgm-toggle";
+import { A11yProvider } from "@/components/a11y-provider";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
@@ -48,11 +49,13 @@ export default function RootLayout({
       className={cn("antialiased", inter.variable, montserrat.variable, "font-sans", geist.variable)}
     >
       <body className={cn("min-h-full", inter.variable, montserrat.variable, "antialiased", "pb-16")}>
-        <BGMProvider>
-          {children}
-          <BottomNav />
-          <BGMToggle />
-        </BGMProvider>
+        <A11yProvider>
+          <BGMProvider>
+            {children}
+            <BottomNav />
+            <BGMToggle />
+          </BGMProvider>
+        </A11yProvider>
       </body>
     </html>
   );

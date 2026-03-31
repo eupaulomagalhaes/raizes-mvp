@@ -9,6 +9,7 @@ import { createClient } from '@/lib/supabase-client'
 import Link from 'next/link'
 import { STORAGE } from '@/lib/storage'
 import { ParentFeedbackModal } from '@/components/parent-feedback-modal'
+import { ttsController } from '@/lib/tts'
 
 const ASSETS = {
   toys: [
@@ -64,28 +65,31 @@ export default function OndeEstaOBrinquedoPage() {
   }, [sessionId])
 
   // Iniciar nível
-  const startLevel = useCallback(() => {
-    const boxes = level + 1 // 1, 2, 3 caixas
-    setBoxCount(boxes)
-    setCorrectBox(Math.floor(Math.random() * boxes))
+  const startNewRound = useCallback(() => {
+    if (level >= 3) return
+    
+    setPhase('show-toy')
+    setCorrectBox(Math.floor(Math.random() * boxCount))
     setSelectedBox(null)
-    setPhase('intro')
 
-    // Sequência de fases
-    setTimeout(() => setPhase('show-toy'), 1000)
+    // TTS: Narrar "Olhe para o [brinquedo]!"
+    const toyName = currentToy.name
+    const toyArticle = currentToy.article
+    ttsController.speak(`Olhe para ${toyArticle} ${toyName}!`)
+
     setTimeout(() => {
       setPhase('hide')
-      logEvent('toy_hidden', { toy: currentToy.name, level })
-    }, 3500)
-    setTimeout(() => {
-      setPhase('guess')
-      logEvent('phase_guess_started', { boxCount: boxes })
-    }, 5000)
-  }, [level, currentToy, logEvent])
+      // TTS: Perguntar onde está o brinquedo
+      setTimeout(() => {
+        ttsController.speak(`Onde está ${toyArticle} ${toyName}?`)
+        setPhase('guess')
+      }, 500)
+    }, 3000)
+  }, [level, boxCount, currentToy])
 
   useEffect(() => {
-    startLevel()
-  }, [startLevel])
+    startNewRound()
+  }, [startNewRound])
 
   // TTS
   const speak = useCallback((text: string) => {
@@ -99,7 +103,16 @@ export default function OndeEstaOBrinquedoPage() {
   }, [])
 
   useEffect(() => {
-    if (phase === 'intro') speak(`Onde está ${currentToy.article} ${currentToy.name}?`)
+    if (phase === 'intro') {
+      ttsController.speak('Vamos brincar de encontrar o brinquedo!')
+      const timer = setTimeout(() => {
+        startNewRound()
+      }, 2000)
+      return () => clearTimeout(timer)
+    }
+  }, [phase])
+
+  useEffect(() => {
     if (phase === 'show-toy') speak(currentToy.intro)
     if (phase === 'hide') speak('Agora vou esconder!')
     if (phase === 'guess') speak('Onde está o brinquedo?')
@@ -116,6 +129,9 @@ export default function OndeEstaOBrinquedoPage() {
       setScore(s => s + 1)
       setPhase('result')
       await logEvent('correct_answer', { boxIndex: index, level })
+      
+      // TTS: Comemorar acerto
+      ttsController.speak('Muito bem! Você encontrou!')
 
       if (level < 2) {
         setTimeout(() => {
