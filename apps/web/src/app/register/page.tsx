@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase-client'
 import { STORAGE } from '@/lib/storage'
 import toast, { Toaster } from 'react-hot-toast'
+import { Info, X } from 'lucide-react'
 
 const STEPS = [
   { heading: 'Conta de Acesso', speech: 'Comece criando seu login para seguir com o cadastro.' },
@@ -182,9 +183,19 @@ export default function RegisterPage() {
       toast.error(
         (t) => (
           <div style={{ width: '100%', position: 'relative' }}>
-            <div style={{ paddingBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '20px' }}>⚠️</span>
-              <span>Preencha os campos obrigatórios (*) para continuar.</span>
+            <div style={{ paddingBottom: '8px', display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
+                <div style={{ background: 'rgba(255,255,255,0.2)', borderRadius: '50%', padding: '4px', display: 'flex' }}>
+                  <Info size={20} color="#fff" strokeWidth={2.5} />
+                </div>
+                <span>Preencha os campos obrigatórios (*) para continuar.</span>
+              </div>
+              <button
+                onClick={() => toast.dismiss(t.id)}
+                style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px', display: 'flex' }}
+              >
+                <X size={20} color="#fff" strokeWidth={2.5} />
+              </button>
             </div>
             <div
               style={{
@@ -207,11 +218,11 @@ export default function RegisterPage() {
             background: '#f97316',
             color: '#fff',
             fontWeight: '600',
-            padding: '16px 24px',
-            paddingBottom: '20px',
+            padding: '16px 20px',
+            paddingBottom: '24px',
             borderRadius: '12px',
             boxShadow: '0 10px 40px rgba(249, 115, 22, 0.4)',
-            minWidth: '320px',
+            minWidth: '380px',
           },
         }
       )
