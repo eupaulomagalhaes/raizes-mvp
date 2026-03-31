@@ -22,12 +22,12 @@ const ASSETS = {
   donHead: STORAGE.images.donCabeca,
 }
 
-type Phase = 'intro' | 'show-toy' | 'hide' | 'guess' | 'result' | 'end'
+type Phase = 'welcome' | 'intro' | 'show-toy' | 'hide' | 'guess' | 'result' | 'end'
 
 export default function OndeEstaOBrinquedoPage() {
   const router = useRouter()
   const [level, setLevel] = useState(0) // 0, 1, 2 = girafa, robô, dinossauro
-  const [phase, setPhase] = useState<Phase>('intro')
+  const [phase, setPhase] = useState<Phase>('welcome')
   const [boxCount, setBoxCount] = useState(1)
   const [correctBox, setCorrectBox] = useState(0)
   const [selectedBox, setSelectedBox] = useState<number | null>(null)
@@ -103,12 +103,8 @@ export default function OndeEstaOBrinquedoPage() {
   }, [])
 
   useEffect(() => {
-    if (phase === 'intro') {
-      ttsController.speak('Vamos brincar de encontrar o brinquedo!')
-      const timer = setTimeout(() => {
-        startNewRound()
-      }, 2000)
-      return () => clearTimeout(timer)
+    if (phase === 'welcome') {
+      ttsController.speak('Esse é o jogo: ONDE ESTÁ O BRINQUEDO!')
     }
   }, [phase])
 
@@ -173,9 +169,20 @@ export default function OndeEstaOBrinquedoPage() {
     createSession()
   }
 
+  const handleStartGame = () => {
+    if (phase === 'welcome') {
+      setPhase('intro')
+      ttsController.speak('Clique na tela para começar!')
+      setTimeout(() => {
+        startNewRound()
+      }, 1500)
+    }
+  }
+
   const getSpeechText = () => {
     switch (phase) {
-      case 'intro': return `Onde está ${currentToy.article} ${currentToy.name}?`
+      case 'welcome': return 'Esse é o jogo: ONDE ESTÁ O BRINQUEDO'
+      case 'intro': return 'Clique na tela para começar!'
       case 'show-toy': return currentToy.intro
       case 'hide': return 'Escondendo...'
       case 'guess': return 'Clique na caixa!'
@@ -216,7 +223,22 @@ export default function OndeEstaOBrinquedoPage() {
       </div>
 
       {/* Game Area */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 pb-6">
+      <div className="flex-1 flex flex-col items-center justify-center px-6 pb-6 relative">
+        {/* Welcome Screen - Click to start */}
+        {phase === 'welcome' && (
+          <button
+            onClick={handleStartGame}
+            className="absolute inset-0 flex flex-col items-center justify-center bg-[#f6fff9]/50 z-10"
+          >
+            <div className="bg-white rounded-2xl p-6 shadow-lg text-center animate-pulse">
+              <p className="text-[#234c38] font-bold text-lg mb-2">Clique na tela para começar!</p>
+              <div className="w-12 h-12 mx-auto rounded-full bg-[#234c38] flex items-center justify-center">
+                <span className="text-white text-2xl">👆</span>
+              </div>
+            </div>
+          </button>
+        )}
+
         {/* Toy Display */}
         {(phase === 'show-toy') && (
           <div className="mb-8 animate-bounce">
