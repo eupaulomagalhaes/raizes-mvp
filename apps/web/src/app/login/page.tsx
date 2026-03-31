@@ -34,7 +34,9 @@ export default function LoginPage() {
     if (error) {
       setFieldErrors({ email: true, password: true })
       toast.error(
-        (t) => (
+        (t) => {
+          console.log('Toast error renderizado', t)
+          return (
           <div style={{ width: '100%' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'space-between', marginBottom: '8px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
@@ -50,9 +52,9 @@ export default function LoginPage() {
                 <X size={20} color="#fff" strokeWidth={2.5} />
               </button>
             </div>
-            <div style={{ height: '6px', background: '#000', borderRadius: '3px', marginTop: '8px', animation: 'shrink 5s linear forwards', transformOrigin: 'left' }} />
+            <div style={{ height: '4px', background: '#fca5a5', borderRadius: '2px', marginTop: '12px', animation: 'shrink 5s linear forwards', transformOrigin: 'left' }} />
           </div>
-        ),
+        )},
         {
           duration: 5000,
           position: 'top-center',
@@ -89,7 +91,7 @@ export default function LoginPage() {
               <X size={20} color="#fff" strokeWidth={2.5} />
             </button>
           </div>
-          <div style={{ height: '6px', background: '#000', borderRadius: '3px', marginTop: '8px', animation: 'shrink 2s linear forwards', transformOrigin: 'left' }} />
+          <div style={{ height: '4px', background: '#86efac', borderRadius: '2px', marginTop: '12px', animation: 'shrink 2s linear forwards', transformOrigin: 'left' }} />
         </div>
       ),
       {

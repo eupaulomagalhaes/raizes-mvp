@@ -208,7 +208,7 @@ export default function RegisterPage() {
                 borderRadius: '0 0 12px 12px',
                 animation: 'shrink 5s linear forwards',
                 transformOrigin: 'left',
-                zIndex: 10,
+                zIndex: 100,
               }}
             />
           </div>
@@ -665,8 +665,8 @@ export default function RegisterPage() {
     <>
       <style jsx global>{`
         @keyframes shrink {
-          from { width: 100%; }
-          to { width: 0%; }
+          from { transform: scaleX(1); }
+          to { transform: scaleX(0); }
         }
       `}</style>
       <Toaster />
