@@ -36,8 +36,9 @@ export default function LoginPage() {
       toast.error(
         (t) => (
           <div style={{ width: '100%', position: 'relative' }}>
-            <div style={{ paddingBottom: '8px' }}>
-              Credenciais inválidas. Verifique seu e-mail e senha.
+            <div style={{ paddingBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '20px' }}>❌</span>
+              <span>Credenciais inválidas. Verifique seu e-mail e senha.</span>
             </div>
             <div
               style={{
@@ -45,7 +46,7 @@ export default function LoginPage() {
                 bottom: 0,
                 left: 0,
                 height: '4px',
-                background: '#dc2626',
+                background: '#fca5a5',
                 borderRadius: '0 0 12px 12px',
                 animation: 'shrink 5s linear forwards',
                 width: '100%',
@@ -57,13 +58,13 @@ export default function LoginPage() {
           duration: 5000,
           position: 'top-center',
           style: {
-            background: '#fff',
-            color: '#dc2626',
+            background: '#dc2626',
+            color: '#fff',
             fontWeight: '600',
             padding: '16px 24px',
             paddingBottom: '20px',
             borderRadius: '12px',
-            boxShadow: '0 10px 40px rgba(220, 38, 38, 0.25)',
+            boxShadow: '0 10px 40px rgba(220, 38, 38, 0.4)',
             minWidth: '320px',
           },
         }
@@ -75,8 +76,9 @@ export default function LoginPage() {
     toast.success(
       (t) => (
         <div style={{ width: '100%', position: 'relative' }}>
-          <div style={{ paddingBottom: '8px' }}>
-            Login realizado com sucesso!
+          <div style={{ paddingBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '20px' }}>✔️</span>
+            <span>Login realizado com sucesso!</span>
           </div>
           <div
             style={{
@@ -84,7 +86,7 @@ export default function LoginPage() {
               bottom: 0,
               left: 0,
               height: '4px',
-              background: '#16a34a',
+              background: '#86efac',
               borderRadius: '0 0 12px 12px',
               animation: 'shrink 2s linear forwards',
               width: '100%',
@@ -96,13 +98,13 @@ export default function LoginPage() {
         duration: 2000,
         position: 'top-center',
         style: {
-          background: '#fff',
-          color: '#16a34a',
+          background: '#16a34a',
+          color: '#fff',
           fontWeight: '600',
           padding: '16px 24px',
           paddingBottom: '20px',
           borderRadius: '12px',
-          boxShadow: '0 10px 40px rgba(22, 163, 74, 0.25)',
+          boxShadow: '0 10px 40px rgba(22, 163, 74, 0.4)',
           minWidth: '320px',
         },
       }

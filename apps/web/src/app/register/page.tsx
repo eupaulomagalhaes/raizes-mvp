@@ -179,18 +179,42 @@ export default function RegisterPage() {
 
   const handleNext = async () => {
     if (!validateCurrentStep()) {
-      toast.error('Preencha os campos obrigatórios (*) para continuar.', {
-        duration: 5000,
-        position: 'top-center',
-        style: {
-          background: '#fff',
-          color: '#f97316',
-          fontWeight: '600',
-          padding: '16px 24px',
-          borderRadius: '12px',
-          boxShadow: '0 10px 40px rgba(249, 115, 22, 0.25)',
-        },
-      })
+      toast.error(
+        (t) => (
+          <div style={{ width: '100%', position: 'relative' }}>
+            <div style={{ paddingBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '20px' }}>⚠️</span>
+              <span>Preencha os campos obrigatórios (*) para continuar.</span>
+            </div>
+            <div
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                height: '4px',
+                background: '#fdba74',
+                borderRadius: '0 0 12px 12px',
+                animation: 'shrink 5s linear forwards',
+                width: '100%',
+              }}
+            />
+          </div>
+        ),
+        {
+          duration: 5000,
+          position: 'top-center',
+          style: {
+            background: '#f97316',
+            color: '#fff',
+            fontWeight: '600',
+            padding: '16px 24px',
+            paddingBottom: '20px',
+            borderRadius: '12px',
+            boxShadow: '0 10px 40px rgba(249, 115, 22, 0.4)',
+            minWidth: '320px',
+          },
+        }
+      )
       return
     }
 
@@ -625,6 +649,12 @@ export default function RegisterPage() {
 
   return (
     <>
+      <style jsx global>{`
+        @keyframes shrink {
+          from { width: 100%; }
+          to { width: 0%; }
+        }
+      `}</style>
       <Toaster />
       <main 
         className="min-h-screen flex items-center justify-center p-8"
