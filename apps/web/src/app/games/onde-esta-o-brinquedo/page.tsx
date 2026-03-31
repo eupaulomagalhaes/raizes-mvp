@@ -322,7 +322,7 @@ export default function OndeEstaOBrinquedoPage() {
               key={i}
               onClick={() => handleBoxClick(i)}
               disabled={phase !== 'guess' || selectedBox !== null}
-              className={`relative w-24 h-24 transition-all duration-500 ${
+              className={`relative w-36 h-36 transition-all duration-500 ${
                 phase === 'hide' && i === correctBox ? 'animate-shake' : ''
               } ${
                 selectedBox === i && i !== correctBox ? 'animate-wiggle' : ''
@@ -360,9 +360,9 @@ export default function OndeEstaOBrinquedoPage() {
         </div>
         )}
 
-        {/* Mão indicadora na fase guess */}
+        {/* Mão indicadora na fase guess - em cima da caixa */}
         {phase === 'guess' && showHand && handAnimation && (
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 translate-y-8 w-32 h-32 z-30">
+          <div className="absolute top-[45%] left-1/2 transform -translate-x-1/2 -translate-y-full w-24 h-24 z-30">
             <Lottie animationData={handAnimation} loop />
           </div>
         )}
