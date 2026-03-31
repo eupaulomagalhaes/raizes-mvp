@@ -23,6 +23,8 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showPassword2, setShowPassword2] = useState(false)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
+  const [emailExists, setEmailExists] = useState(false)
+  const [checkingEmail, setCheckingEmail] = useState(false)
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -104,6 +106,39 @@ export default function RegisterPage() {
     updateField('u_cidade', value)
   }
 
+  useEffect(() => {
+    const checkEmailAvailability = async () => {
+      if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(formData.email)) {
+        setEmailExists(false)
+        setCheckingEmail(false)
+        return
+      }
+
+      setCheckingEmail(true)
+      try {
+        const supabase = createClient()
+        const { data, error } = await supabase
+          .from('usuarios')
+          .select('email')
+          .eq('email', formData.email)
+          .maybeSingle()
+
+        if (!error && data) {
+          setEmailExists(true)
+        } else {
+          setEmailExists(false)
+        }
+      } catch (err) {
+        console.error('Erro ao verificar email:', err)
+        setEmailExists(false)
+      }
+      setCheckingEmail(false)
+    }
+
+    const timer = setTimeout(checkEmailAvailability, 500)
+    return () => clearTimeout(timer)
+  }, [formData.email])
+
   const validateCurrentStep = () => {
     const errors: Record<string, string> = {}
 
@@ -112,6 +147,8 @@ export default function RegisterPage() {
         errors.email = 'Campo obrigatório'
       } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(formData.email)) {
         errors.email = 'E-mail inválido'
+      } else if (emailExists) {
+        errors.email = 'E-mail já cadastrado! Use outro e-mail.'
       }
       if (!formData.password.trim()) {
         errors.password = 'Campo obrigatório'
@@ -185,7 +222,14 @@ export default function RegisterPage() {
       })
 
     if (authError) {
-      setError(authError.message)
+      const errorMsg = authError.message.includes('already registered') 
+        ? 'Este e-mail já está cadastrado. Faça login ou use outro e-mail.'
+        : authError.message.includes('Invalid email')
+        ? 'E-mail inválido'
+        : authError.message.includes('Password')
+        ? 'Senha inválida. Use no mínimo 6 caracteres.'
+        : authError.message
+      setError(errorMsg)
       setLoading(false)
       return
     }
@@ -196,22 +240,31 @@ export default function RegisterPage() {
       return
     }
 
-    const { error: userError } = await supabase.from('usuarios').insert({
-      id_usuario: authData.user.id,
-      nome_completo: formData.u_nome,
-      data_nascimento: formData.u_nasc,
-      parentesco: formData.u_parentesco,
-      escolaridade: formData.u_escolaridade,
-      profissao: formData.u_prof,
-      email: formData.email,
-      celular: formData.u_cel.replace(/\D/g, ''),
-      cidade_estado: formData.u_cidade,
-    })
+    // Verificar se já existe usuário antes de inserir
+    const { data: existingUser } = await supabase
+      .from('usuarios')
+      .select('id_usuario')
+      .eq('id_usuario', authData.user.id)
+      .maybeSingle()
 
-    if (userError) {
-      setError('Erro ao salvar dados do responsável')
-      setLoading(false)
-      return
+    if (!existingUser) {
+      const { error: userError } = await supabase.from('usuarios').insert({
+        id_usuario: authData.user.id,
+        nome_completo: formData.u_nome,
+        data_nascimento: formData.u_nasc,
+        parentesco: formData.u_parentesco,
+        escolaridade: formData.u_escolaridade,
+        profissao: formData.u_prof,
+        email: formData.email,
+        celular: formData.u_cel.replace(/\D/g, ''),
+        cidade_estado: formData.u_cidade,
+      })
+
+      if (userError) {
+        setError('Erro ao salvar dados do responsável: ' + userError.message)
+        setLoading(false)
+        return
+      }
     }
 
     const { error: childError } = await supabase.from('criancas').insert({
@@ -227,7 +280,7 @@ export default function RegisterPage() {
     })
 
     if (childError) {
-      setError('Erro ao salvar dados da criança')
+      setError('Erro ao salvar dados da criança: ' + childError.message)
       setLoading(false)
       return
     }
@@ -262,15 +315,16 @@ export default function RegisterPage() {
                   if (fieldErrors.email) {
                     setFieldErrors(prev => ({ ...prev, email: '' }))
                   }
+                  setEmailExists(false)
                 }}
                 placeholder="seunome@email.com"
                 className={`w-full bg-[#ffe7a4] border-none rounded-[1.2rem] px-[1.1rem] py-[0.9rem] text-base shadow-[inset_0_2px_4px_rgba(0,0,0,0.08)] focus:outline focus:outline-[3px] focus:outline-[rgba(35,76,56,0.35)] ${
-                  fieldErrors.email ? 'border-2 !border-[#e63946] shadow-[inset_0_3px_6px_rgba(230,57,70,0.18)]' : ''
+                  fieldErrors.email || emailExists ? 'border-2 !border-[#e63946] shadow-[inset_0_3px_6px_rgba(230,57,70,0.18)]' : ''
                 }`}
                 required
               />
-              {fieldErrors.email && (
-                <p className="text-[#b02035] text-[0.8rem] font-semibold mt-[0.35rem]">* {fieldErrors.email}</p>
+              {(fieldErrors.email || emailExists) && (
+                <p className="text-[#b02035] text-[0.8rem] font-semibold mt-[0.35rem]">* {fieldErrors.email || 'E-mail já cadastrado! Use outro e-mail.'}</p>
               )}
             </div>
             <div className="space-y-2">
