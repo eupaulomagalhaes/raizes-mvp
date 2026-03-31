@@ -291,7 +291,7 @@ export default function OndeEstaOBrinquedoPage() {
       </div>
 
       {/* Game Area */}
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 pb-6">
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-end px-6 pb-20">
         {/* Intro Screen - Click to start */}
         {phase === 'intro' && (
           <button
