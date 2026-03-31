@@ -37,6 +37,8 @@ export default function OndeEstaOBrinquedoPage() {
   const [showParentFeedback, setShowParentFeedback] = useState(false)
   const [feedbackData, setFeedbackData] = useState({ acertos: 0, tentativas: 0, niveis: 0 })
   const [sessionId, setSessionId] = useState<string | null>(null)
+  const [showHand, setShowHand] = useState(false)
+  const [showNextButton, setShowNextButton] = useState(false)
 
   const currentToy = ASSETS.toys[level]
 
@@ -103,9 +105,46 @@ export default function OndeEstaOBrinquedoPage() {
     }
   }, [])
 
+  // Fluxo welcome -> intro
   useEffect(() => {
     if (phase === 'welcome') {
       ttsController.speak('Esse é o jogo: ONDE ESTÁ O BRINQUEDO!')
+      
+      // Após 2s, muda para intro
+      const timer = setTimeout(() => {
+        setPhase('intro')
+        ttsController.speak('Clique na tela para começar!')
+      }, 2000)
+
+      return () => clearTimeout(timer)
+    }
+  }, [phase])
+
+  // Mostrar mão após 5s no intro
+  useEffect(() => {
+    if (phase === 'intro') {
+      const handTimer = setTimeout(() => {
+        setShowHand(true)
+      }, 5000)
+
+      return () => {
+        clearTimeout(handTimer)
+        setShowHand(false)
+      }
+    }
+  }, [phase])
+
+  // Mostrar mão após 5s no guess
+  useEffect(() => {
+    if (phase === 'guess') {
+      const handTimer = setTimeout(() => {
+        setShowHand(true)
+      }, 5000)
+
+      return () => {
+        clearTimeout(handTimer)
+        setShowHand(false)
+      }
     }
   }, [phase])
 
@@ -118,6 +157,7 @@ export default function OndeEstaOBrinquedoPage() {
   const handleBoxClick = async (index: number) => {
     if (phase !== 'guess' || selectedBox !== null) return
 
+    setShowHand(false)
     setSelectedBox(index)
     setAttempts(a => a + 1)
 
@@ -128,19 +168,12 @@ export default function OndeEstaOBrinquedoPage() {
       await logEvent('correct_answer', { boxIndex: index, level })
       
       // TTS: Comemorar acerto
-      ttsController.speak('Muito bem! Você encontrou!')
+      ttsController.speak('MUITO BEM! VOCÊ ACERTOU!')
 
-      if (level < 2) {
-        setTimeout(() => {
-          setLevel(l => l + 1)
-        }, 2000)
-      } else {
-        setTimeout(() => {
-          setShowParentFeedback(true)
-          setFeedbackData({ acertos: score + 1, tentativas: attempts + 1, niveis: level + 1 })
-          setPhase('end')
-        }, 2000)
-      }
+      // Mostrar botão próximo nível após 2s
+      setTimeout(() => {
+        setShowNextButton(true)
+      }, 2000)
     } else {
       setPhase('result')
       await logEvent('wrong_answer', { boxIndex: index, correctBox, level })
@@ -148,6 +181,18 @@ export default function OndeEstaOBrinquedoPage() {
         setSelectedBox(null)
         setPhase('guess')
       }, 1500)
+    }
+  }
+
+  const handleNextLevel = () => {
+    setShowNextButton(false)
+    if (level < 2) {
+      setLevel(l => l + 1)
+      setBoxCount(c => c + 1)
+    } else {
+      setShowParentFeedback(true)
+      setFeedbackData({ acertos: score, tentativas: attempts, niveis: level + 1 })
+      setPhase('end')
     }
   }
 
@@ -171,12 +216,9 @@ export default function OndeEstaOBrinquedoPage() {
   }
 
   const handleStartGame = () => {
-    if (phase === 'welcome') {
-      setPhase('intro')
-      ttsController.speak('Clique na tela para começar!')
-      setTimeout(() => {
-        startNewRound()
-      }, 1500)
+    if (phase === 'intro') {
+      setShowHand(false)
+      startNewRound()
     }
   }
 
@@ -186,9 +228,9 @@ export default function OndeEstaOBrinquedoPage() {
       case 'intro': return 'Clique na tela para começar!'
       case 'show-toy': return currentToy.intro
       case 'hide': return 'Escondendo...'
-      case 'guess': return 'Clique na caixa!'
+      case 'guess': return `Onde está ${currentToy.article} ${currentToy.name}?`
       case 'result':
-        if (selectedBox === correctBox) return 'Muito bem! 🎉'
+        if (selectedBox === correctBox) return 'MUITO BEM! VOCÊ ACERTOU!'
         return 'Tente de novo!'
       default: return ''
     }
@@ -236,18 +278,17 @@ export default function OndeEstaOBrinquedoPage() {
 
       {/* Game Area */}
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 pb-6">
-        {/* Welcome Screen - Click to start */}
-        {phase === 'welcome' && (
+        {/* Intro Screen - Click to start */}
+        {phase === 'intro' && (
           <button
             onClick={handleStartGame}
-            className="absolute inset-0 flex flex-col items-center justify-center bg-[#f6fff9]/50 z-10"
+            className="absolute inset-0 flex flex-col items-center justify-center z-20"
           >
-            <div className="bg-white rounded-2xl p-6 shadow-lg text-center animate-pulse">
-              <p className="text-[#234c38] font-bold text-lg mb-2">Clique na tela para começar!</p>
-              <div className="w-12 h-12 mx-auto rounded-full bg-[#234c38] flex items-center justify-center">
-                <span className="text-white text-2xl">👆</span>
+            {showHand && (
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 animate-bounce">
+                <span className="text-6xl">👆</span>
               </div>
-            </div>
+            )}
           </button>
         )}
 
@@ -306,15 +347,56 @@ export default function OndeEstaOBrinquedoPage() {
           ))}
         </div>
 
-        {/* Level indicator */}
-        <div className="mt-8 flex gap-2">
+        {/* Mão indicadora na fase guess */}
+        {phase === 'guess' && showHand && (
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 translate-y-8 animate-bounce z-30">
+            <span className="text-6xl">👆</span>
+          </div>
+        )}
+
+        {/* Confetes quando acertar */}
+        {phase === 'result' && selectedBox === correctBox && (
+          <div className="absolute inset-0 pointer-events-none z-50">
+            {[...Array(30)].map((_, i) => (
+              <div
+                key={i}
+                className="absolute animate-confetti"
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  top: '-10%',
+                  animationDelay: `${Math.random() * 0.5}s`,
+                  fontSize: '24px',
+                }}
+              >
+                {['🎉', '⭐', '✨', '🎊'][Math.floor(Math.random() * 4)]}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Botão Próximo Nível */}
+        {showNextButton && (
+          <div className="mt-6 flex flex-col items-center gap-4 z-40">
+            <Button
+              onClick={handleNextLevel}
+              size="lg"
+              className="bg-[#16a34a] hover:bg-[#15803d] text-white font-bold px-8 py-6 text-lg"
+            >
+              Próximo Nível
+            </Button>
+          </div>
+        )}
+
+        {/* Estrelas (Level indicator) */}
+        <div className="mt-8 flex gap-3">
           {[0, 1, 2].map(i => (
-            <div
-              key={i}
-              className={`w-3 h-3 rounded-full ${
-                i < level ? 'bg-green-500' : i === level ? 'bg-[#234c38]' : 'bg-gray-300'
-              }`}
-            />
+            <div key={i} className="relative">
+              {i <= level ? (
+                <span className="text-4xl">⭐</span>
+              ) : (
+                <span className="text-4xl opacity-30">⭐</span>
+              )}
+            </div>
           ))}
         </div>
       </div>
