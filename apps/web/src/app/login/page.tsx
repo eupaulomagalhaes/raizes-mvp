@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Eye, EyeOff } from 'lucide-react'
 import { createClient } from '@/lib/supabase-client'
 import { STORAGE } from '@/lib/storage'
+import toast, { Toaster } from 'react-hot-toast'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -17,12 +18,12 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState<{ email?: boolean; password?: boolean }>({})
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    setError('')
+    setFieldErrors({})
 
     const supabase = createClient()
     const { error } = await supabase.auth.signInWithPassword({
@@ -31,17 +32,54 @@ export default function LoginPage() {
     })
 
     if (error) {
-      setError(error.message)
+      setFieldErrors({ email: true, password: true })
+      toast.error('Credenciais inválidas. Verifique seu e-mail e senha.', {
+        duration: 5000,
+        position: 'top-center',
+        style: {
+          background: '#fff',
+          color: '#dc2626',
+          fontWeight: '600',
+          padding: '16px 24px',
+          borderRadius: '12px',
+          boxShadow: '0 10px 40px rgba(220, 38, 38, 0.25)',
+        },
+      })
       setLoading(false)
       return
     }
 
-    router.push('/games')
-    router.refresh()
+    toast.success('Login realizado com sucesso!', {
+      duration: 2000,
+      position: 'top-center',
+      style: {
+        background: '#fff',
+        color: '#16a34a',
+        fontWeight: '600',
+        padding: '16px 24px',
+        borderRadius: '12px',
+        boxShadow: '0 10px 40px rgba(22, 163, 74, 0.25)',
+      },
+    })
+
+    setTimeout(() => {
+      router.push('/games')
+      router.refresh()
+    }, 500)
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-[#f6fff9] to-[#e9f7f0] flex items-center justify-center px-6 py-12">
+    <>
+      <Toaster />
+      <main 
+        className="min-h-screen flex items-center justify-center px-6 py-12"
+        style={{
+          backgroundImage: 'url(https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/raizes-m-v-p-i9jdtd/assets/l8o6ilu1qm8g/tela_fundo.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      >
       <div className="w-full max-w-md space-y-8">
         {/* Greeting */}
         <p className="text-center text-xl font-bold tracking-widest text-[#1f3328] uppercase drop-shadow-lg">
@@ -70,10 +108,15 @@ export default function LoginPage() {
                   id="email"
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value)
+                    setFieldErrors(prev => ({ ...prev, email: false }))
+                  }}
                   placeholder="Digite seu email ..."
                   required
-                  className="border-0 rounded-3xl py-5 px-4 bg-[#edf4f0] text-[#1b2b21] font-semibold shadow-inner focus:ring-4 focus:ring-[#234c38]/20 focus-visible:ring-[#234c38]/35"
+                  className={`border-0 rounded-3xl py-5 px-4 bg-[#edf4f0] text-[#1b2b21] font-semibold shadow-inner focus:ring-4 focus:ring-[#234c38]/20 focus-visible:ring-[#234c38]/35 ${
+                    fieldErrors.email ? 'border-2 !border-[#e63946] shadow-[inset_0_3px_6px_rgba(230,57,70,0.18)]' : ''
+                  }`}
                 />
               </div>
 
@@ -86,10 +129,15 @@ export default function LoginPage() {
                     id="password"
                     type={showPassword ? 'text' : 'password'}
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value)
+                      setFieldErrors(prev => ({ ...prev, password: false }))
+                    }}
                     placeholder="Digite sua senha ..."
                     required
-                    className="border-0 rounded-3xl py-5 px-4 bg-[#edf4f0] text-[#1b2b21] font-semibold shadow-inner focus:ring-4 focus:ring-[#234c38]/20 focus-visible:ring-[#234c38]/35 pr-12"
+                    className={`border-0 rounded-3xl py-5 px-4 bg-[#edf4f0] text-[#1b2b21] font-semibold shadow-inner focus:ring-4 focus:ring-[#234c38]/20 focus-visible:ring-[#234c38]/35 pr-12 ${
+                      fieldErrors.password ? 'border-2 !border-[#e63946] shadow-[inset_0_3px_6px_rgba(230,57,70,0.18)]' : ''
+                    }`}
                   />
                   <button
                     type="button"
@@ -105,12 +153,6 @@ export default function LoginPage() {
               <p className="text-sm text-[#3a5144]">
                 Use um e-mail e senha cadastrados.
               </p>
-
-              {error && (
-                <p className="text-sm text-red-600 bg-red-50 p-3 rounded-xl">
-                  {error}
-                </p>
-              )}
 
               <Button
                 type="submit"
@@ -147,6 +189,7 @@ export default function LoginPage() {
           </p>
         </div>
       </div>
-    </main>
+      </main>
+    </>
   )
 }
