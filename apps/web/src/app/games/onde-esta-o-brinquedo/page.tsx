@@ -25,6 +25,7 @@ const ASSETS = {
   donHead: STORAGE.images.donCabeca,
   roomBg: 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/raizes-m-v-p-i9jdtd/assets/8sgpf2p40cxs/tela_fundo_atividade_1.png',
   clickHand: 'https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/Click_hand2.json',
+  confetti: 'https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/confetti.json',
 }
 
 type Phase = 'welcome' | 'intro' | 'show-toy' | 'hide' | 'guess' | 'result' | 'end'
@@ -44,6 +45,7 @@ export default function OndeEstaOBrinquedoPage() {
   const [showHand, setShowHand] = useState(false)
   const [showNextButton, setShowNextButton] = useState(false)
   const [handAnimation, setHandAnimation] = useState<any>(null)
+  const [confettiAnimation, setConfettiAnimation] = useState<any>(null)
 
   const currentToy = ASSETS.toys[level]
 
@@ -61,12 +63,17 @@ export default function OndeEstaOBrinquedoPage() {
     createSession()
   }, [])
 
-  // Carregar animação da mão
+  // Carregar animações Lottie
   useEffect(() => {
     fetch(ASSETS.clickHand)
       .then(res => res.json())
       .then(data => setHandAnimation(data))
-      .catch(err => console.error('Erro ao carregar animação:', err))
+      .catch(err => console.error('Erro ao carregar mão:', err))
+
+    fetch(ASSETS.confetti)
+      .then(res => res.json())
+      .then(data => setConfettiAnimation(data))
+      .catch(err => console.error('Erro ao carregar confetti:', err))
   }, [])
 
   // Registrar evento
@@ -367,23 +374,14 @@ export default function OndeEstaOBrinquedoPage() {
           </div>
         )}
 
-        {/* Confetes quando acertar */}
-        {phase === 'result' && selectedBox === correctBox && (
-          <div className="absolute inset-0 pointer-events-none z-50">
-            {[...Array(30)].map((_, i) => (
-              <div
-                key={i}
-                className="absolute animate-confetti"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  top: '-10%',
-                  animationDelay: `${Math.random() * 0.5}s`,
-                  fontSize: '24px',
-                }}
-              >
-                {['🎉', '⭐', '✨', '🎊'][Math.floor(Math.random() * 4)]}
-              </div>
-            ))}
+        {/* Confetes quando acertar - Lottie fullscreen */}
+        {phase === 'result' && selectedBox === correctBox && confettiAnimation && (
+          <div className="fixed inset-0 pointer-events-none z-50 flex items-center justify-center">
+            <Lottie 
+              animationData={confettiAnimation} 
+              loop={false}
+              style={{ width: '100vw', height: '100vh' }}
+            />
           </div>
         )}
 
