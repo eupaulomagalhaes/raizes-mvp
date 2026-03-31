@@ -370,8 +370,8 @@ export default function OndeEstaOBrinquedoPage() {
               <p className="text-lg font-semibold text-[#16a34a]">Concluído!</p>
               <div className="flex gap-3 mt-2">
                 {[0, 1, 2].map(i => (
-                  <span key={i} className="text-4xl">
-                    {i <= level ? '⭐' : '⭐'}
+                  <span key={i} className={`text-4xl ${i <= level ? '' : 'opacity-30'}`}>
+                    ⭐
                   </span>
                 ))}
               </div>
