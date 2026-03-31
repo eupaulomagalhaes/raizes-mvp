@@ -166,11 +166,7 @@ export default function OndeEstaOBrinquedoPage() {
     }
   }, [phase])
 
-  useEffect(() => {
-    if (phase === 'show-toy') speak(currentToy.intro)
-    if (phase === 'hide') speak('Agora vou esconder!')
-    if (phase === 'guess') speak('Onde está o brinquedo?')
-  }, [phase, currentToy, speak])
+  // Removido: TTS duplicado - já é chamado no startNewRound
 
   const handleBoxClick = async (index: number) => {
     if (phase !== 'guess' || selectedBox !== null) return
@@ -295,7 +291,7 @@ export default function OndeEstaOBrinquedoPage() {
       </div>
 
       {/* Game Area */}
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-start px-6 pt-4 pb-6">
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 pb-6">
         {/* Intro Screen - Click to start */}
         {phase === 'intro' && (
           <button
