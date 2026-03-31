@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Eye, EyeOff, ChevronLeft, ChevronRight, Check } from 'lucide-react'
 import { createClient } from '@/lib/supabase-client'
+import { STORAGE } from '@/lib/storage'
 
 const STEPS = [
   { heading: 'Conta de Acesso', speech: 'Comece criando seu login para seguir com o cadastro.' },
@@ -416,7 +417,7 @@ export default function RegisterPage() {
         {/* Mascot speech */}
         <div className="flex items-center gap-4 mt-6">
           <img
-            src="https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/don_mascote_final.png"
+            src={STORAGE.images.donMascote}
             alt="Don"
             className="w-20 h-auto"
           />

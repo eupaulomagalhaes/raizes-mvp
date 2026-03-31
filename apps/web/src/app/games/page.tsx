@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Gamepad2, TrendingUp, LogOut, ChevronRight } from 'lucide-react'
 import { createClient } from '@/lib/supabase-client'
+import { STORAGE } from '@/lib/storage'
 
 interface Jogo {
   id_jogo: string
@@ -113,7 +114,7 @@ export default function GamesPage() {
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 rounded-full bg-white shadow-lg flex items-center justify-center">
             <img
-              src="https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/don_mascote_final.png"
+              src={STORAGE.images.donMascote}
               alt="Don"
               className="w-12 h-auto"
             />

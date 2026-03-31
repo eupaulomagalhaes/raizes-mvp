@@ -7,16 +7,17 @@ import { Card } from '@/components/ui/card'
 import { ChevronLeft, RotateCcw, Home, Trophy } from 'lucide-react'
 import { createClient } from '@/lib/supabase-client'
 import Link from 'next/link'
+import { STORAGE } from '@/lib/storage'
 
 const ASSETS = {
   toys: [
-    { url: 'https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/girafa.png', name: 'girafa', article: 'a', intro: 'Olhe para a girafa!' },
-    { url: 'https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/robo.png', name: 'robô', article: 'o', intro: 'Olhe para o robô!' },
-    { url: 'https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/dinossauro.png', name: 'dinossauro', article: 'o', intro: 'Olhe para o dinossauro!' },
+    { url: STORAGE.images.girafa, name: 'girafa', article: 'a', intro: 'Olhe para a girafa!' },
+    { url: STORAGE.images.robo, name: 'robô', article: 'o', intro: 'Olhe para o robô!' },
+    { url: STORAGE.images.dinossauro, name: 'dinossauro', article: 'o', intro: 'Olhe para o dinossauro!' },
   ],
-  box: 'https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/mistery_box_01.png',
-  boxEmpty: 'https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/mistery_box_empty.png',
-  donHead: 'https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/cabeca.png',
+  box: STORAGE.images.misteryBox,
+  boxEmpty: STORAGE.images.misteryBoxEmpty,
+  donHead: STORAGE.images.donCabeca,
 }
 
 type Phase = 'intro' | 'show-toy' | 'hide' | 'guess' | 'result' | 'end'

@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Eye, EyeOff } from 'lucide-react'
 import { createClient } from '@/lib/supabase-client'
+import { STORAGE } from '@/lib/storage'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -126,7 +127,7 @@ export default function LoginPage() {
         <div className="flex flex-col items-center gap-4">
           <div className="flex items-center gap-4">
             <img
-              src="https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/don_mascote_final.png"
+              src={STORAGE.images.donMascote}
               alt="Mascote Don acenando"
               className="w-28 h-auto drop-shadow-2xl"
             />

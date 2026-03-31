@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { STORAGE } from '@/lib/storage'
 
 export default function Home() {
   return (
@@ -12,7 +13,7 @@ export default function Home() {
           </p>
           <div className="bg-white rounded-2xl p-6 shadow-xl inline-block">
             <img 
-              src="https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/logo_raizes_educacional.png" 
+              src={STORAGE.images.logo} 
               alt="Raízes Educacional" 
               className="h-16 w-auto mx-auto mb-2"
             />
@@ -29,7 +30,7 @@ export default function Home() {
           {/* Mascot */}
           <div className="flex-shrink-0">
             <img 
-              src="https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/don_mascote_final.png" 
+              src={STORAGE.images.donMascote} 
               alt="DON - Mascote" 
               className="w-32 h-auto drop-shadow-2xl"
             />
