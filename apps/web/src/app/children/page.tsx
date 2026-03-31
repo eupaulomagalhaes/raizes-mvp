@@ -275,20 +275,20 @@ export default function ChildrenPage() {
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-col gap-2">
                       <Button
                         variant="outline"
-                        size="icon"
                         onClick={() => handleShowDetails(child)}
-                        className="border-[#16a34a] text-[#16a34a] hover:bg-[#f0fdf4] w-10 h-10"
+                        className="border-[#16a34a] text-[#16a34a] hover:bg-[#f0fdf4] w-full"
                         title="Ver estatísticas"
                       >
-                        <BarChart3 className="w-5 h-5" />
+                        <BarChart3 className="w-4 h-4 mr-2" />
+                        Resultados
                       </Button>
                       <Button
                         variant={isActive ? 'default' : 'outline'}
                         onClick={() => handleSelectChild(child.id_crianca)}
-                        className={`min-w-[100px] ${isActive ? 'bg-[#16a34a] hover:bg-[#15803d] text-white' : 'border-[#16a34a] text-[#16a34a] hover:bg-[#f0fdf4]'}`}
+                        className={`w-full ${isActive ? 'bg-[#16a34a] hover:bg-[#15803d] text-white' : 'border-[#16a34a] text-[#16a34a] hover:bg-[#f0fdf4]'}`}
                       >
                         {isActive ? (
                           <>
