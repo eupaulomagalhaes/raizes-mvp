@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase-client'
 import { STORAGE } from '@/lib/storage'
+import toast, { Toaster } from 'react-hot-toast'
 
 const STEPS = [
   { heading: 'Conta de Acesso', speech: 'Comece criando seu login para seguir com o cadastro.' },
@@ -21,6 +22,7 @@ export default function RegisterPage() {
   const [error, setError] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [showPassword2, setShowPassword2] = useState(false)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -97,8 +99,60 @@ export default function RegisterPage() {
     updateField('u_cidade', value)
   }
 
+  const validateCurrentStep = () => {
+    const errors: Record<string, string> = {}
+
+    if (step === 1) {
+      if (!formData.email.trim()) {
+        errors.email = 'Campo obrigatório'
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(formData.email)) {
+        errors.email = 'E-mail inválido'
+      }
+      if (!formData.password.trim()) {
+        errors.password = 'Campo obrigatório'
+      } else if (formData.password.length < 6) {
+        errors.password = 'Senha deve ter no mínimo 6 caracteres'
+      }
+      if (!formData.password2.trim()) {
+        errors.password2 = 'Campo obrigatório'
+      } else if (formData.password !== formData.password2) {
+        errors.password2 = 'Senha não é a mesma'
+      }
+    } else if (step === 2) {
+      if (!formData.u_nome.trim()) errors.u_nome = 'Campo obrigatório'
+      if (!formData.u_nasc.trim()) errors.u_nasc = 'Campo obrigatório'
+      if (!formData.u_cel.trim()) errors.u_cel = 'Campo obrigatório'
+      if (!formData.u_parentesco.trim()) errors.u_parentesco = 'Campo obrigatório'
+      if (!formData.u_escolaridade.trim()) errors.u_escolaridade = 'Campo obrigatório'
+      if (!formData.u_prof.trim()) errors.u_prof = 'Campo obrigatório'
+      if (!formData.u_cidade.trim()) errors.u_cidade = 'Campo obrigatório'
+    } else if (step === 3) {
+      if (!formData.c_nome.trim()) errors.c_nome = 'Campo obrigatório'
+      if (!formData.c_nasc.trim()) errors.c_nasc = 'Campo obrigatório'
+    }
+
+    setFieldErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+
   const handleNext = async () => {
+    if (!validateCurrentStep()) {
+      toast.error('Preencha os campos obrigatórios (*) para continuar.', {
+        duration: 4000,
+        position: 'top-center',
+        style: {
+          background: '#fff',
+          color: '#b02035',
+          fontWeight: '600',
+          padding: '16px',
+          borderRadius: '12px',
+        },
+      })
+      return
+    }
+
     if (step < 5) {
+      setFieldErrors({})
       setStep(step + 1)
     } else {
       await handleSubmit()
@@ -186,11 +240,21 @@ export default function RegisterPage() {
                 id="email"
                 type="email"
                 value={formData.email}
-                onChange={(e) => updateField('email', e.target.value)}
+                onChange={(e) => {
+                  updateField('email', e.target.value)
+                  if (fieldErrors.email) {
+                    setFieldErrors(prev => ({ ...prev, email: '' }))
+                  }
+                }}
                 placeholder="seunome@email.com"
-                className="w-full bg-[#ffe7a4] border-none rounded-[1.2rem] px-[1.1rem] py-[0.9rem] text-base shadow-[inset_0_2px_4px_rgba(0,0,0,0.08)] focus:outline focus:outline-[3px] focus:outline-[rgba(35,76,56,0.35)]"
+                className={`w-full bg-[#ffe7a4] border-none rounded-[1.2rem] px-[1.1rem] py-[0.9rem] text-base shadow-[inset_0_2px_4px_rgba(0,0,0,0.08)] focus:outline focus:outline-[3px] focus:outline-[rgba(35,76,56,0.35)] ${
+                  fieldErrors.email ? 'border-2 !border-[#e63946] shadow-[inset_0_3px_6px_rgba(230,57,70,0.18)]' : ''
+                }`}
                 required
               />
+              {fieldErrors.email && (
+                <p className="text-[#b02035] text-[0.8rem] font-semibold mt-[0.35rem]">* {fieldErrors.email}</p>
+              )}
             </div>
             <div className="space-y-2">
               <label htmlFor="password" className="block font-bold text-[#52462a] text-[0.95rem]">Senha *</label>
@@ -199,10 +263,17 @@ export default function RegisterPage() {
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   value={formData.password}
-                  onChange={(e) => updateField('password', e.target.value)}
+                  onChange={(e) => {
+                    updateField('password', e.target.value)
+                    if (fieldErrors.password) {
+                      setFieldErrors(prev => ({ ...prev, password: '' }))
+                    }
+                  }}
                   placeholder="Crie sua senha"
                   minLength={6}
-                  className="w-full bg-[#ffe7a4] border-none rounded-[1.2rem] px-[1.1rem] py-[0.9rem] text-base shadow-[inset_0_2px_4px_rgba(0,0,0,0.08)] focus:outline focus:outline-[3px] focus:outline-[rgba(35,76,56,0.35)]"
+                  className={`w-full bg-[#ffe7a4] border-none rounded-[1.2rem] px-[1.1rem] py-[0.9rem] text-base shadow-[inset_0_2px_4px_rgba(0,0,0,0.08)] focus:outline focus:outline-[3px] focus:outline-[rgba(35,76,56,0.35)] ${
+                    fieldErrors.password ? 'border-2 !border-[#e63946] shadow-[inset_0_3px_6px_rgba(230,57,70,0.18)]' : ''
+                  }`}
                   required
                 />
                 <button
@@ -213,6 +284,9 @@ export default function RegisterPage() {
                   {showPassword ? '🙈' : '👁'}
                 </button>
               </div>
+              {fieldErrors.password && (
+                <p className="text-[#b02035] text-[0.8rem] font-semibold mt-[0.35rem]">* {fieldErrors.password}</p>
+              )}
             </div>
             <div className="space-y-2">
               <label htmlFor="password2" className="block font-bold text-[#52462a] text-[0.95rem]">Confirme sua senha *</label>
@@ -221,11 +295,16 @@ export default function RegisterPage() {
                   id="password2"
                   type={showPassword2 ? 'text' : 'password'}
                   value={formData.password2}
-                  onChange={(e) => updateField('password2', e.target.value)}
+                  onChange={(e) => {
+                    updateField('password2', e.target.value)
+                    if (fieldErrors.password2) {
+                      setFieldErrors(prev => ({ ...prev, password2: '' }))
+                    }
+                  }}
                   placeholder="Repita a senha"
                   minLength={6}
                   className={`w-full bg-[#ffe7a4] border-none rounded-[1.2rem] px-[1.1rem] py-[0.9rem] text-base shadow-[inset_0_2px_4px_rgba(0,0,0,0.08)] focus:outline focus:outline-[3px] focus:outline-[rgba(35,76,56,0.35)] ${
-                    formData.password2 && formData.password !== formData.password2 ? 'border-2 !border-[#e63946] shadow-[inset_0_3px_6px_rgba(230,57,70,0.18)]' : ''
+                    fieldErrors.password2 || (formData.password2 && formData.password !== formData.password2) ? 'border-2 !border-[#e63946] shadow-[inset_0_3px_6px_rgba(230,57,70,0.18)]' : ''
                   }`}
                   required
                 />
@@ -237,8 +316,8 @@ export default function RegisterPage() {
                   {showPassword2 ? '🙈' : '👁'}
                 </button>
               </div>
-              {formData.password2 && formData.password !== formData.password2 && (
-                <p className="text-[#b02035] text-[0.8rem] font-semibold mt-[0.35rem]">* Senha não é a mesma</p>
+              {(fieldErrors.password2 || (formData.password2 && formData.password !== formData.password2 && !fieldErrors.password2)) && (
+                <p className="text-[#b02035] text-[0.8rem] font-semibold mt-[0.35rem]">* {fieldErrors.password2 || 'Senha não é a mesma'}</p>
               )}
             </div>
           </div>
@@ -473,13 +552,15 @@ export default function RegisterPage() {
   const progress = Math.round((step - 0.5) / 5 * 100)
 
   return (
-    <main 
-      className="min-h-screen flex items-center justify-center p-8"
-      style={{
-        background: 'linear-gradient(180deg, #fde9a5 0%, #f9d97d 100%)'
-      }}
-    >
-      <div className="w-full max-w-[420px] flex flex-col gap-7">
+    <>
+      <Toaster />
+      <main 
+        className="min-h-screen flex items-center justify-center p-8"
+        style={{
+          background: 'linear-gradient(180deg, #fde9a5 0%, #f9d97d 100%)'
+        }}
+      >
+        <div className="w-full max-w-[420px] flex flex-col gap-7">
         {/* Header */}
         <header className="text-center text-[#3a2f16]">
           <h1 className="text-[1.75rem] font-extrabold tracking-wide uppercase font-[family-name:var(--font-montserrat)]">
@@ -548,6 +629,7 @@ export default function RegisterPage() {
           </div>
         </footer>
       </div>
-    </main>
+      </main>
+    </>
   )
 }
