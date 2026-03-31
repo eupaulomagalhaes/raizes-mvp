@@ -68,6 +68,7 @@ export default function LoginPage() {
         {
           duration: 5000,
           position: 'top-center',
+          icon: null,
           style: {
             background: '#dc2626',
             color: '#fff',
@@ -119,6 +120,7 @@ export default function LoginPage() {
       {
         duration: 2000,
         position: 'top-center',
+        icon: null,
         style: {
           background: '#16a34a',
           color: '#fff',

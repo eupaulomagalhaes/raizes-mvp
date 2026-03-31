@@ -182,7 +182,7 @@ export default function RegisterPage() {
     if (!validateCurrentStep()) {
       toast.error(
         (t) => (
-          <div style={{ width: '100%', position: 'relative' }}>
+          <div style={{ width: '100%', position: 'relative', margin: '-16px -20px', padding: '16px 20px', paddingBottom: '24px' }}>
             <div style={{ paddingBottom: '8px', display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
                 <div style={{ background: 'rgba(255,255,255,0.2)', borderRadius: '50%', padding: '4px', display: 'flex' }}>
@@ -202,6 +202,7 @@ export default function RegisterPage() {
                 position: 'absolute',
                 bottom: 0,
                 left: 0,
+                right: 0,
                 height: '4px',
                 background: '#fdba74',
                 borderRadius: '0 0 12px 12px',
@@ -214,15 +215,16 @@ export default function RegisterPage() {
         {
           duration: 5000,
           position: 'top-center',
+          icon: null,
           style: {
             background: '#f97316',
             color: '#fff',
             fontWeight: '600',
-            padding: '16px 20px',
-            paddingBottom: '24px',
+            padding: 0,
             borderRadius: '12px',
             boxShadow: '0 10px 40px rgba(249, 115, 22, 0.4)',
             minWidth: '380px',
+            overflow: 'hidden',
           },
         }
       )
