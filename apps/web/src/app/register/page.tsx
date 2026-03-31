@@ -79,14 +79,19 @@ export default function RegisterPage() {
         return
       }
 
-      const supabase = createClient()
-      const { data } = await supabase
-        .from('cidades')
-        .select('id_cidade, cidade_uf')
-        .ilike('cidade_uf', `%${citySearch}%`)
-        .limit(20)
+      try {
+        const supabase = createClient()
+        const { data } = await supabase
+          .from('cidades')
+          .select('id_cidade, cidade_uf')
+          .ilike('cidade_uf', `%${citySearch}%`)
+          .limit(20)
 
-      setCities(data || [])
+        setCities(data || [])
+      } catch (err) {
+        console.error('Erro ao buscar cidades:', err)
+        setCities([])
+      }
     }
 
     const timer = setTimeout(fetchCities, 300)
@@ -171,12 +176,13 @@ export default function RegisterPage() {
     setLoading(true)
     setError('')
 
-    const supabase = createClient()
+    try {
+      const supabase = createClient()
 
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email: formData.email,
-      password: formData.password,
-    })
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+      })
 
     if (authError) {
       setError(authError.message)
@@ -227,6 +233,17 @@ export default function RegisterPage() {
     }
 
     router.push('/games')
+    } catch (err: any) {
+      console.error('Erro no cadastro:', err)
+      setError(err?.message || 'Erro ao criar conta')
+      setLoading(false)
+    }
+  }
+
+  const formatDateToBR = (dateString: string) => {
+    if (!dateString) return ''
+    const [year, month, day] = dateString.split('-')
+    return `${day}/${month}/${year}`
   }
 
   const renderStep = () => {
@@ -536,11 +553,11 @@ export default function RegisterPage() {
             <ul className="list-disc pl-6 space-y-1">
               <li><strong>E-mail:</strong> {formData.email}</li>
               <li><strong>Responsável:</strong> {formData.u_nome}</li>
-              <li><strong>Nascimento:</strong> {formData.u_nasc}</li>
+              <li><strong>Nascimento:</strong> {formatDateToBR(formData.u_nasc)}</li>
               <li><strong>Celular:</strong> {formData.u_cel}</li>
               <li><strong>Parentesco:</strong> {formData.u_parentesco}</li>
               <li><strong>Criança:</strong> {formData.c_nome}</li>
-              <li><strong>Nascimento:</strong> {formData.c_nasc}</li>
+              <li><strong>Nascimento:</strong> {formatDateToBR(formData.c_nasc)}</li>
             </ul>
           </div>
         )
