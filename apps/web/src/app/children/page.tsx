@@ -133,21 +133,25 @@ export default function ChildrenPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary-50 to-secondary-50 flex items-center justify-center">
+      <div className="min-h-screen bg-[#f0fdf4] flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Carregando...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#16a34a] mx-auto mb-4"></div>
+          <p className="text-[#166534]">Carregando...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-secondary-50 pb-20">
+    <div className="min-h-screen bg-[#f0fdf4] pb-20">
       <div className="container max-w-4xl mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Crianças</h1>
-          <Button onClick={() => setShowAddModal(true)} size="lg">
+          <h1 className="text-3xl font-bold text-[#166534]">Crianças</h1>
+          <Button 
+            onClick={() => setShowAddModal(true)} 
+            size="lg"
+            className="bg-[#16a34a] hover:bg-[#15803d] text-white"
+          >
             <Plus className="w-5 h-5 mr-2" />
             Adicionar
           </Button>
@@ -167,10 +171,10 @@ export default function ChildrenPage() {
               const isActive = activeChildId === child.id_crianca;
               
               return (
-                <Card key={child.id_crianca} className={isActive ? 'border-primary-600 border-2' : ''}>
+                <Card key={child.id_crianca} className={isActive ? 'border-[#16a34a] border-2' : ''}>
                   <CardContent className="flex items-center gap-4 p-6">
-                    <div className="w-16 h-16 rounded-full bg-primary-100 flex items-center justify-center">
-                      <User className="w-8 h-8 text-primary-600" />
+                    <div className="w-16 h-16 rounded-full bg-[#dcfce7] flex items-center justify-center">
+                      <User className="w-8 h-8 text-[#16a34a]" />
                     </div>
                     
                     <div className="flex-1">
@@ -185,7 +189,7 @@ export default function ChildrenPage() {
                     <Button
                       variant={isActive ? 'default' : 'outline'}
                       onClick={() => handleSelectChild(child.id_crianca)}
-                      className="min-w-[120px]"
+                      className={`min-w-[120px] ${isActive ? 'bg-[#16a34a] hover:bg-[#15803d] text-white' : 'border-[#16a34a] text-[#16a34a] hover:bg-[#f0fdf4]'}`}
                     >
                       {isActive ? (
                         <>
