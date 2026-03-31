@@ -47,7 +47,11 @@ export default function ChildrenPage() {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       
-      if (!user) return;
+      console.log('User:', user?.id);
+      if (!user) {
+        console.log('Usuário não autenticado');
+        return;
+      }
 
       const { data, error } = await supabase
         .from('criancas')
@@ -55,10 +59,15 @@ export default function ChildrenPage() {
         .eq('id_responsavel', user.id)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro Supabase:', error);
+        throw error;
+      }
+      console.log('Crianças carregadas:', data);
       setChildren(data || []);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao carregar crianças:', error);
+      console.error('Detalhes do erro:', error.message, error.details, error.hint);
     } finally {
       setLoading(false);
     }
