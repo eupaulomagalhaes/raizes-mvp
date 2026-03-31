@@ -12,7 +12,7 @@ export const STORAGE = {
     donInteiro: `${SUPABASE_URL}/storage/v1/object/public/images/inteiro.png`,
     logo: `${SUPABASE_URL}/storage/v1/object/public/images/logo_raizes_educacional.png`,
     misteryBox: `${SUPABASE_URL}/storage/v1/object/public/images/mistery_box_01.png`,
-    misteryBoxEmpty: `${SUPABASE_URL}/storage/v1/object/public/images/mistery_box_empty.png`,
+    misteryBoxEmpty: `${SUPABASE_URL}/storage/v1/object/public/images/mistery_box_02.png`, // Caixa vazia alternativa
     girafa: `${SUPABASE_URL}/storage/v1/object/public/images/girafa.png`,
     robo: `${SUPABASE_URL}/storage/v1/object/public/images/robo.png`,
     dinossauro: `${SUPABASE_URL}/storage/v1/object/public/images/dinossauro.png`,
@@ -20,7 +20,6 @@ export const STORAGE = {
   
   // Áudios
   audio: {
-    celebration: `${SUPABASE_URL}/storage/v1/object/public/audios/celebration.mp3`,
     bgm: `${SUPABASE_URL}/storage/v1/object/public/audios/sound_trakcs/difacil_audio_track_voiceless.mp3`,
   },
   
