@@ -74,8 +74,8 @@ export default function LoginPage() {
 
     toast.success(
       (t) => (
-        <div style={{ width: '100%', position: 'relative', margin: '-16px -20px', padding: '16px 20px 20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'space-between', marginBottom: '12px' }}>
+        <div style={{ width: '100%' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'space-between', marginBottom: '8px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
               <div style={{ background: 'rgba(255,255,255,0.2)', borderRadius: '50%', padding: '4px', display: 'flex' }}>
                 <CheckCircle size={20} color="#fff" strokeWidth={2.5} />
@@ -89,20 +89,7 @@ export default function LoginPage() {
               <X size={20} color="#fff" strokeWidth={2.5} />
             </button>
           </div>
-          <div
-            style={{
-              position: 'absolute',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              height: '6px',
-              background: '#000',
-              borderRadius: '0 0 12px 12px',
-              animation: 'shrink 2s linear forwards',
-              transformOrigin: 'left',
-              zIndex: 100,
-            }}
-          />
+          <div style={{ height: '6px', background: '#000', borderRadius: '3px', marginTop: '8px', animation: 'shrink 2s linear forwards', transformOrigin: 'left' }} />
         </div>
       ),
       {
@@ -113,11 +100,10 @@ export default function LoginPage() {
           background: '#16a34a',
           color: '#fff',
           fontWeight: '600',
-          padding: 0,
+          padding: '16px 20px',
           borderRadius: '12px',
           boxShadow: '0 10px 40px rgba(22, 163, 74, 0.4)',
           minWidth: '380px',
-          overflow: 'hidden',
         },
       }
     )
