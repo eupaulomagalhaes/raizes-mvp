@@ -8,6 +8,7 @@ import { ChevronLeft, RotateCcw, Home, Trophy } from 'lucide-react'
 import { createClient } from '@/lib/supabase-client'
 import Link from 'next/link'
 import { STORAGE } from '@/lib/storage'
+import { ParentFeedbackModal } from '@/components/parent-feedback-modal'
 
 const ASSETS = {
   toys: [
@@ -32,7 +33,7 @@ export default function OndeEstaOBrinquedoPage() {
   const [score, setScore] = useState(0)
   const [attempts, setAttempts] = useState(0)
   const [showParentFeedback, setShowParentFeedback] = useState(false)
-  const [feedbackData, setFeedbackData] = useState({ acertos: 0, tentativas: 0 })
+  const [feedbackData, setFeedbackData] = useState({ acertos: 0, tentativas: 0, niveis: 0 })
   const [sessionId, setSessionId] = useState<string | null>(null)
 
   const currentToy = ASSETS.toys[level]
@@ -122,8 +123,8 @@ export default function OndeEstaOBrinquedoPage() {
         }, 2000)
       } else {
         setTimeout(() => {
-          setFeedbackData({ acertos: score + 1, tentativas: attempts + 1 })
           setShowParentFeedback(true)
+          setFeedbackData({ acertos: score + 1, tentativas: attempts + 1, niveis: level + 1 })
           setPhase('end')
         }, 2000)
       }
@@ -269,57 +270,16 @@ export default function OndeEstaOBrinquedoPage() {
       </div>
 
       {/* Parent Feedback Modal */}
-      {showParentFeedback && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-6 z-50">
-          <Card className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl">
-            <div className="flex items-center gap-3 mb-4">
-              <img src={ASSETS.donHead} alt="Don" className="w-12 h-12" />
-              <h2 className="text-xl font-bold text-[#234c38]">Momento do Responsável</h2>
-            </div>
-
-            <div className="bg-[#f6fff9] rounded-xl p-4 mb-4">
-              <p className="text-sm text-[#3a5144] mb-2">
-                O Raízes <strong>não substitui o adulto</strong>.
-              </p>
-              <p className="text-sm text-[#3a5144]">
-                Ele organiza o estímulo, orienta o pai e transforma minutos comuns em <strong>desenvolvimento cerebral intencional</strong>.
-              </p>
-            </div>
-
-            <div className="space-y-3 mb-6">
-              <h3 className="font-bold text-[#234c38]">Como foi a atividade?</h3>
-              <p className="text-sm text-[#3a5144]">
-                Acertos: <strong>{feedbackData.acertos}</strong> | Tentativas: <strong>{feedbackData.tentativas}</strong>
-              </p>
-              <p className="text-sm text-[#3a5144] italic">
-                Observe se a criança:
-                - Memoriza a posição visualmente
-                - Usa estratégia (marca posição, conta)
-                - Demonstra frustração ou persistência
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-3">
-              <Button
-                onClick={handlePlayAgain}
-                className="w-full bg-[#234c38] hover:bg-[#1d3f2f] text-white font-bold rounded-full py-5"
-              >
-                <RotateCcw className="mr-2 w-5 h-5" />
-                Jogar novamente
-              </Button>
-              <Link href="/games">
-                <Button
-                  variant="outline"
-                  className="w-full border-[#234c38] text-[#234c38] rounded-full py-5"
-                >
-                  <Home className="mr-2 w-5 h-5" />
-                  Voltar aos jogos
-                </Button>
-              </Link>
-            </div>
-          </Card>
-        </div>
-      )}
+      <ParentFeedbackModal
+        open={showParentFeedback}
+        onClose={() => {
+          setShowParentFeedback(false)
+          router.push('/games')
+        }}
+        sessionId={sessionId}
+        completedLevels={feedbackData.niveis}
+        correctCount={feedbackData.acertos}
+      />
     </main>
   )
 }

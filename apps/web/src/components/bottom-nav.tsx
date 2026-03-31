@@ -33,7 +33,7 @@ export function BottomNav() {
 
   return (
     <nav 
-      className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50"
+      className="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-[#edf4f0] shadow-lg z-50"
       aria-label="Navegação principal"
     >
       <div className="flex justify-around items-center h-16 max-w-lg mx-auto">
@@ -47,15 +47,15 @@ export function BottomNav() {
               href={item.href}
               className={`
                 flex flex-col items-center justify-center gap-1 px-4 py-2 min-w-[80px]
-                transition-colors
+                transition-all duration-200
                 ${isActive 
-                  ? 'text-primary-600' 
-                  : 'text-gray-600 hover:text-primary-500'
+                  ? 'text-[#234c38] font-bold scale-105' 
+                  : 'text-[#3a5144] hover:text-[#234c38] hover:scale-105'
                 }
               `}
               aria-current={isActive ? 'page' : undefined}
             >
-              <Icon className="w-6 h-6" />
+              <Icon className="w-6 h-6" strokeWidth={isActive ? 2.5 : 2} />
               <span className="text-xs font-medium">{item.label}</span>
             </Link>
           );

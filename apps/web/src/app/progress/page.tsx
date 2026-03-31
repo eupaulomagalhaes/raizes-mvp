@@ -5,8 +5,9 @@ import { createClient } from '@/lib/supabase-client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, FileText } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { ParentReportModal } from '@/components/parent-report-modal';
 
 interface Child {
   id_crianca: string;
@@ -27,6 +28,7 @@ export default function ProgressPage() {
   const [selectedChildId, setSelectedChildId] = useState<string>('');
   const [progress, setProgress] = useState<GameProgress | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showParentReport, setShowParentReport] = useState(false);
 
   useEffect(() => {
     loadChildren();
@@ -148,7 +150,7 @@ export default function ProgressPage() {
           </Card>
         ) : (
           <>
-            <div className="mb-6">
+            <div className="mb-6 space-y-3">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Selecione a criança
               </label>
@@ -164,6 +166,17 @@ export default function ProgressPage() {
                   ))}
                 </SelectContent>
               </Select>
+              
+              {selectedChildId && (
+                <Button
+                  onClick={() => setShowParentReport(true)}
+                  variant="outline"
+                  className="w-full border-[#234c38] text-[#234c38] hover:bg-[#edf4f0]"
+                >
+                  <FileText className="mr-2 w-5 h-5" />
+                  Relatório do Responsável
+                </Button>
+              )}
             </div>
 
             {progress && (
@@ -248,6 +261,16 @@ export default function ProgressPage() {
           </>
         )}
       </div>
+
+      {/* Parent Report Modal */}
+      {selectedChildId && (
+        <ParentReportModal
+          open={showParentReport}
+          onClose={() => setShowParentReport(false)}
+          childId={selectedChildId}
+          childName={children.find(c => c.id_crianca === selectedChildId)?.nome_completo || ''}
+        />
+      )}
     </div>
   );
 }
