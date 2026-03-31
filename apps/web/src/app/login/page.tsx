@@ -35,8 +35,8 @@ export default function LoginPage() {
       setFieldErrors({ email: true, password: true })
       toast.error(
         (t) => (
-          <div style={{ width: '100%', position: 'relative', margin: '-16px -20px', padding: '16px 20px', paddingBottom: '24px' }}>
-            <div style={{ paddingBottom: '8px', display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'space-between' }}>
+          <div style={{ width: '100%', position: 'relative', margin: '-16px -20px', padding: '16px 20px 20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'space-between', marginBottom: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
                 <div style={{ background: 'rgba(255,255,255,0.2)', borderRadius: '50%', padding: '4px', display: 'flex' }}>
                   <AlertCircle size={20} color="#fff" strokeWidth={2.5} />
@@ -60,7 +60,8 @@ export default function LoginPage() {
                 background: '#fca5a5',
                 borderRadius: '0 0 12px 12px',
                 animation: 'shrink 5s linear forwards',
-                width: '100%',
+                transformOrigin: 'left',
+                zIndex: 10,
               }}
             />
           </div>
@@ -87,8 +88,8 @@ export default function LoginPage() {
 
     toast.success(
       (t) => (
-        <div style={{ width: '100%', position: 'relative', margin: '-16px -20px', padding: '16px 20px', paddingBottom: '24px' }}>
-          <div style={{ paddingBottom: '8px', display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'space-between' }}>
+        <div style={{ width: '100%', position: 'relative', margin: '-16px -20px', padding: '16px 20px 20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'space-between', marginBottom: '12px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
               <div style={{ background: 'rgba(255,255,255,0.2)', borderRadius: '50%', padding: '4px', display: 'flex' }}>
                 <CheckCircle size={20} color="#fff" strokeWidth={2.5} />
@@ -112,7 +113,8 @@ export default function LoginPage() {
               background: '#86efac',
               borderRadius: '0 0 12px 12px',
               animation: 'shrink 2s linear forwards',
-              width: '100%',
+              transformOrigin: 'left',
+              zIndex: 10,
             }}
           />
         </div>
