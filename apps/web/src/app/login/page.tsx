@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff, AlertCircle, CheckCircle, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase-client'
 import { STORAGE } from '@/lib/storage'
 import toast, { Toaster } from 'react-hot-toast'
@@ -36,9 +36,19 @@ export default function LoginPage() {
       toast.error(
         (t) => (
           <div style={{ width: '100%', position: 'relative' }}>
-            <div style={{ paddingBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '20px' }}>❌</span>
-              <span>Credenciais inválidas. Verifique seu e-mail e senha.</span>
+            <div style={{ paddingBottom: '8px', display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
+                <div style={{ background: 'rgba(255,255,255,0.2)', borderRadius: '50%', padding: '4px', display: 'flex' }}>
+                  <AlertCircle size={20} color="#fff" strokeWidth={2.5} />
+                </div>
+                <span>Credenciais inválidas. Verifique seu e-mail e senha.</span>
+              </div>
+              <button
+                onClick={() => toast.dismiss(t.id)}
+                style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px', display: 'flex' }}
+              >
+                <X size={20} color="#fff" strokeWidth={2.5} />
+              </button>
             </div>
             <div
               style={{
@@ -61,11 +71,11 @@ export default function LoginPage() {
             background: '#dc2626',
             color: '#fff',
             fontWeight: '600',
-            padding: '16px 24px',
-            paddingBottom: '20px',
+            padding: '16px 20px',
+            paddingBottom: '24px',
             borderRadius: '12px',
             boxShadow: '0 10px 40px rgba(220, 38, 38, 0.4)',
-            minWidth: '320px',
+            minWidth: '380px',
           },
         }
       )
@@ -76,9 +86,19 @@ export default function LoginPage() {
     toast.success(
       (t) => (
         <div style={{ width: '100%', position: 'relative' }}>
-          <div style={{ paddingBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '20px' }}>✔️</span>
-            <span>Login realizado com sucesso!</span>
+          <div style={{ paddingBottom: '8px', display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
+              <div style={{ background: 'rgba(255,255,255,0.2)', borderRadius: '50%', padding: '4px', display: 'flex' }}>
+                <CheckCircle size={20} color="#fff" strokeWidth={2.5} />
+              </div>
+              <span>Login realizado com sucesso!</span>
+            </div>
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px', display: 'flex' }}
+            >
+              <X size={20} color="#fff" strokeWidth={2.5} />
+            </button>
           </div>
           <div
             style={{
@@ -101,11 +121,11 @@ export default function LoginPage() {
           background: '#16a34a',
           color: '#fff',
           fontWeight: '600',
-          padding: '16px 24px',
-          paddingBottom: '20px',
+          padding: '16px 20px',
+          paddingBottom: '24px',
           borderRadius: '12px',
           boxShadow: '0 10px 40px rgba(22, 163, 74, 0.4)',
-          minWidth: '320px',
+          minWidth: '380px',
         },
       }
     )
