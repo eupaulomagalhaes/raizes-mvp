@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Plus, User, Check } from 'lucide-react';
+import { Plus, User, Check, BarChart3, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface Child {
@@ -27,6 +27,10 @@ export default function ChildrenPage() {
     name: '',
     birthdate: ''
   });
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [selectedChild, setSelectedChild] = useState<Child | null>(null);
+  const [childStats, setChildStats] = useState<any>(null);
+  const [weeklyData, setWeeklyData] = useState<number[]>([0,0,0,0,0,0,0]);
 
   useEffect(() => {
     checkAuth();
@@ -113,6 +117,91 @@ export default function ChildrenPage() {
     localStorage.setItem('active_child_id', childId);
   };
 
+  const handleShowDetails = async (child: Child) => {
+    setSelectedChild(child);
+    setShowDetailsModal(true);
+    
+    try {
+      const supabase = createClient();
+      
+      // Buscar estatísticas da criança (sessões do jogo)
+      const { data: sessions, error: sessionsError } = await supabase
+        .from('sessoes_jogo')
+        .select('id_sessao, data_hora')
+        .eq('id_crianca', child.id_crianca);
+      
+      if (sessionsError) throw sessionsError;
+      
+      const totalSessions = sessions?.length || 0;
+      
+      // Buscar eventos das sessões
+      const sessionIds = sessions?.map(s => s.id_sessao) || [];
+      let accuracy = 0;
+      let avgReactionTime = 0;
+      let maxLevel = 0;
+      
+      if (sessionIds.length > 0) {
+        const { data: events, error: eventsError } = await supabase
+          .from('eventos_jogo')
+          .select('dados_adicionais')
+          .in('id_sessao', sessionIds);
+        
+        if (!eventsError && events) {
+          let total = 0, hits = 0, rtSum = 0, levelSum = 0, levelCount = 0;
+          
+          events.forEach(e => {
+            const payload = e.dados_adicionais || {};
+            if (typeof payload.correct === 'boolean') {
+              total++;
+              if (payload.correct) hits++;
+            }
+            if (typeof payload.reactionTimeMs === 'number') rtSum += payload.reactionTimeMs;
+            if (typeof payload.level === 'number') {
+              levelSum++;
+              levelCount++;
+              if (payload.level > maxLevel) maxLevel = payload.level;
+            }
+          });
+          
+          accuracy = total > 0 ? Math.round((hits / total) * 100) : 0;
+          avgReactionTime = total > 0 ? Math.round(rtSum / total) : 0;
+        }
+      }
+      
+      // Buscar progresso semanal
+      const now = new Date();
+      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      
+      const { data: weeklySessions, error: weeklyError } = await supabase
+        .from('sessoes_jogo')
+        .select('data_hora')
+        .eq('id_crianca', child.id_crianca)
+        .gte('data_hora', weekAgo.toISOString());
+      
+      const weekData = [0, 0, 0, 0, 0, 0, 0]; // Dom-Sáb
+      
+      if (!weeklyError && weeklySessions) {
+        weeklySessions.forEach(s => {
+          const d = new Date(s.data_hora);
+          weekData[d.getDay()]++;
+        });
+      }
+      
+      setChildStats({
+        totalSessions,
+        accuracy,
+        avgReactionTime,
+        maxLevel
+      });
+      
+      setWeeklyData(weekData);
+    } catch (error) {
+      console.error('Erro ao buscar estatísticas:', error);
+      setChildStats({ totalSessions: 0, accuracy: 0, avgReactionTime: 0, maxLevel: 0 });
+      setWeeklyData([0,0,0,0,0,0,0]);
+    }
+  };
+
   const calculateAge = (birthdate: string) => {
     const birth = new Date(birthdate);
     const today = new Date();
@@ -186,20 +275,31 @@ export default function ChildrenPage() {
                       </p>
                     </div>
 
-                    <Button
-                      variant={isActive ? 'default' : 'outline'}
-                      onClick={() => handleSelectChild(child.id_crianca)}
-                      className={`min-w-[120px] ${isActive ? 'bg-[#16a34a] hover:bg-[#15803d] text-white' : 'border-[#16a34a] text-[#16a34a] hover:bg-[#f0fdf4]'}`}
-                    >
-                      {isActive ? (
-                        <>
-                          <Check className="w-4 h-4 mr-2" />
-                          Selecionado
-                        </>
-                      ) : (
-                        'Selecionar'
-                      )}
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handleShowDetails(child)}
+                        className="border-[#16a34a] text-[#16a34a] hover:bg-[#f0fdf4] w-10 h-10"
+                        title="Ver estatísticas"
+                      >
+                        <BarChart3 className="w-5 h-5" />
+                      </Button>
+                      <Button
+                        variant={isActive ? 'default' : 'outline'}
+                        onClick={() => handleSelectChild(child.id_crianca)}
+                        className={`min-w-[100px] ${isActive ? 'bg-[#16a34a] hover:bg-[#15803d] text-white' : 'border-[#16a34a] text-[#16a34a] hover:bg-[#f0fdf4]'}`}
+                      >
+                        {isActive ? (
+                          <>
+                            <Check className="w-4 h-4 mr-2" />
+                            Selecionado
+                          </>
+                        ) : (
+                          'Selecionar'
+                        )}
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               );
@@ -247,6 +347,102 @@ export default function ChildrenPage() {
               </Button>
             </div>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de detalhes da criança */}
+      <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <div className="flex items-center justify-between">
+              <DialogTitle className="text-[#166534]">{selectedChild?.nome_completo}</DialogTitle>
+            </div>
+          </DialogHeader>
+          
+          {childStats && childStats.totalSessions > 0 ? (
+            <div className="space-y-6">
+              {/* Estatísticas */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-[#dcfce7] rounded-xl p-4 text-center">
+                  <div className="text-2xl font-bold text-[#166534]">{childStats.totalSessions}</div>
+                  <div className="text-xs text-[#166534]">Sessões jogadas</div>
+                </div>
+                <div className="bg-[#dcfce7] rounded-xl p-4 text-center">
+                  <div className="text-2xl font-bold text-[#166534]">{childStats.accuracy}%</div>
+                  <div className="text-xs text-[#166534]">Taxa de acerto</div>
+                </div>
+                <div className="bg-[#dcfce7] rounded-xl p-4 text-center">
+                  <div className="text-2xl font-bold text-[#166534]">{childStats.avgReactionTime > 0 ? (childStats.avgReactionTime / 1000).toFixed(1) + 's' : '0s'}</div>
+                  <div className="text-xs text-[#166534]">Tempo médio</div>
+                </div>
+                <div className="bg-[#dcfce7] rounded-xl p-4 text-center">
+                  <div className="text-2xl font-bold text-[#166534]">{childStats.maxLevel}</div>
+                  <div className="text-xs text-[#166534]">Nível máximo</div>
+                </div>
+              </div>
+              
+              {/* Gráfico semanal */}
+              <div>
+                <h4 className="font-semibold text-[#166534] mb-3 text-center">Evolução Semanal</h4>
+                
+                {/* Resumo */}
+                <div className="flex justify-center gap-8 mb-4">
+                  <div className="text-center">
+                    <span className="text-xl font-bold text-[#166534]">{weeklyData.reduce((a, b) => a + b, 0)}</span>
+                    <span className="text-xs text-[#166534] block">sessões na semana</span>
+                  </div>
+                  <div className="text-center">
+                    <span className="text-xl font-bold text-[#166534]">{weeklyData.filter(v => v > 0).length}</span>
+                    <span className="text-xs text-[#166534] block">dias ativos</span>
+                  </div>
+                </div>
+                
+                {/* Barras do gráfico */}
+                <div className="flex items-end justify-between h-32 gap-1 mb-2">
+                  {(() => {
+                    const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+                    const today = new Date();
+                    const orderedDays = [];
+                    for (let i = 6; i >= 0; i--) {
+                      const date = new Date(today);
+                      date.setDate(today.getDate() - i);
+                      const dayIndex = date.getDay();
+                      const dd = String(date.getDate()).padStart(2, '0');
+                      const mm = String(date.getMonth() + 1).padStart(2, '0');
+                      orderedDays.push({
+                        dayName: days[dayIndex],
+                        dateStr: `${dd}/${mm}`,
+                        value: weeklyData[dayIndex] || 0,
+                        isToday: i === 0
+                      });
+                    }
+                    const maxValue = Math.max(...orderedDays.map(d => d.value), 1);
+                    
+                    return orderedDays.map((day, idx) => (
+                      <div key={idx} className="flex flex-col items-center flex-1">
+                        <div 
+                          className={`w-full rounded-t-sm flex items-end justify-center ${day.value > 0 ? 'bg-[#16a34a]' : 'bg-[#dcfce7]'}`}
+                          style={{ height: `${Math.max((day.value / maxValue) * 100, day.value > 0 ? 20 : 8)}%`, minHeight: day.value > 0 ? '20px' : '8px' }}
+                        >
+                          {day.value > 0 && <span className="text-xs text-white font-bold pb-1">{day.value}</span>}
+                        </div>
+                        <div className={`text-center mt-1 ${day.isToday ? 'font-bold text-[#16a34a]' : 'text-gray-500'}`}>
+                          <span className="text-[10px] block">{day.dateStr}</span>
+                          <span className="text-[10px] block">{day.dayName}</span>
+                        </div>
+                      </div>
+                    ));
+                  })()}
+                </div>
+                <p className="text-center text-xs text-gray-500">Atividades realizadas nos últimos 7 dias</p>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-600 mb-2">Ainda não há dados de jogos</p>
+              <p className="text-sm text-gray-500">Jogue "Onde está o brinquedo" para ver estatísticas</p>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
