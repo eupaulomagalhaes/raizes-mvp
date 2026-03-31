@@ -112,11 +112,11 @@ export default function OndeEstaOBrinquedoPage() {
     if (phase === 'welcome') {
       ttsController.speak('Esse é o jogo: ONDE ESTÁ O BRINQUEDO!')
       
-      // Após 2s, muda para intro
+      // Após 5s, muda para intro (dar tempo do TTS terminar)
       const timer = setTimeout(() => {
         setPhase('intro')
         ttsController.speak('Clique na tela para começar!')
-      }, 2000)
+      }, 5000)
 
       return () => clearTimeout(timer)
     }
@@ -391,7 +391,8 @@ export default function OndeEstaOBrinquedoPage() {
           </div>
         )}
 
-        {/* Estrelas (Level indicator) */}
+        {/* Estrelas (Level indicator) - Só mostrar após começar o jogo */}
+        {phase !== 'welcome' && phase !== 'intro' && (
         <div className="mt-8 flex gap-3">
           {[0, 1, 2].map(i => (
             <div key={i} className="relative">
@@ -403,6 +404,7 @@ export default function OndeEstaOBrinquedoPage() {
             </div>
           ))}
         </div>
+        )}
       </div>
 
       {/* Parent Feedback Modal */}
