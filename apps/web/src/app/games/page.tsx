@@ -101,14 +101,24 @@ export default function GamesPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-gradient-to-b from-[#f6fff9] to-[#e9f7f0] flex items-center justify-center">
+      <main 
+        className="min-h-screen flex items-center justify-center"
+        style={{
+          background: 'url(https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/nuvens_background.gif) center/cover no-repeat'
+        }}
+      >
         <p className="text-[#234c38] font-bold">Carregando...</p>
       </main>
     )
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-[#f6fff9] to-[#e9f7f0]">
+    <main 
+      className="min-h-screen"
+      style={{
+        background: 'url(https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/nuvens_background.gif) center/cover no-repeat'
+      }}
+    >
       {/* Header */}
       <div className="px-6 pt-6 pb-4">
         <div className="flex items-center gap-4">
