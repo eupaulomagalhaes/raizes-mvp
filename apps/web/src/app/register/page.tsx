@@ -182,8 +182,8 @@ export default function RegisterPage() {
     if (!validateCurrentStep()) {
       toast.error(
         (t) => (
-          <div style={{ width: '100%', position: 'relative', margin: '-16px -20px', padding: '16px 20px', paddingBottom: '24px' }}>
-            <div style={{ paddingBottom: '8px', display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'space-between' }}>
+          <div style={{ width: '100%', position: 'relative', margin: '-16px -20px', padding: '16px 20px 20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'space-between', marginBottom: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
                 <div style={{ background: 'rgba(255,255,255,0.2)', borderRadius: '50%', padding: '4px', display: 'flex' }}>
                   <Info size={20} color="#fff" strokeWidth={2.5} />
@@ -203,11 +203,12 @@ export default function RegisterPage() {
                 bottom: 0,
                 left: 0,
                 right: 0,
-                height: '4px',
-                background: '#fdba74',
+                height: '6px',
+                background: '#000',
                 borderRadius: '0 0 12px 12px',
                 animation: 'shrink 5s linear forwards',
-                width: '100%',
+                transformOrigin: 'left',
+                zIndex: 10,
               }}
             />
           </div>
