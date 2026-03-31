@@ -175,7 +175,7 @@ export default function GamesPage() {
                       alt="Caixa misteriosa"
                       className="w-14 h-14 object-contain"
                     />
-                    <span className="text-[#234c38] font-extrabold text-[1.05rem] flex-1 text-left">
+                    <span className="text-[#234c38] font-extrabold text-[1.05rem] flex-1 text-left break-words leading-tight">
                       {jogo.nome}
                     </span>
                   </Link>
