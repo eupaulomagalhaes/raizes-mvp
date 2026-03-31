@@ -90,9 +90,7 @@ export default function OndeEstaOBrinquedoPage() {
     }, 3000)
   }, [level, boxCount, currentToy])
 
-  useEffect(() => {
-    startNewRound()
-  }, [startNewRound])
+  // Removido: não inicia automaticamente, só após o usuário clicar no intro
 
   // TTS
   const speak = useCallback((text: string) => {
@@ -264,13 +262,13 @@ export default function OndeEstaOBrinquedoPage() {
       </header>
 
       {/* Mascote - Posição igual ao legado (topo esquerda) */}
-      <div className="relative z-10 px-6 flex items-start gap-3 mb-4">
-        <div className="w-16 h-16 rounded-full bg-white shadow-lg flex items-center justify-center flex-shrink-0 border-2 border-[#234c38]">
-          <img src={ASSETS.donHead} alt="Don" className="w-12 h-auto" />
+      <div className="relative z-10 px-4 flex items-start gap-3 mb-4 mt-2">
+        <div className="w-20 h-20 rounded-full bg-white shadow-xl flex items-center justify-center flex-shrink-0 border-4 border-[#234c38]">
+          <img src={ASSETS.donHead} alt="Don" className="w-14 h-auto" />
         </div>
-        <div className="relative bg-white rounded-2xl p-4 shadow-lg flex-1 mt-2">
-          <div className="absolute -left-3 top-4 w-0 h-0 border-y-8 border-y-transparent border-r-[12px] border-r-white" />
-          <p className="text-[#234c38] font-bold text-sm leading-tight">
+        <div className="relative bg-white rounded-3xl px-5 py-4 shadow-xl max-w-md">
+          <div className="absolute -left-3 top-6 w-0 h-0 border-t-[12px] border-t-transparent border-b-[12px] border-b-transparent border-r-[16px] border-r-white" />
+          <p className="text-[#234c38] font-bold text-base leading-snug">
             {getSpeechText()}
           </p>
         </div>
@@ -303,7 +301,8 @@ export default function OndeEstaOBrinquedoPage() {
           </div>
         )}
 
-        {/* Boxes Grid */}
+        {/* Boxes Grid - Só mostrar nas fases corretas */}
+        {(phase === 'hide' || phase === 'guess' || phase === 'result') && (
         <div className={`grid gap-4 ${boxCount === 1 ? 'grid-cols-1' : boxCount === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
           {Array.from({ length: boxCount }).map((_, i) => (
             <button
@@ -346,6 +345,7 @@ export default function OndeEstaOBrinquedoPage() {
             </button>
           ))}
         </div>
+        )}
 
         {/* Mão indicadora na fase guess */}
         {phase === 'guess' && showHand && (
