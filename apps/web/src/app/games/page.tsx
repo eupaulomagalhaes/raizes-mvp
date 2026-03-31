@@ -114,37 +114,38 @@ export default function GamesPage() {
 
   return (
     <main 
-      className="min-h-screen"
+      className="min-h-screen flex items-center justify-center p-8"
       style={{
         background: 'url(https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/nuvens_background.gif) center/cover no-repeat'
       }}
     >
-      {/* Header */}
-      <div className="px-6 pt-6 pb-4">
+      {/* Container centralizado */}
+      <div className="w-full max-w-[420px] bg-white/95 rounded-[2.25rem] p-8 pb-10 shadow-[0_26px_52px_rgba(0,0,0,0.22)] flex flex-col gap-6 items-center text-center">
+        
+        {/* Mascot + Speech */}
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-full bg-white shadow-lg flex items-center justify-center">
+          <div className="w-24 h-24 rounded-full bg-white shadow-[0_20px_40px_rgba(0,0,0,0.18)] border-4 border-[#234c38] flex items-center justify-center overflow-hidden">
             <img
               src={STORAGE.images.donMascote}
               alt="Don"
-              className="w-12 h-auto"
+              className="w-[88px] h-auto"
             />
           </div>
-          <div className="relative bg-white rounded-2xl p-3 shadow-lg flex-1">
-            <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-0 h-0 border-y-8 border-y-transparent border-r-[12px] border-r-white" />
-            <p className="text-[#234c38] font-bold">
+          <div className="relative bg-white rounded-2xl px-4 py-2 shadow-lg">
+            <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-0 h-0 border-t-[10px] border-t-transparent border-b-[10px] border-b-transparent border-r-[12px] border-r-white" />
+            <p className="text-[#234c38] font-bold text-base">
               VAMOS BRINCAR!
             </p>
           </div>
         </div>
-      </div>
 
-      {/* Content */}
-      <div className="px-6 pb-6">
-        <h1 className="text-2xl font-bold text-[#234c38] mb-2">
+        {/* Title */}
+        <h1 className="text-[1.75rem] font-extrabold text-[#234c38] font-[family-name:var(--font-montserrat)]">
           Escolha um jogo
         </h1>
 
-        <p className="text-[#3a5144] mb-6">
+        {/* Greeting */}
+        <p className="text-[#1f3328] text-[1.05rem] font-semibold">
           {greetingName ? (
             <>Olá de novo, <strong>{greetingName}</strong>!</>
           ) : (
@@ -152,76 +153,60 @@ export default function GamesPage() {
           )}
         </p>
 
+        {/* Hint */}
         {!criancaAtiva && (
-          <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-sm">
-            Cadastre uma criança para vincular as sessões de jogo.
-          </div>
+          <p className="text-[#3a5144] text-sm min-h-[1.2rem]">
+            Cadastre uma criança no cadastro para vincular as sessões.
+          </p>
         )}
 
         {/* Games List */}
-        <div className="space-y-3 mb-6">
-          {jogos.map((jogo, index) => (
-            <Card
-              key={jogo.id_jogo}
-              className={`border-0 shadow-lg overflow-hidden ${
-                index === 0 && jogo.habilitado
-                  ? 'bg-white hover:shadow-xl transition-shadow cursor-pointer'
-                  : 'bg-white/60'
-              }`}
-            >
-              <CardContent className="p-4">
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-2xl bg-[#234c38]/10 flex items-center justify-center flex-shrink-0">
-                    <Gamepad2 className="w-7 h-7 text-[#234c38]" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-[#1b2b21] truncate">
+        <ul className="w-full flex flex-col gap-4 list-none p-0 m-0">
+          {jogos.map((jogo, index) => {
+            if (index === 0 && jogo.habilitado) {
+              return (
+                <li key={jogo.id_jogo} className="w-full">
+                  <Link
+                    href={`/games/${jogo.slug}`}
+                    className="w-full rounded-3xl p-4 flex items-center gap-3 shadow-[0_14px_28px_rgba(0,0,0,0.16)] no-underline bg-gradient-to-br from-white to-[#e3ffec]/90 border-2 border-[#a5d9b3] hover:shadow-[0_20px_40px_rgba(0,0,0,0.2)] transition-shadow"
+                  >
+                    <img
+                      src="https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/mistery_box_01.png"
+                      alt="Caixa misteriosa"
+                      className="w-14 h-14 object-contain"
+                    />
+                    <span className="text-[#234c38] font-extrabold text-[1.05rem] flex-1 text-left">
                       {jogo.nome}
-                    </h3>
-                    <p className="text-sm text-[#3a5144] line-clamp-1">
-                      {jogo.descricao || 'Em breve'}
-                    </p>
-                  </div>
-                  {index === 0 && jogo.habilitado ? (
-                    <Link href={`/games/${jogo.slug}`}>
-                      <Button
-                        size="sm"
-                        className="bg-[#234c38] hover:bg-[#1d3f2f] text-white rounded-full px-4"
-                      >
-                        Jogar <ChevronRight size={16} />
-                      </Button>
-                    </Link>
-                  ) : (
-                    <span className="text-xs font-semibold text-[#3a5144] bg-[#edf4f0] px-3 py-1 rounded-full">
-                      EM BREVE
                     </span>
-                  )}
+                  </Link>
+                </li>
+              )
+            }
+            return (
+              <li key={jogo.id_jogo} className="w-full rounded-3xl p-3 px-4 flex items-center gap-3 bg-white shadow-[0_14px_28px_rgba(0,0,0,0.16)]">
+                <span className="text-[#2c3d33] font-extrabold text-base">#{index + 1}</span>
+                <div className="flex-1 flex flex-col items-start">
+                  <span className="text-[#234c38] font-bold text-sm">{jogo.nome}</span>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                <span className="text-xs font-semibold text-[#3a5144] bg-[#edf4f0] px-3 py-1 rounded-full">
+                  Em breve
+                </span>
+              </li>
+            )
+          })}
+        </ul>
 
         {/* Actions */}
-        <div className="flex flex-col gap-3">
-          <Link href="/progress">
-            <Button
-              variant="outline"
-              className="w-full border-[#234c38] text-[#234c38] hover:bg-[#234c38]/5 rounded-full py-5"
-            >
-              <TrendingUp className="mr-2" size={18} />
-              Ver progresso
-            </Button>
+        <div className="flex gap-4 w-full justify-center text-sm font-semibold">
+          <Link href="/progress" className="text-[#234c38] hover:underline no-underline">
+            Ver progresso
           </Link>
-
-          <Button
-            variant="ghost"
+          <button
             onClick={handleLogout}
-            className="w-full text-[#3a5144] hover:text-[#234c38]"
+            className="text-[#234c38] hover:underline bg-transparent border-none cursor-pointer p-0"
           >
-            <LogOut className="mr-2" size={18} />
             Sair
-          </Button>
+          </button>
         </div>
       </div>
     </main>
