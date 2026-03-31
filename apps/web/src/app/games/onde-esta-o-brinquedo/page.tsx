@@ -43,6 +43,7 @@ export default function OndeEstaOBrinquedoPage() {
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [showHand, setShowHand] = useState(false)
   const [showNextButton, setShowNextButton] = useState(false)
+  const [handAnimation, setHandAnimation] = useState<any>(null)
 
   const currentToy = ASSETS.toys[level]
 
@@ -58,6 +59,14 @@ export default function OndeEstaOBrinquedoPage() {
       if (data) setSessionId(data.id_sessao)
     }
     createSession()
+  }, [])
+
+  // Carregar animação da mão
+  useEffect(() => {
+    fetch(ASSETS.clickHand)
+      .then(res => res.json())
+      .then(data => setHandAnimation(data))
+      .catch(err => console.error('Erro ao carregar animação:', err))
   }, [])
 
   // Registrar evento
@@ -286,9 +295,9 @@ export default function OndeEstaOBrinquedoPage() {
             onClick={handleStartGame}
             className="absolute inset-0 flex flex-col items-center justify-center z-20"
           >
-            {showHand && (
+            {showHand && handAnimation && (
               <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32">
-                <Lottie animationData={ASSETS.clickHand} loop={true} />
+                <Lottie animationData={handAnimation} loop />
               </div>
             )}
           </button>
@@ -352,9 +361,9 @@ export default function OndeEstaOBrinquedoPage() {
         )}
 
         {/* Mão indicadora na fase guess */}
-        {phase === 'guess' && showHand && (
+        {phase === 'guess' && showHand && handAnimation && (
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 translate-y-8 w-32 h-32 z-30">
-            <Lottie animationData={ASSETS.clickHand} loop={true} />
+            <Lottie animationData={handAnimation} loop />
           </div>
         )}
 
