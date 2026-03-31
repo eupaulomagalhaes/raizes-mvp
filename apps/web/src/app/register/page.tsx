@@ -180,14 +180,15 @@ export default function RegisterPage() {
   const handleNext = async () => {
     if (!validateCurrentStep()) {
       toast.error('Preencha os campos obrigatórios (*) para continuar.', {
-        duration: 4000,
+        duration: 5000,
         position: 'top-center',
         style: {
           background: '#fff',
-          color: '#b02035',
+          color: '#f97316',
           fontWeight: '600',
-          padding: '16px',
+          padding: '16px 24px',
           borderRadius: '12px',
+          boxShadow: '0 10px 40px rgba(249, 115, 22, 0.25)',
         },
       })
       return

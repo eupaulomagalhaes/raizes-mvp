@@ -33,34 +33,80 @@ export default function LoginPage() {
 
     if (error) {
       setFieldErrors({ email: true, password: true })
-      toast.error('Credenciais inválidas. Verifique seu e-mail e senha.', {
-        duration: 5000,
-        position: 'top-center',
-        style: {
-          background: '#fff',
-          color: '#dc2626',
-          fontWeight: '600',
-          padding: '16px 24px',
-          borderRadius: '12px',
-          boxShadow: '0 10px 40px rgba(220, 38, 38, 0.25)',
-        },
-      })
+      toast.error(
+        (t) => (
+          <div style={{ width: '100%', position: 'relative' }}>
+            <div style={{ paddingBottom: '8px' }}>
+              Credenciais inválidas. Verifique seu e-mail e senha.
+            </div>
+            <div
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                height: '4px',
+                background: '#dc2626',
+                borderRadius: '0 0 12px 12px',
+                animation: 'shrink 5s linear forwards',
+                width: '100%',
+              }}
+            />
+          </div>
+        ),
+        {
+          duration: 5000,
+          position: 'top-center',
+          style: {
+            background: '#fff',
+            color: '#dc2626',
+            fontWeight: '600',
+            padding: '16px 24px',
+            paddingBottom: '20px',
+            borderRadius: '12px',
+            boxShadow: '0 10px 40px rgba(220, 38, 38, 0.25)',
+            minWidth: '320px',
+          },
+        }
+      )
       setLoading(false)
       return
     }
 
-    toast.success('Login realizado com sucesso!', {
-      duration: 2000,
-      position: 'top-center',
-      style: {
-        background: '#fff',
-        color: '#16a34a',
-        fontWeight: '600',
-        padding: '16px 24px',
-        borderRadius: '12px',
-        boxShadow: '0 10px 40px rgba(22, 163, 74, 0.25)',
-      },
-    })
+    toast.success(
+      (t) => (
+        <div style={{ width: '100%', position: 'relative' }}>
+          <div style={{ paddingBottom: '8px' }}>
+            Login realizado com sucesso!
+          </div>
+          <div
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              height: '4px',
+              background: '#16a34a',
+              borderRadius: '0 0 12px 12px',
+              animation: 'shrink 2s linear forwards',
+              width: '100%',
+            }}
+          />
+        </div>
+      ),
+      {
+        duration: 2000,
+        position: 'top-center',
+        style: {
+          background: '#fff',
+          color: '#16a34a',
+          fontWeight: '600',
+          padding: '16px 24px',
+          paddingBottom: '20px',
+          borderRadius: '12px',
+          boxShadow: '0 10px 40px rgba(22, 163, 74, 0.25)',
+          minWidth: '320px',
+        },
+      }
+    )
 
     setTimeout(() => {
       router.push('/games')
@@ -70,6 +116,12 @@ export default function LoginPage() {
 
   return (
     <>
+      <style jsx global>{`
+        @keyframes shrink {
+          from { width: 100%; }
+          to { width: 0%; }
+        }
+      `}</style>
       <Toaster />
       <main 
         className="min-h-screen flex items-center justify-center px-6 py-12"
