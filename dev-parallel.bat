@@ -3,7 +3,7 @@ echo ========================================
 echo Raizes Educacional - Desenvolvimento Paralelo
 echo ========================================
 echo.
-echo LEGADO (Vanilla JS):  http://localhost:8080
+echo LEGADO (Vanilla JS):  http://localhost:8081
 echo NEXT.JS 15:           http://localhost:3000
 echo.
 echo Pressione Ctrl+C para encerrar ambos servidores

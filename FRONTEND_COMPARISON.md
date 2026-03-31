@@ -6,28 +6,28 @@
 dev-parallel.bat
 
 # Manual
-cd legacy && npm run dev  # http://localhost:8080
+cd legacy && npm run dev  # http://localhost:8081
 cd apps/web && npm run dev # http://localhost:3000
 ```
 
 ---
 
-## 📊 Matriz de Comparação - Páginas e Rotas
+## Matriz de Comparação - Páginas e Rotas
 
 | # | Página | Legado | Next.js 15 | Status Visual |
 |---|--------|--------|------------|---------------|
-| 1 | **Splash/Welcome** | `http://localhost:8080/#/` | `http://localhost:3000/` | ⚠️ Comparar |
-| 2 | **Login** | `http://localhost:8080/#/login` | `http://localhost:3000/login` | ⚠️ Comparar |
-| 3 | **Registro** | `http://localhost:8080/#/register` | `http://localhost:3000/register` | ⚠️ Comparar |
-| 4 | **Jogos (Lista)** | `http://localhost:8080/#/games` | `http://localhost:3000/games` | ⚠️ Comparar |
-| 5 | **Onde está o brinquedo** | `http://localhost:8080/#/games/onde-esta-o-brinquedo` | `http://localhost:3000/games/onde-esta-o-brinquedo` | ⚠️ Comparar |
-| 6 | **Crianças** | `http://localhost:8080/#/children` | `http://localhost:3000/children` | ⚠️ Comparar |
-| 7 | **Progresso** | `http://localhost:8080/#/progress` | `http://localhost:3000/progress` | ⚠️ Comparar |
-| 8 | **Configurações** | `http://localhost:8080/#/settings` | `http://localhost:3000/settings` | ⚠️ Comparar |
+| 1 | **Splash/Welcome** | `http://localhost:8081/#/` | `http://localhost:3000/` | ⚠️ Comparar |
+| 2 | **Login** | `http://localhost:8081/#/login` | `http://localhost:3000/login` | ⚠️ Comparar |
+| 3 | **Registro** | `http://localhost:8081/#/register` | `http://localhost:3000/register` | ⚠️ Comparar |
+| 4 | **Jogos (Lista)** | `http://localhost:8081/#/games` | `http://localhost:3000/games` | ⚠️ Comparar |
+| 5 | **Onde está o brinquedo** | `http://localhost:8081/#/games/onde-esta-o-brinquedo` | `http://localhost:3000/games/onde-esta-o-brinquedo` | ⚠️ Comparar |
+| 6 | **Crianças** | `http://localhost:8081/#/children` | `http://localhost:3000/children` | ⚠️ Comparar |
+| 7 | **Progresso** | `http://localhost:8081/#/progress` | `http://localhost:3000/progress` | ⚠️ Comparar |
+| 8 | **Configurações** | `http://localhost:8081/#/settings` | `http://localhost:3000/settings` | ⚠️ Comparar |
 
 ---
 
-## 🎨 Checklist de Componentes UI
+## Checklist de Componentes UI
 
 ### **Layout Global**
 - [ ] Navbar inferior (3 tabs: Jogos, Crianças, Config)
