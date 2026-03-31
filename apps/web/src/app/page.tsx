@@ -10,6 +10,22 @@ export default function Home() {
   const [speechText, setSpeechText] = useState('Eu sou o Don!')
 
   useEffect(() => {
+    // Injetar keyframe animation no document
+    const styleId = 'cta-pulse-keyframe'
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement('style')
+      style.id = styleId
+      style.textContent = `
+        @keyframes cta-pulse {
+          from { transform: scale(0.95); }
+          to { transform: scale(1.025); }
+        }
+      `
+      document.head.appendChild(style)
+    }
+  }, [])
+
+  useEffect(() => {
     // TTS sequence: "Eu sou o Don!" -> "Quero ajudar você!"
     if (ttsController.isEnabled()) {
       setTimeout(() => {
@@ -101,12 +117,9 @@ export default function Home() {
               </Button>
             </Link>
             <Link href="/login" className="w-full" style={{ maxWidth: 'min(100%, 260px)' }}>
-              <Button 
-                variant="ghost" 
-                className="w-full text-[#234c38] font-semibold underline"
-              >
+              <button className="w-full text-white font-bold text-base opacity-90 hover:opacity-100 bg-transparent border-none cursor-pointer transition-opacity">
                 Já tenho uma conta!
-              </Button>
+              </button>
             </Link>
           </div>
         </div>
