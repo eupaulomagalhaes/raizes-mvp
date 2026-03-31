@@ -11,7 +11,7 @@ import { Plus, User, Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface Child {
-  id_crianca: number;
+  id_crianca: string;
   nome_completo: string;
   data_nascimento: string;
   sexo?: string;
@@ -22,7 +22,7 @@ export default function ChildrenPage() {
   const [children, setChildren] = useState<Child[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [activeChildId, setActiveChildId] = useState<number | null>(null);
+  const [activeChildId, setActiveChildId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     birthdate: ''
@@ -76,7 +76,7 @@ export default function ChildrenPage() {
   const loadActiveChild = () => {
     const stored = localStorage.getItem('active_child_id');
     if (stored) {
-      setActiveChildId(parseInt(stored));
+      setActiveChildId(stored);
     }
   };
 
@@ -108,9 +108,9 @@ export default function ChildrenPage() {
     }
   };
 
-  const handleSelectChild = (childId: number) => {
+  const handleSelectChild = (childId: string) => {
     setActiveChildId(childId);
-    localStorage.setItem('active_child_id', childId.toString());
+    localStorage.setItem('active_child_id', childId);
   };
 
   const calculateAge = (birthdate: string) => {
