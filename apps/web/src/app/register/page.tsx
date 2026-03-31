@@ -224,7 +224,9 @@ export default function RegisterPage() {
                   onChange={(e) => updateField('password2', e.target.value)}
                   placeholder="Repita a senha"
                   minLength={6}
-                  className="w-full bg-[#ffe7a4] border-none rounded-[1.2rem] px-[1.1rem] py-[0.9rem] text-base shadow-[inset_0_2px_4px_rgba(0,0,0,0.08)] focus:outline focus:outline-[3px] focus:outline-[rgba(35,76,56,0.35)]"
+                  className={`w-full bg-[#ffe7a4] border-none rounded-[1.2rem] px-[1.1rem] py-[0.9rem] text-base shadow-[inset_0_2px_4px_rgba(0,0,0,0.08)] focus:outline focus:outline-[3px] focus:outline-[rgba(35,76,56,0.35)] ${
+                    formData.password2 && formData.password !== formData.password2 ? 'border-2 !border-[#e63946] shadow-[inset_0_3px_6px_rgba(230,57,70,0.18)]' : ''
+                  }`}
                   required
                 />
                 <button
@@ -235,6 +237,9 @@ export default function RegisterPage() {
                   {showPassword2 ? '🙈' : '👁'}
                 </button>
               </div>
+              {formData.password2 && formData.password !== formData.password2 && (
+                <p className="text-[#b02035] text-[0.8rem] font-semibold mt-[0.35rem]">* Senha não é a mesma</p>
+              )}
             </div>
           </div>
         )
