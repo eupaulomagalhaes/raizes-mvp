@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS observacoes_atividades (
 
 -- Tabela de marcos de desenvolvimento (checklist)
 CREATE TABLE IF NOT EXISTS marcos_desenvolvimento (
-    id_marco UUUDARY KEY DEFA DEFAULT gen_random_uuid()ULT gen_random_uuid(),
+    id_marco BIGSERIAL PRIMARY KEY,
     
     -- Identificação do marco
     codigo_marco VARCHAR(50) UNIQUE NOT NULL,
