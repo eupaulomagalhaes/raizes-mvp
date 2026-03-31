@@ -306,8 +306,8 @@ export default function OndeEstaOBrinquedoPage() {
           </button>
         )}
 
-        {/* Toy Display */}
-        {(phase === 'show-toy') && (
+        {/* Toy Display - Não mostrar em result */}
+        {phase === 'show-toy' && (
           <div className="mb-4 animate-bounce">
             <img
               src={currentToy.url}
@@ -317,8 +317,8 @@ export default function OndeEstaOBrinquedoPage() {
           </div>
         )}
 
-        {/* Boxes Grid - Só mostrar nas fases corretas */}
-        {(phase === 'hide' || phase === 'guess' || phase === 'result') && (
+        {/* Boxes Grid - Só mostrar nas fases corretas (não mostrar em result) */}
+        {(phase === 'hide' || phase === 'guess') && (
         <div className={`grid gap-4 ${boxCount === 1 ? 'grid-cols-1' : boxCount === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
           {Array.from({ length: boxCount }).map((_, i) => (
             <button
@@ -335,29 +335,10 @@ export default function OndeEstaOBrinquedoPage() {
             >
               {/* Box */}
               <img
-                src={selectedBox === i && i === correctBox && phase === 'result'
-                  ? ASSETS.boxEmpty
-                  : ASSETS.box
-                }
+                src={ASSETS.box}
                 alt="Caixa"
                 className="w-full h-full object-contain drop-shadow-lg"
               />
-
-              {/* Toy revealed */}
-              {selectedBox === i && i === correctBox && phase === 'result' && (
-                <img
-                  src={currentToy.url}
-                  alt={currentToy.name}
-                  className="absolute inset-0 w-16 h-16 m-auto object-contain animate-pop"
-                />
-              )}
-
-              {/* Wrong indicator */}
-              {selectedBox === i && i !== correctBox && phase === 'result' && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-4xl">❌</span>
-                </div>
-              )}
             </button>
           ))}
         </div>
@@ -381,33 +362,33 @@ export default function OndeEstaOBrinquedoPage() {
           </div>
         )}
 
-        {/* Botão Próximo Nível */}
-        {showNextButton && (
-          <div className="mt-6 flex flex-col items-center gap-4 z-40">
-            <Button
-              onClick={handleNextLevel}
-              size="lg"
-              className="bg-[#16a34a] hover:bg-[#15803d] text-white font-bold px-8 py-6 text-lg"
-            >
-              Próximo Nível
-            </Button>
+        {/* Card de Conclusão de Nível */}
+        {phase === 'result' && selectedBox === correctBox && (
+          <div className="flex flex-col items-center gap-6 z-40">
+            <div className="bg-white/70 backdrop-blur-sm rounded-3xl px-8 py-6 shadow-xl flex flex-col items-center gap-3">
+              <h2 className="text-2xl font-bold text-[#234c38]">Nível {level + 1}</h2>
+              <p className="text-lg font-semibold text-[#16a34a]">Concluído!</p>
+              <div className="flex gap-2 mt-2">
+                {[0, 1, 2].map(i => (
+                  <span key={i} className="text-5xl">
+                    {i <= level ? '⭐' : '☆'}
+                  </span>
+                ))}
+              </div>
+            </div>
+            {showNextButton && (
+              <Button
+                onClick={handleNextLevel}
+                size="lg"
+                className="bg-[#16a34a] hover:bg-[#15803d] text-white font-bold px-8 py-6 text-lg rounded-2xl"
+              >
+                Próximo Nível
+              </Button>
+            )}
           </div>
         )}
 
-        {/* Estrelas (Level indicator) - Só mostrar após acertar */}
-        {(phase === 'result' || showNextButton) && (
-        <div className="mt-8 flex gap-3">
-          {[0, 1, 2].map(i => (
-            <div key={i} className="relative">
-              {i <= level ? (
-                <span className="text-4xl">⭐</span>
-              ) : (
-                <span className="text-4xl opacity-30">⭐</span>
-              )}
-            </div>
-          ))}
-        </div>
-        )}
+        {/* Estrelas removidas - agora estão no card de conclusão */}
       </div>
 
       {/* Parent Feedback Modal */}
