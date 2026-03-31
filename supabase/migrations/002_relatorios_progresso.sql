@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS observacoes_atividades (
 
 -- Tabela de marcos de desenvolvimento (checklist)
 CREATE TABLE IF NOT EXISTS marcos_desenvolvimento (
-    id_marco UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id_marco UUUDARY KEY DEFA DEFAULT gen_random_uuid()ULT gen_random_uuid(),
     
     -- Identificação do marco
     codigo_marco VARCHAR(50) UNIQUE NOT NULL,
@@ -95,9 +95,9 @@ CREATE TABLE IF NOT EXISTS marcos_desenvolvimento (
 
 -- Tabela de acompanhamento de marcos por criança
 CREATE TABLE IF NOT EXISTS marcos_crianca (
-    id_marco_crianca UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    id_crianca UUID NOT NULL REFERENCES criancas(id_crianca) ON DELETE CASCADE,
-    id_marco UUID NOT NULL REFERENCES marcos_desenvolvimento(id_marco) ON DELETE CASCADE,
+    id_marco_crianca BIGSERIAL PRIMARY KEY,
+    id_crianca BIGINT NOT NULL REFERENCES criancas(id_crianca) ON DELETE CASCADE,
+    id_marco BIGINT NOT NULL REFERENCES marcos_desenvolvimento(id_marco) ON DELETE CASCADE,
     
     -- Status do marco
     status VARCHAR(20) DEFAULT 'nao_avaliado' CHECK (status IN ('nao_avaliado', 'em_desenvolvimento', 'conquistado', 'nao_aplicavel')),
@@ -118,8 +118,8 @@ CREATE TABLE IF NOT EXISTS marcos_crianca (
 
 -- Tabela de sessões de terapia/acompanhamento profissional
 CREATE TABLE IF NOT EXISTS sessoes_profissionais (
-    id_sessao UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    id_crianca UUID NOT NULL REFERENCES criancas(id_crianca) ON DELETE CASCADE,
+    id_sessao BIGSERIAL PRIMARY KEY,
+    id_crianca BIGINT NOT NULL REFERENCES criancas(id_crianca) ON DELETE CASCADE,
     
     -- Profissional
     nome_profissional VARCHAR(255),
