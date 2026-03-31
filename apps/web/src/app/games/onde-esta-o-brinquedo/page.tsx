@@ -20,6 +20,7 @@ const ASSETS = {
   box: STORAGE.images.misteryBox,
   boxEmpty: STORAGE.images.misteryBoxEmpty,
   donHead: STORAGE.images.donCabeca,
+  roomBg: 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/raizes-m-v-p-i9jdtd/assets/8sgpf2p40cxs/tela_fundo_atividade_1.png',
 }
 
 type Phase = 'welcome' | 'intro' | 'show-toy' | 'hide' | 'guess' | 'result' | 'end'
@@ -194,11 +195,22 @@ export default function OndeEstaOBrinquedoPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-[#f6fff9] to-[#e9f7f0] flex flex-col">
+    <main 
+      className="min-h-screen flex flex-col relative"
+      style={{
+        backgroundImage: `url(${ASSETS.roomBg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      }}
+    >
+      {/* Background overlay para melhor contraste */}
+      <div className="absolute inset-0 bg-white/10" />
+
       {/* Header */}
-      <header className="px-4 py-4 flex items-center justify-between">
+      <header className="relative z-10 px-4 py-4 flex items-center justify-between">
         <Link href="/games">
-          <Button variant="ghost" size="icon" className="rounded-full">
+          <Button variant="ghost" size="icon" className="rounded-full bg-white/80 backdrop-blur">
             <ChevronLeft className="w-6 h-6 text-[#234c38]" />
           </Button>
         </Link>
@@ -209,21 +221,21 @@ export default function OndeEstaOBrinquedoPage() {
         <div className="w-10" />
       </header>
 
-      {/* Mascot */}
-      <div className="px-6 flex items-center gap-3 mb-4">
-        <div className="w-14 h-14 rounded-full bg-white shadow-lg flex items-center justify-center flex-shrink-0">
-          <img src={ASSETS.donHead} alt="Don" className="w-10 h-auto" />
+      {/* Mascote - Posição igual ao legado (topo esquerda) */}
+      <div className="relative z-10 px-6 flex items-start gap-3 mb-4">
+        <div className="w-16 h-16 rounded-full bg-white shadow-lg flex items-center justify-center flex-shrink-0 border-2 border-[#234c38]">
+          <img src={ASSETS.donHead} alt="Don" className="w-12 h-auto" />
         </div>
-        <div className="relative bg-white rounded-2xl p-3 shadow-lg flex-1">
-          <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-0 h-0 border-y-8 border-y-transparent border-r-[12px] border-r-white" />
-          <p className="text-[#234c38] font-bold text-sm">
+        <div className="relative bg-white rounded-2xl p-4 shadow-lg flex-1 mt-2">
+          <div className="absolute -left-3 top-4 w-0 h-0 border-y-8 border-y-transparent border-r-[12px] border-r-white" />
+          <p className="text-[#234c38] font-bold text-sm leading-tight">
             {getSpeechText()}
           </p>
         </div>
       </div>
 
       {/* Game Area */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 pb-6 relative">
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 pb-6">
         {/* Welcome Screen - Click to start */}
         {phase === 'welcome' && (
           <button
