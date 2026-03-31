@@ -10,8 +10,9 @@ class TTSController {
     }
   }
 
-  speak(text: string) {
+  speak(text: string, onEnd?: () => void) {
     if (!this.enabled || typeof window === 'undefined' || !('speechSynthesis' in window)) {
+      if (onEnd) onEnd()
       return
     }
 
@@ -27,6 +28,10 @@ class TTSController {
     const ptVoice = voices.find(v => v.lang.startsWith('pt'))
     if (ptVoice) {
       utterance.voice = ptVoice
+    }
+
+    if (onEnd) {
+      utterance.onend = onEnd
     }
 
     window.speechSynthesis.speak(utterance)
