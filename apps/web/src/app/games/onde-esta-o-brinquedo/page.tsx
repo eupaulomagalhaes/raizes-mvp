@@ -10,6 +10,9 @@ import Link from 'next/link'
 import { STORAGE } from '@/lib/storage'
 import { ParentFeedbackModal } from '@/components/parent-feedback-modal'
 import { ttsController } from '@/lib/tts'
+import dynamic from 'next/dynamic'
+
+const Lottie = dynamic(() => import('lottie-react'), { ssr: false })
 
 const ASSETS = {
   toys: [
@@ -21,6 +24,7 @@ const ASSETS = {
   boxEmpty: STORAGE.images.misteryBoxEmpty,
   donHead: STORAGE.images.donCabeca,
   roomBg: 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/raizes-m-v-p-i9jdtd/assets/8sgpf2p40cxs/tela_fundo_atividade_1.png',
+  clickHand: 'https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/Click_hand2.json',
 }
 
 type Phase = 'welcome' | 'intro' | 'show-toy' | 'hide' | 'guess' | 'result' | 'end'
@@ -283,8 +287,8 @@ export default function OndeEstaOBrinquedoPage() {
             className="absolute inset-0 flex flex-col items-center justify-center z-20"
           >
             {showHand && (
-              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 animate-bounce">
-                <span className="text-6xl">👆</span>
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32">
+                <Lottie animationData={ASSETS.clickHand} loop={true} />
               </div>
             )}
           </button>
@@ -349,8 +353,8 @@ export default function OndeEstaOBrinquedoPage() {
 
         {/* Mão indicadora na fase guess */}
         {phase === 'guess' && showHand && (
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 translate-y-8 animate-bounce z-30">
-            <span className="text-6xl">👆</span>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 translate-y-8 w-32 h-32 z-30">
+            <Lottie animationData={ASSETS.clickHand} loop={true} />
           </div>
         )}
 
