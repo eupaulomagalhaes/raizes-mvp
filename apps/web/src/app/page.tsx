@@ -90,7 +90,7 @@ export default function Home() {
             <Link href="/register" className="w-full" style={{ maxWidth: 'min(100%, 260px)' }}>
               <Button 
                 size="lg" 
-                className="w-full bg-[#234c38] hover:bg-[#1d3f2f] text-white font-bold rounded-full py-6 text-lg shadow-[0_14px_28px_rgba(0,0,0,0.18)] animate-pulse"
+                className="w-full bg-[#234c38] hover:bg-[#1d3f2f] text-white font-bold rounded-full py-6 text-lg shadow-[0_14px_28px_rgba(0,0,0,0.18)] animate-cta-pulse"
               >
                 Começar
               </Button>

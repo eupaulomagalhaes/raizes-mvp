@@ -132,3 +132,19 @@ body {
     @apply font-sans;
   }
 }
+
+/* Animação do botão "Começar" (breathing effect) */
+@keyframes cta-pulse {
+  from {
+    transform: scale(0.95);
+  }
+  to {
+    transform: scale(1.025);
+  }
+}
+
+.animate-cta-pulse {
+  animation: cta-pulse 0.6s ease-in-out infinite alternate;
+  transform-origin: center;
+  will-change: transform;
+}
