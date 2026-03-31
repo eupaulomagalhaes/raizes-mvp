@@ -6,7 +6,7 @@
 -- Tabela de relatórios mensais de desenvolvimento
 CREATE TABLE IF NOT EXISTS relatorios_desenvolvimento (
     id_relatorio UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    id_crianca BIGINT NOT NULL REFERENCES criancas(id_crianca) ON DELETE CASCADE,
+    id_crianca UUID NOT NULL REFERENCES criancas(id_crianca) ON DELETE CASCADE,
     mes_referencia INTEGER NOT NULL CHECK (mes_referencia BETWEEN 1 AND 12),
     ano_referencia INTEGER NOT NULL,
     
@@ -42,8 +42,8 @@ CREATE TABLE IF NOT EXISTS relatorios_desenvolvimento (
 -- Tabela de observações por atividade
 CREATE TABLE IF NOT EXISTS observacoes_atividades (
     id_observacao UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    id_crianca BIGINT NOT NULL REFERENCES criancas(id_crianca) ON DELETE CASCADE,
-    id_sessao BIGINT REFERENCES sessoes_jogo(id_sessao) ON DELETE SET NULL,
+    id_crianca UUID NOT NULL REFERENCES criancas(id_crianca) ON DELETE CASCADE,
+    id_sessao UUID REFERENCES sessoes_jogo(id_sessao) ON DELETE SET NULL,
     
     -- Informações da atividade
     nome_atividade VARCHAR(255) NOT NULL,
@@ -96,7 +96,7 @@ CREATE TABLE IF NOT EXISTS marcos_desenvolvimento (
 -- Tabela de acompanhamento de marcos por criança
 CREATE TABLE IF NOT EXISTS marcos_crianca (
     id_marco_crianca UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    id_crianca BIGINT NOT NULL REFERENCES criancas(id_crianca) ON DELETE CASCADE,
+    id_crianca UUID NOT NULL REFERENCES criancas(id_crianca) ON DELETE CASCADE,
     id_marco UUID NOT NULL REFERENCES marcos_desenvolvimento(id_marco) ON DELETE CASCADE,
     
     -- Status do marco
@@ -119,7 +119,7 @@ CREATE TABLE IF NOT EXISTS marcos_crianca (
 -- Tabela de sessões de terapia/acompanhamento profissional
 CREATE TABLE IF NOT EXISTS sessoes_profissionais (
     id_sessao UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    id_crianca BIGINT NOT NULL REFERENCES criancas(id_crianca) ON DELETE CASCADE,
+    id_crianca UUID NOT NULL REFERENCES criancas(id_crianca) ON DELETE CASCADE,
     
     -- Profissional
     nome_profissional VARCHAR(255),

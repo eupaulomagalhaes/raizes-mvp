@@ -3,7 +3,7 @@ import { Database } from './supabase';
 // Tipos estendidos para as novas tabelas de relatórios
 export interface RelatorioDesenvolvimento {
   id_relatorio: string;
-  id_crianca: number;
+  id_crianca: string;
   mes_referencia: number;
   ano_referencia: number;
   pontuacao_cognicao: number;
@@ -25,8 +25,8 @@ export interface RelatorioDesenvolvimento {
 
 export interface ObservacaoAtividade {
   id_observacao: string;
-  id_crianca: number;
-  id_sessao: number | null;
+  id_crianca: string;
+  id_sessao: string | null;
   nome_atividade: string;
   area_desenvolvimento: string;
   idade_recomendada_meses: number | null;
@@ -57,7 +57,7 @@ export interface MarcoDesenvolvimento {
 
 export interface MarcoCrianca {
   id_marco_crianca: string;
-  id_crianca: number;
+  id_crianca: string;
   id_marco: string;
   status: 'nao_avaliado' | 'em_desenvolvimento' | 'conquistado' | 'nao_aplicavel';
   data_conquista: string | null;
@@ -70,7 +70,7 @@ export interface MarcoCrianca {
 
 export interface SessaoProfissional {
   id_sessao: string;
-  id_crianca: number;
+  id_crianca: string;
   nome_profissional: string | null;
   tipo_profissional: string | null;
   registro_profissional: string | null;

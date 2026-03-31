@@ -9,7 +9,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface Child {
-  id_crianca: number;
+  id_crianca: string;
   nome_completo: string;
 }
 
@@ -34,7 +34,7 @@ export default function ProgressPage() {
 
   useEffect(() => {
     if (selectedChildId) {
-      loadProgress(parseInt(selectedChildId));
+      loadProgress(selectedChildId);
     }
   }, [selectedChildId]);
 
@@ -59,10 +59,10 @@ export default function ProgressPage() {
       
       // Auto-selecionar criança ativa
       const activeId = localStorage.getItem('active_child_id');
-      if (activeId && data?.some(c => c.id_crianca === parseInt(activeId))) {
+      if (activeId && data?.some(c => c.id_crianca === activeId)) {
         setSelectedChildId(activeId);
       } else if (data && data.length > 0) {
-        setSelectedChildId(data[0].id_crianca.toString());
+        setSelectedChildId(data[0].id_crianca);
       }
     } catch (error) {
       console.error('Erro ao carregar crianças:', error);
@@ -71,7 +71,7 @@ export default function ProgressPage() {
     }
   };
 
-  const loadProgress = async (childId: number) => {
+  const loadProgress = async (childId: string) => {
     try {
       const supabase = createClient();
       
@@ -158,7 +158,7 @@ export default function ProgressPage() {
                 </SelectTrigger>
                 <SelectContent>
                   {children.map((child) => (
-                    <SelectItem key={child.id_crianca} value={child.id_crianca.toString()}>
+                    <SelectItem key={child.id_crianca} value={child.id_crianca}>
                       {child.nome_completo}
                     </SelectItem>
                   ))}
