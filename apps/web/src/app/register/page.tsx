@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase-client'
@@ -44,6 +44,57 @@ export default function RegisterPage() {
 
   const updateField = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
+  }
+
+  const formatPhone = (value: string) => {
+    const digits = value.replace(/\D/g, '').slice(0, 11)
+    if (digits.length === 11) {
+      return `(${digits.slice(0, 2)}) ${digits.slice(2, 3)}-${digits.slice(3, 7)} ${digits.slice(7)}`
+    } else if (digits.length === 10) {
+      return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)} ${digits.slice(6)}`
+    } else if (digits.length > 6) {
+      return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)} ${digits.slice(6)}`
+    } else if (digits.length > 2) {
+      return `(${digits.slice(0, 2)}) ${digits.slice(2)}`
+    } else if (digits.length > 0) {
+      return `(${digits}`
+    }
+    return ''
+  }
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhone(e.target.value)
+    updateField('u_cel', formatted)
+  }
+
+  const [cities, setCities] = useState<Array<{ id_cidade: number; cidade_uf: string }>>([])
+  const [citySearch, setCitySearch] = useState('')
+
+  useEffect(() => {
+    const fetchCities = async () => {
+      if (!citySearch || citySearch.length < 2) {
+        setCities([])
+        return
+      }
+
+      const supabase = createClient()
+      const { data } = await supabase
+        .from('cidades')
+        .select('id_cidade, cidade_uf')
+        .ilike('cidade_uf', `%${citySearch}%`)
+        .limit(20)
+
+      setCities(data || [])
+    }
+
+    const timer = setTimeout(fetchCities, 300)
+    return () => clearTimeout(timer)
+  }, [citySearch])
+
+  const handleCityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setCitySearch(value)
+    updateField('u_cidade', value)
   }
 
   const handleNext = async () => {
@@ -93,7 +144,7 @@ export default function RegisterPage() {
       escolaridade: formData.u_escolaridade,
       profissao: formData.u_prof,
       email: formData.email,
-      celular: formData.u_cel,
+      celular: formData.u_cel.replace(/\D/g, ''),
       cidade_estado: formData.u_cidade,
     })
 
@@ -216,9 +267,12 @@ export default function RegisterPage() {
               <label htmlFor="u_cel" className="block font-bold text-[#52462a] text-[0.95rem]">Celular *</label>
               <input
                 id="u_cel"
+                type="tel"
+                inputMode="numeric"
                 value={formData.u_cel}
-                onChange={(e) => updateField('u_cel', e.target.value)}
+                onChange={handlePhoneChange}
                 placeholder="(00) 0 0000-0000"
+                maxLength={19}
                 className="w-full bg-[#ffe7a4] border-none rounded-[1.2rem] px-[1.1rem] py-[0.9rem] text-base shadow-[inset_0_2px_4px_rgba(0,0,0,0.08)] focus:outline focus:outline-[3px] focus:outline-[rgba(35,76,56,0.35)]"
                 required
               />
@@ -271,11 +325,18 @@ export default function RegisterPage() {
               <input
                 id="u_cidade"
                 value={formData.u_cidade}
-                onChange={(e) => updateField('u_cidade', e.target.value)}
+                onChange={handleCityChange}
                 placeholder="Ex: São Paulo/SP"
+                list="cities-list"
+                autoComplete="off"
                 className="w-full bg-[#ffe7a4] border-none rounded-[1.2rem] px-[1.1rem] py-[0.9rem] text-base shadow-[inset_0_2px_4px_rgba(0,0,0,0.08)] focus:outline focus:outline-[3px] focus:outline-[rgba(35,76,56,0.35)]"
                 required
               />
+              <datalist id="cities-list">
+                {cities.map((city) => (
+                  <option key={city.id_cidade} value={city.cidade_uf} />
+                ))}
+              </datalist>
             </div>
           </div>
         )
