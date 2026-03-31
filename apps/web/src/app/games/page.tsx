@@ -197,16 +197,10 @@ export default function GamesPage() {
         </ul>
 
         {/* Actions */}
-        <div className="flex gap-4 w-full justify-center text-sm font-semibold">
-          <Link href="/progress" className="text-[#234c38] hover:underline no-underline">
+        <div className="flex gap-4 w-full justify-center text-sm">
+          <Link href="/progress" className="text-[#234c38] font-bold hover:underline no-underline">
             Ver progresso
           </Link>
-          <button
-            onClick={handleLogout}
-            className="text-[#234c38] hover:underline bg-transparent border-none cursor-pointer p-0"
-          >
-            Sair
-          </button>
         </div>
       </div>
     </main>
