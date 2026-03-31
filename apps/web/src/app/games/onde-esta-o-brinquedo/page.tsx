@@ -288,7 +288,7 @@ export default function OndeEstaOBrinquedoPage() {
       </div>
 
       {/* Game Area */}
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 pb-6">
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-start px-6 pt-4 pb-6">
         {/* Intro Screen - Click to start */}
         {phase === 'intro' && (
           <button
@@ -305,7 +305,7 @@ export default function OndeEstaOBrinquedoPage() {
 
         {/* Toy Display */}
         {(phase === 'show-toy') && (
-          <div className="mb-8 animate-bounce">
+          <div className="mb-4 animate-bounce">
             <img
               src={currentToy.url}
               alt={currentToy.name}
@@ -400,8 +400,8 @@ export default function OndeEstaOBrinquedoPage() {
           </div>
         )}
 
-        {/* Estrelas (Level indicator) - Só mostrar após começar o jogo */}
-        {phase !== 'welcome' && phase !== 'intro' && (
+        {/* Estrelas (Level indicator) - Só mostrar após acertar */}
+        {(phase === 'result' || showNextButton) && (
         <div className="mt-8 flex gap-3">
           {[0, 1, 2].map(i => (
             <div key={i} className="relative">
