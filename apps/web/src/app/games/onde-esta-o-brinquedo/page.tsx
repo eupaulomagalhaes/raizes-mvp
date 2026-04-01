@@ -193,6 +193,10 @@ export default function OndeEstaOBrinquedoPage() {
       setPhase('reveal') // Mostrar brinquedo primeiro
       await logEvent('correct_answer', { boxIndex: index, level })
       
+      // Incrementar nível imediatamente para sincronizar troféu com card
+      setLevel(l => l + 1)
+      setBoxCount(c => c + 1)
+      
       ttsController.speak('MUITO BEM! VOCÊ ACERTOU!')
 
       // Após 2.5s, mostrar card de conclusão
@@ -219,17 +223,10 @@ export default function OndeEstaOBrinquedoPage() {
   const handleNextLevel = () => {
     setShowNextButton(false)
     
-    if (level < 2) {
-      // Incrementar nível e reiniciar
-      const nextLevel = level + 1
-      const nextBoxCount = boxCount + 1
-      
-      setLevel(nextLevel)
-      setBoxCount(nextBoxCount)
-      
+    if (level < 3) {
       // Pequeno delay antes de iniciar próximo round
       setTimeout(() => {
-        startNewRound(nextLevel)
+        startNewRound(level)
       }, 300)
     } else {
       setShowParentFeedback(true)
@@ -420,7 +417,7 @@ export default function OndeEstaOBrinquedoPage() {
                 size="lg"
                 className="bg-[#16a34a] hover:bg-[#15803d] text-white font-bold px-8 py-6 text-lg rounded-2xl"
               >
-                Próximo Nível
+                {level < 3 ? 'Próximo Nível' : 'Continuar'}
               </Button>
             )}
           </div>
