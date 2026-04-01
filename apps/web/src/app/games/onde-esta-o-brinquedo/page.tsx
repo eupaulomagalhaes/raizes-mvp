@@ -341,8 +341,8 @@ export default function OndeEstaOBrinquedoPage() {
           </div>
         )}
 
-        {/* Boxes Grid - Mostrar em hide, guess e reveal */}
-        {(phase === 'hide' || phase === 'guess' || phase === 'reveal') && (
+        {/* Boxes Grid - Mostrar apenas em hide e guess */}
+        {(phase === 'hide' || phase === 'guess') && (
         <div className="relative">
           <div className={`grid gap-4 ${boxCount === 1 ? 'grid-cols-1' : boxCount === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
             {Array.from({ length: boxCount }).map((_, i) => (
