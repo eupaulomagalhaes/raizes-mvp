@@ -57,9 +57,17 @@ export default function OndeEstaOBrinquedoPage() {
   useEffect(() => {
     const createSession = async () => {
       const supabase = createClient()
+      
+      // Buscar id_jogo pelo slug
+      const { data: jogo } = await supabase
+        .from('jogos')
+        .select('id_jogo')
+        .eq('slug', 'onde-esta-o-brinquedo')
+        .single()
+      
       const { data } = await supabase
         .from('sessoes_jogo')
-        .insert({ id_jogo: 'onde-esta-o-brinquedo' })
+        .insert({ id_jogo: jogo?.id_jogo || null })
         .select()
         .single()
       if (data) setSessionId(data.id_sessao)
@@ -168,9 +176,9 @@ export default function OndeEstaOBrinquedoPage() {
     }
   }, [phase, showHand, boxCount])
 
-  // Mostrar mão após 5s no guess
+  // Mostrar mão após 5s de inatividade no guess
   useEffect(() => {
-    if (phase === 'guess') {
+    if (phase === 'guess' && selectedBox === null) {
       const handTimer = setTimeout(() => {
         setShowHand(true)
       }, 5000)
@@ -179,8 +187,10 @@ export default function OndeEstaOBrinquedoPage() {
         clearTimeout(handTimer)
         setShowHand(false)
       }
+    } else {
+      setShowHand(false)
     }
-  }, [phase])
+  }, [phase, selectedBox])
 
   // Removido: TTS duplicado - já é chamado no startNewRound
 
