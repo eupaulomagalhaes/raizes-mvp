@@ -319,36 +319,38 @@ export default function OndeEstaOBrinquedoPage() {
 
         {/* Boxes Grid - Só mostrar nas fases corretas (não mostrar em result) */}
         {(phase === 'hide' || phase === 'guess') && (
-        <div className={`grid gap-4 ${boxCount === 1 ? 'grid-cols-1' : boxCount === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
-          {Array.from({ length: boxCount }).map((_, i) => (
-            <button
-              key={i}
-              onClick={() => handleBoxClick(i)}
-              disabled={phase !== 'guess' || selectedBox !== null}
-              className={`relative w-36 h-36 transition-all duration-500 ${
-                phase === 'hide' && i === correctBox ? 'animate-shake' : ''
-              } ${
-                selectedBox === i && i !== correctBox ? 'animate-wiggle' : ''
-              } ${
-                selectedBox === i && i === correctBox ? 'scale-110' : ''
-              }`}
-            >
-              {/* Box */}
-              <img
-                src={ASSETS.box}
-                alt="Caixa"
-                className="w-full h-full object-contain drop-shadow-lg"
-              />
-            </button>
-          ))}
-        </div>
-        )}
-
-        {/* Mão indicadora na fase guess - em cima da caixa */}
-        {phase === 'guess' && showHand && handAnimation && (
-          <div className="absolute bottom-[62%] left-1/2 transform -translate-x-1/2 w-20 h-20 z-30">
-            <Lottie animationData={handAnimation} loop />
+        <div className="relative">
+          <div className={`grid gap-4 ${boxCount === 1 ? 'grid-cols-1' : boxCount === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
+            {Array.from({ length: boxCount }).map((_, i) => (
+              <button
+                key={i}
+                onClick={() => handleBoxClick(i)}
+                disabled={phase !== 'guess' || selectedBox !== null}
+                className={`relative w-36 h-36 transition-all duration-500 ${
+                  phase === 'hide' && i === correctBox ? 'animate-shake' : ''
+                } ${
+                  selectedBox === i && i !== correctBox ? 'animate-wiggle' : ''
+                } ${
+                  selectedBox === i && i === correctBox ? 'scale-110' : ''
+                }`}
+              >
+                {/* Box */}
+                <img
+                  src={ASSETS.box}
+                  alt="Caixa"
+                  className="w-full h-full object-contain drop-shadow-lg"
+                />
+              </button>
+            ))}
           </div>
+
+          {/* Mão indicadora na fase guess - em cima da caixa */}
+          {phase === 'guess' && showHand && handAnimation && (
+            <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 w-20 h-20 z-30">
+              <Lottie animationData={handAnimation} loop />
+            </div>
+          )}
+        </div>
         )}
 
         {/* Confetes quando acertar - Lottie fullscreen */}
