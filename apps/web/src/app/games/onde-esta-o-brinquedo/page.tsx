@@ -28,7 +28,7 @@ const ASSETS = {
   confetti: 'https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/confetti.json',
 }
 
-type Phase = 'welcome' | 'intro' | 'show-toy' | 'hide' | 'guess' | 'reveal' | 'result' | 'end'
+type Phase = 'welcome' | 'intro' | 'show-toy' | 'hide' | 'guess' | 'reveal' | 'result' | 'end' | 'congratulations'
 
 export default function OndeEstaOBrinquedoPage() {
   const router = useRouter()
@@ -423,6 +423,74 @@ export default function OndeEstaOBrinquedoPage() {
           </div>
         )}
 
+        {/* Tela de Congratulações */}
+        {phase === 'congratulations' && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6">
+              <div className="flex items-center gap-4 mb-4">
+                <img src={ASSETS.donHead} alt="Don" className="w-16 h-16" />
+                <h2 className="text-2xl font-bold text-[#234c38]">
+                  Parabéns! 🎉
+                </h2>
+              </div>
+              
+              <p className="text-[#234c38] mb-6">
+                Você completou todas as 3 fases da atividade!
+              </p>
+
+              <div className="bg-[#edf4f0] rounded-2xl p-4 mb-6 space-y-4">
+                <div>
+                  <h3 className="font-bold text-[#234c38] mb-2">💡 Dica para os pais:</h3>
+                  <p className="text-sm text-[#3a5144] mb-3">
+                    <strong>👁️ O que trabalhamos nesta atividade:</strong>
+                  </p>
+                  <ul className="text-sm text-[#3a5144] space-y-2 ml-4">
+                    <li>• <strong>Atenção e Foco:</strong> A criança precisa prestar atenção ao brinquedo e às caixas.</li>
+                    <li>• <strong>Memória Visual:</strong> Lembrar onde viu o brinquedo pela última vez.</li>
+                    <li>• <strong>Permanência do Objeto:</strong> Entender que objetos continuam existindo mesmo quando não são visíveis.</li>
+                    <li>• <strong>Tomada de Decisão:</strong> Escolher uma caixa e aprender com acertos e erros.</li>
+                    <li>• <strong>Coordenação Motora Fina:</strong> Tocar na caixa e praticar movimentos de precisão.</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <p className="text-sm text-[#3a5144] mb-2">
+                    <strong>🎯 Sugestão prática para casa:</strong>
+                  </p>
+                  <p className="text-sm text-[#3a5144]">
+                    Esconda um brinquedo dentro de caixas, copos ou paninhos. Peça à criança para encontrar. Celebre quando ela acertar! Faça isso, incentive sempre que ela errar, com calma: "Tente novamente!"
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-sm text-[#3a5144]">
+                    <strong>💡 Por que é importante:</strong>
+                  </p>
+                  <p className="text-sm text-[#3a5144]">
+                    Esse tipo de brincadeira simples fortalece o cérebro da criança de forma divertida e afetosa, desenvolvendo habilidades essenciais para o aprendizado futuro.
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <Button
+                  onClick={handlePlayAgain}
+                  className="w-full bg-[#234c38] hover:bg-[#1d3f2f] text-white font-bold py-6 rounded-full text-lg"
+                >
+                  Jogar novamente
+                </Button>
+                <Button
+                  onClick={() => router.push('/games')}
+                  variant="outline"
+                  className="w-full border-2 border-[#234c38] text-[#234c38] font-bold py-6 rounded-full text-lg hover:bg-[#edf4f0]"
+                >
+                  Voltar aos jogos
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Estrelas removidas - agora estão no card de conclusão */}
       </div>
 
@@ -431,7 +499,10 @@ export default function OndeEstaOBrinquedoPage() {
         open={showParentFeedback}
         onClose={() => {
           setShowParentFeedback(false)
-          router.push('/games')
+        }}
+        onSuccess={() => {
+          setPhase('congratulations')
+          ttsController.speak('Parabéns! Você completou todas as 3 fases da atividade!')
         }}
         sessionId={sessionId}
         completedLevels={feedbackData.niveis}

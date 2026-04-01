@@ -11,6 +11,7 @@ import { createClient } from '@/lib/supabase-client'
 interface ParentFeedbackModalProps {
   open: boolean
   onClose: () => void
+  onSuccess?: () => void
   sessionId: string | null
   completedLevels: number
   correctCount: number
@@ -19,6 +20,7 @@ interface ParentFeedbackModalProps {
 export function ParentFeedbackModal({
   open,
   onClose,
+  onSuccess,
   sessionId,
   completedLevels,
   correctCount
@@ -50,6 +52,7 @@ export function ParentFeedbackModal({
       })
 
       onClose()
+      if (onSuccess) onSuccess()
     } catch (error) {
       console.error('Error saving parent feedback:', error)
     } finally {
