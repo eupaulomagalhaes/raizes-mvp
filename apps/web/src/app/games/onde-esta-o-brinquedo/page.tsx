@@ -218,7 +218,6 @@ export default function OndeEstaOBrinquedoPage() {
 
   const handleNextLevel = () => {
     setShowNextButton(false)
-    setPhase('hide') // Evitar flash do card
     
     if (level < 2) {
       // Incrementar nível e reiniciar
