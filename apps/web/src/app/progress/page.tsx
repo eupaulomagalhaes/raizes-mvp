@@ -101,7 +101,6 @@ export default function ProgressPage() {
         .from('sessoes_jogo')
         .select('id_sessao, pontos, acertos, tentativas, data_hora')
         .eq('id_crianca', childId)
-        .eq('finalizada', true)
         .order('data_hora', { ascending: true });
 
       if (sessionsError) throw sessionsError;
