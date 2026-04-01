@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -42,6 +42,7 @@ export default function OndeEstaOBrinquedoPage() {
   const [showParentFeedback, setShowParentFeedback] = useState(false)
   const [feedbackData, setFeedbackData] = useState({ acertos: 0, tentativas: 0, niveis: 0 })
   const [sessionId, setSessionId] = useState<string | null>(null)
+  const sessionIdRef = useRef<string | null>(null)
   const [showHand, setShowHand] = useState(false)
   const [showNextButton, setShowNextButton] = useState(false)
   const [handAnimation, setHandAnimation] = useState<any>(null)
@@ -160,6 +161,7 @@ export default function OndeEstaOBrinquedoPage() {
       if (data) {
         console.log('[DEBUG] Sessão criada:', data.id_sessao)
         setSessionId(data.id_sessao)
+        sessionIdRef.current = data.id_sessao
       }
     }
     createSession()
@@ -167,11 +169,40 @@ export default function OndeEstaOBrinquedoPage() {
     // Cleanup: finalizar sessão ao sair da página
     return () => {
       console.log('[DEBUG] Componente desmontando - finalizando sessão')
-      if (sessionId) {
-        endSession()
+      if (sessionIdRef.current) {
+        const finalSessionId = sessionIdRef.current
+        const supabase = createClient()
+        
+        supabase
+          .from('eventos_jogo')
+          .select('dados_adicionais')
+          .eq('id_sessao', finalSessionId)
+          .eq('tipo_evento', 'game_action')
+          .then(({ data: events }) => {
+            let pontos = 0, acertos = 0, tentativas = 0
+            
+            events?.forEach(e => {
+              const payload = e.dados_adicionais || {}
+              if (typeof payload.correct === 'boolean') {
+                tentativas++
+                if (payload.correct) {
+                  acertos++
+                  pontos += payload.level || 1
+                }
+              }
+            })
+            
+            console.log('[DEBUG] Cleanup - Métricas:', { pontos, acertos, tentativas })
+            
+            return supabase
+              .from('sessoes_jogo')
+              .update({ finalizada: true, pontos, acertos, tentativas })
+              .eq('id_sessao', finalSessionId)
+          })
+          .catch(err => console.error('[DEBUG] Erro no cleanup:', err))
       }
     }
-  }, [sessionId, endSession])
+  }, [])
 
   // Carregar animações Lottie
   useEffect(() => {
