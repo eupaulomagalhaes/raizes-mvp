@@ -46,6 +46,8 @@ export default function OndeEstaOBrinquedoPage() {
   const [showNextButton, setShowNextButton] = useState(false)
   const [handAnimation, setHandAnimation] = useState<any>(null)
   const [confettiAnimation, setConfettiAnimation] = useState<any>(null)
+  const [wrongBoxes, setWrongBoxes] = useState<number[]>([])
+  const [handTargetBox, setHandTargetBox] = useState(0)
 
   const currentToy = ASSETS.toys[level]
 
@@ -94,6 +96,8 @@ export default function OndeEstaOBrinquedoPage() {
     setPhase('show-toy')
     setCorrectBox(Math.floor(Math.random() * boxCount))
     setSelectedBox(null)
+    setWrongBoxes([])
+    setHandTargetBox(0)
 
     // TTS: Narrar "Olhe para o [brinquedo]!"
     const toyName = currentToy.name
@@ -138,19 +142,25 @@ export default function OndeEstaOBrinquedoPage() {
     }
   }, [phase])
 
-  // Mostrar mão após 5s no intro
+  // Mão indicadora após 5s
   useEffect(() => {
-    if (phase === 'intro') {
-      const handTimer = setTimeout(() => {
+    if ((phase === 'intro' || phase === 'guess') && !showHand) {
+      const timer = setTimeout(() => {
         setShowHand(true)
       }, 5000)
-
-      return () => {
-        clearTimeout(handTimer)
-        setShowHand(false)
-      }
+      return () => clearTimeout(timer)
     }
-  }, [phase])
+  }, [phase, showHand])
+
+  // Mão alternando entre caixas no nível 2+
+  useEffect(() => {
+    if (phase === 'guess' && showHand && boxCount >= 2) {
+      const interval = setInterval(() => {
+        setHandTargetBox(prev => (prev + 1) % boxCount)
+      }, 2000)
+      return () => clearInterval(interval)
+    }
+  }, [phase, showHand, boxCount])
 
   // Mostrar mão após 5s no guess
   useEffect(() => {
@@ -169,19 +179,16 @@ export default function OndeEstaOBrinquedoPage() {
   // Removido: TTS duplicado - já é chamado no startNewRound
 
   const handleBoxClick = async (index: number) => {
-    if (phase !== 'guess' || selectedBox !== null) return
-
-    setShowHand(false)
+    if (selectedBox !== null || wrongBoxes.includes(index)) return
     setSelectedBox(index)
     setAttempts(a => a + 1)
+    await logEvent('box_clicked', { boxIndex: index, correctBox, level })
 
-    const isCorrect = index === correctBox
-    if (isCorrect) {
+    if (index === correctBox) {
       setScore(s => s + 1)
       setPhase('result')
       await logEvent('correct_answer', { boxIndex: index, level })
       
-      // TTS: Comemorar acerto
       ttsController.speak('MUITO BEM! VOCÊ ACERTOU!')
 
       // Mostrar botão próximo nível após 2s
@@ -189,11 +196,14 @@ export default function OndeEstaOBrinquedoPage() {
         setShowNextButton(true)
       }, 2000)
     } else {
-      setPhase('result')
+      // Erro: adicionar caixa à lista de erradas
+      setWrongBoxes(prev => [...prev, index])
       await logEvent('wrong_answer', { boxIndex: index, correctBox, level })
+      
+      ttsController.speak('Ops! Tente outra caixa!')
+      
       setTimeout(() => {
         setSelectedBox(null)
-        setPhase('guess')
       }, 1500)
     }
   }
@@ -325,7 +335,7 @@ export default function OndeEstaOBrinquedoPage() {
               <button
                 key={i}
                 onClick={() => handleBoxClick(i)}
-                disabled={phase !== 'guess' || selectedBox !== null}
+                disabled={phase !== 'guess' || selectedBox !== null || wrongBoxes.includes(i)}
                 className={`relative w-36 h-36 transition-all duration-500 ${
                   phase === 'hide' && i === correctBox ? 'animate-shake' : ''
                 } ${
@@ -340,13 +350,23 @@ export default function OndeEstaOBrinquedoPage() {
                   alt="Caixa"
                   className="w-full h-full object-contain drop-shadow-lg"
                 />
+                {/* Overlay para caixas erradas */}
+                {wrongBoxes.includes(i) && (
+                  <div className="absolute inset-0 bg-red-500/40 rounded-lg" />
+                )}
               </button>
             ))}
           </div>
 
           {/* Mão indicadora na fase guess - em cima da caixa */}
           {phase === 'guess' && showHand && handAnimation && (
-            <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 w-20 h-20 z-30">
+            <div 
+              className="absolute -top-10 w-20 h-20 z-30 transition-all duration-500"
+              style={{
+                left: boxCount === 1 ? '50%' : `${((handTargetBox + 0.5) / boxCount) * 100}%`,
+                transform: 'translateX(-50%)'
+              }}
+            >
               <Lottie animationData={handAnimation} loop />
             </div>
           )}
