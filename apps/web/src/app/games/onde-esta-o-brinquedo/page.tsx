@@ -301,7 +301,7 @@ export default function OndeEstaOBrinquedoPage() {
         </Link>
         <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow">
           <Trophy className="w-5 h-5 text-yellow-500" />
-          <span className="font-bold text-[#234c38]">{level}/3</span>
+          <span className="font-bold text-[#234c38]">{level + 1}/3</span>
         </div>
         <div className="w-10" />
       </header>
