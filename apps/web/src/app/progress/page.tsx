@@ -59,10 +59,20 @@ export default function ProgressPage() {
         return;
       }
 
+      // Buscar id_usuario pelo uuid do auth.user
+      const { data: usuarioData, error: usuarioError } = await supabase
+        .from('usuarios')
+        .select('id_usuario')
+        .eq('uuid', user.id)
+        .single();
+      
+      if (usuarioError) throw usuarioError;
+      if (!usuarioData) throw new Error('Usuário não encontrado');
+
       const { data, error } = await supabase
         .from('criancas')
         .select('id_crianca, nome_completo')
-        .eq('id_responsavel', user.id);
+        .eq('id_responsavel', usuarioData.id_usuario);
 
       if (error) throw error;
 
@@ -89,10 +99,10 @@ export default function ProgressPage() {
       // Buscar sessões do jogo "Onde está o brinquedo" com data
       const { data: sessions, error: sessionsError } = await supabase
         .from('sessoes_jogo')
-        .select('id_sessao, pontos, acertos, tentativas, data_inicio')
+        .select('id_sessao, pontos, acertos, tentativas, data_hora')
         .eq('id_crianca', childId)
         .eq('finalizada', true)
-        .order('data_inicio', { ascending: true });
+        .order('data_hora', { ascending: true });
 
       if (sessionsError) throw sessionsError;
 
