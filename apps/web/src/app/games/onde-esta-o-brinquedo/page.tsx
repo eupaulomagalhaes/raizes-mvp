@@ -185,7 +185,7 @@ export default function OndeEstaOBrinquedoPage() {
   // Removido: TTS duplicado - já é chamado no startNewRound
 
   const handleBoxClick = async (index: number) => {
-    if (selectedBox !== null || wrongBoxes.includes(index)) return
+    if (selectedBox !== null || wrongBoxes.includes(index) || level >= 3) return
     setSelectedBox(index)
     setAttempts(a => a + 1)
     await logEvent('box_clicked', { boxIndex: index, correctBox, level })
@@ -193,9 +193,9 @@ export default function OndeEstaOBrinquedoPage() {
     if (index === correctBox) {
       setScore(s => s + 1)
       
-      // Salvar toy e nível atual antes de incrementar
+      // Salvar toy e nível atual antes de incrementar (máximo 2 = nível 3)
       setRevealedToy(currentToy)
-      setCompletedLevel(level)
+      setCompletedLevel(Math.min(level, 2))
       
       setPhase('reveal') // Mostrar brinquedo primeiro
       await logEvent('correct_answer', { boxIndex: index, level })
