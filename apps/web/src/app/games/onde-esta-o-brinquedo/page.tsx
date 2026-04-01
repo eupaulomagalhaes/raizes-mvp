@@ -28,7 +28,7 @@ const ASSETS = {
   confetti: 'https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/confetti.json',
 }
 
-type Phase = 'welcome' | 'intro' | 'show-toy' | 'hide' | 'guess' | 'result' | 'end'
+type Phase = 'welcome' | 'intro' | 'show-toy' | 'hide' | 'guess' | 'reveal' | 'result' | 'end'
 
 export default function OndeEstaOBrinquedoPage() {
   const router = useRouter()
@@ -186,15 +186,19 @@ export default function OndeEstaOBrinquedoPage() {
 
     if (index === correctBox) {
       setScore(s => s + 1)
-      setPhase('result')
+      setPhase('reveal') // Mostrar brinquedo primeiro
       await logEvent('correct_answer', { boxIndex: index, level })
       
       ttsController.speak('MUITO BEM! VOCÊ ACERTOU!')
 
-      // Mostrar botão próximo nível após 2s
+      // Após 2.5s, mostrar card de conclusão
       setTimeout(() => {
-        setShowNextButton(true)
-      }, 2000)
+        setPhase('result')
+        // Mostrar botão próximo nível após mais 0.5s
+        setTimeout(() => {
+          setShowNextButton(true)
+        }, 500)
+      }, 2500)
     } else {
       // Erro: adicionar caixa à lista de erradas
       setWrongBoxes(prev => [...prev, index])
@@ -326,8 +330,8 @@ export default function OndeEstaOBrinquedoPage() {
           </button>
         )}
 
-        {/* Toy Display - Não mostrar em result */}
-        {phase === 'show-toy' && (
+        {/* Toy Display - Mostrar em show-toy e reveal */}
+        {(phase === 'show-toy' || phase === 'reveal') && (
           <div className="mb-4 animate-bounce">
             <img
               src={currentToy.url}
@@ -337,8 +341,8 @@ export default function OndeEstaOBrinquedoPage() {
           </div>
         )}
 
-        {/* Boxes Grid - Só mostrar nas fases corretas (não mostrar em result) */}
-        {(phase === 'hide' || phase === 'guess') && (
+        {/* Boxes Grid - Mostrar em hide, guess e reveal */}
+        {(phase === 'hide' || phase === 'guess' || phase === 'reveal') && (
         <div className="relative">
           <div className={`grid gap-4 ${boxCount === 1 ? 'grid-cols-1' : boxCount === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
             {Array.from({ length: boxCount }).map((_, i) => (
@@ -384,7 +388,7 @@ export default function OndeEstaOBrinquedoPage() {
         )}
 
         {/* Confetes quando acertar - Lottie fullscreen */}
-        {phase === 'result' && selectedBox === correctBox && confettiAnimation && (
+        {(phase === 'reveal' || phase === 'result') && selectedBox === correctBox && confettiAnimation && (
           <div className="fixed inset-0 pointer-events-none z-50 flex items-center justify-center">
             <Lottie 
               animationData={confettiAnimation} 
