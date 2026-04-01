@@ -197,8 +197,8 @@ export default function GamesPage() {
         </ul>
 
         {/* Actions */}
-        <div className="flex gap-4 w-full justify-center text-sm">
-          <Link href="/progress" className="text-[#234c38] font-bold hover:underline no-underline">
+        <div className="flex gap-4 w-full justify-center">
+          <Link href="/progress" className="text-[#234c38] text-lg font-extrabold underline hover:text-[#1d3f2f] transition-colors">
             Ver progresso
           </Link>
         </div>
