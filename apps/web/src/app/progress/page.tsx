@@ -172,6 +172,8 @@ export default function ProgressPage() {
       setShowChart(progressByDay.length > 0);
     } catch (error) {
       console.error('Erro ao carregar progresso:', error);
+      console.error('Error stack:', error instanceof Error ? error.stack : 'No stack');
+      console.error('Error message:', error instanceof Error ? error.message : String(error));
       setProgress(null);
     }
   };
@@ -214,7 +216,9 @@ export default function ProgressPage() {
               </label>
               <Select value={selectedChildId} onValueChange={(value) => setSelectedChildId(value || '')}>
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Escolha uma criança" />
+                  <SelectValue>
+                    {children.find(c => c.id_crianca === selectedChildId)?.nome_completo || 'Escolha uma criança'}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {children.map((child) => (
