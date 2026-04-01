@@ -72,7 +72,13 @@ export default function GamesPage() {
         .eq('id_responsavel', session.user.id)
 
       if (criancasData && criancasData.length > 0) {
-        setCriancaAtiva(criancasData[0])
+        // Tentar usar a criança ativa do localStorage
+        const activeChildId = localStorage.getItem('active_child_id')
+        const criancaSelecionada = activeChildId 
+          ? criancasData.find(c => c.id_crianca === activeChildId)
+          : null
+        
+        setCriancaAtiva(criancaSelecionada || criancasData[0])
       }
 
       setLoading(false)
