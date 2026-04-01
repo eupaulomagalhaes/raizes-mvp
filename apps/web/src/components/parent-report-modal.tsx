@@ -23,15 +23,6 @@ interface Feedback {
   correct_count?: number
 }
 
-interface GameProgress {
-  sessions: number
-  totalAttempts: number
-  totalCorrect: number
-  totalErrors: number
-  accuracy: number
-  avgLevel: number
-}
-
 const getBehaviorLabel = (value: string) => {
   const labels: Record<string, string> = {
     found_alone: 'Achou sozinho',
@@ -61,7 +52,6 @@ const getDifficultyLabel = (value: string) => {
 
 export function ParentReportModal({ open, onClose, childId, childName }: ParentReportModalProps) {
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([])
-  const [gameProgress, setGameProgress] = useState<GameProgress | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -84,14 +74,6 @@ export function ParentReportModal({ open, onClose, childId, childName }: ParentR
 
       if (!sessions || sessions.length === 0) {
         setFeedbacks([])
-        setGameProgress({
-          sessions: 0,
-          totalAttempts: 0,
-          totalCorrect: 0,
-          totalErrors: 0,
-          accuracy: 0,
-          avgLevel: 0
-        })
         setLoading(false)
         return
       }
@@ -117,41 +99,6 @@ export function ParentReportModal({ open, onClose, childId, childName }: ParentR
       }))
 
       setFeedbacks(formattedFeedbacks)
-
-      // Calcular métricas gerais
-      const { data: events } = await supabase
-        .from('eventos_jogo')
-        .select('tipo_evento, dados_adicionais')
-        .in('id_sessao', sessionIds)
-
-      let totalCorrect = 0
-      let totalErrors = 0
-      let totalAttempts = 0
-      let totalLevel = 0
-      let levelCount = 0
-
-      events?.forEach(e => {
-        if (e.tipo_evento === 'correct_answer') {
-          totalCorrect++
-          totalAttempts++
-          if (e.dados_adicionais?.level !== undefined) {
-            totalLevel += e.dados_adicionais.level
-            levelCount++
-          }
-        } else if (e.tipo_evento === 'wrong_answer') {
-          totalErrors++
-          totalAttempts++
-        }
-      })
-
-      setGameProgress({
-        sessions: sessions.length,
-        totalAttempts,
-        totalCorrect,
-        totalErrors,
-        accuracy: totalAttempts > 0 ? totalCorrect / totalAttempts : 0,
-        avgLevel: levelCount > 0 ? totalLevel / levelCount : 0
-      })
     } catch (error) {
       console.error('Error loading parent report:', error)
     } finally {
@@ -189,36 +136,6 @@ export function ParentReportModal({ open, onClose, childId, childName }: ParentR
             <div className="text-center py-8 text-[#3a5144]">Carregando...</div>
           ) : (
             <>
-              {/* Métricas das Sessões */}
-              {gameProgress && (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="bg-white p-4 rounded-xl border-2 border-[#edf4f0]">
-                    <div className="text-sm text-[#3a5144] mb-1">Sessões</div>
-                    <div className="text-2xl font-bold text-[#234c38]">
-                      {gameProgress.sessions}
-                    </div>
-                  </div>
-                  <div className="bg-white p-4 rounded-xl border-2 border-[#edf4f0]">
-                    <div className="text-sm text-[#3a5144] mb-1">Acertos</div>
-                    <div className="text-2xl font-bold text-green-600">
-                      {gameProgress.totalCorrect}
-                    </div>
-                  </div>
-                  <div className="bg-white p-4 rounded-xl border-2 border-[#edf4f0]">
-                    <div className="text-sm text-[#3a5144] mb-1">Erros</div>
-                    <div className="text-2xl font-bold text-red-600">
-                      {gameProgress.totalErrors}
-                    </div>
-                  </div>
-                  <div className="bg-white p-4 rounded-xl border-2 border-[#edf4f0]">
-                    <div className="text-sm text-[#3a5144] mb-1">Acurácia</div>
-                    <div className="text-2xl font-bold text-[#234c38]">
-                      {(gameProgress.accuracy * 100).toFixed(0)}%
-                    </div>
-                  </div>
-                </div>
-              )}
-
               {/* Lista de Feedbacks */}
               <div>
                 <h3 className="font-bold text-[#234c38] mb-4">
