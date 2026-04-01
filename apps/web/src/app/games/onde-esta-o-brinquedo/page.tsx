@@ -48,8 +48,9 @@ export default function OndeEstaOBrinquedoPage() {
   const [confettiAnimation, setConfettiAnimation] = useState<any>(null)
   const [wrongBoxes, setWrongBoxes] = useState<number[]>([])
   const [handTargetBox, setHandTargetBox] = useState(0)
+  const [revealedToy, setRevealedToy] = useState<typeof ASSETS.toys[0] | null>(null)
 
-  const currentToy = ASSETS.toys[level]
+  const currentToy = ASSETS.toys[Math.min(level, 2)]
 
   // Criar sessão no Supabase
   useEffect(() => {
@@ -190,6 +191,10 @@ export default function OndeEstaOBrinquedoPage() {
 
     if (index === correctBox) {
       setScore(s => s + 1)
+      
+      // Salvar toy atual antes de incrementar level
+      setRevealedToy(currentToy)
+      
       setPhase('reveal') // Mostrar brinquedo primeiro
       await logEvent('correct_answer', { boxIndex: index, level })
       
@@ -332,11 +337,20 @@ export default function OndeEstaOBrinquedoPage() {
         )}
 
         {/* Toy Display - Mostrar em show-toy e reveal */}
-        {(phase === 'show-toy' || phase === 'reveal') && (
+        {phase === 'show-toy' && (
           <div className="mb-4 animate-bounce">
             <img
               src={currentToy.url}
               alt={currentToy.name}
+              className="w-32 h-32 object-contain drop-shadow-xl"
+            />
+          </div>
+        )}
+        {phase === 'reveal' && revealedToy && (
+          <div className="mb-4 animate-bounce">
+            <img
+              src={revealedToy.url}
+              alt={revealedToy.name}
               className="w-32 h-32 object-contain drop-shadow-xl"
             />
           </div>
