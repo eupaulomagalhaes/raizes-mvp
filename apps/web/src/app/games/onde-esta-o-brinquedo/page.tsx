@@ -162,6 +162,13 @@ export default function OndeEstaOBrinquedoPage() {
     }
   }, [phase, showHand, boxCount])
 
+  // Iniciar automaticamente o próximo nível quando level mudar
+  useEffect(() => {
+    if (level > 0 && level < 3 && phase === 'hide') {
+      startNewRound()
+    }
+  }, [level, phase, startNewRound])
+
   // Mostrar mão após 5s no guess
   useEffect(() => {
     if (phase === 'guess') {
@@ -210,9 +217,14 @@ export default function OndeEstaOBrinquedoPage() {
 
   const handleNextLevel = () => {
     setShowNextButton(false)
+    setPhase('hide') // Esconder card imediatamente
+    
     if (level < 2) {
-      setLevel(l => l + 1)
-      setBoxCount(c => c + 1)
+      // Incrementar nível após pequeno delay
+      setTimeout(() => {
+        setLevel(l => l + 1)
+        setBoxCount(c => c + 1)
+      }, 100)
     } else {
       setShowParentFeedback(true)
       setFeedbackData({ acertos: score, tentativas: attempts, niveis: level + 1 })
