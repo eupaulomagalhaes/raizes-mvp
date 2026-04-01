@@ -218,6 +218,7 @@ export default function OndeEstaOBrinquedoPage() {
 
   const handleNextLevel = () => {
     setShowNextButton(false)
+    setPhase('hide') // Evitar flash do card
     
     if (level < 2) {
       // Incrementar nível e reiniciar
@@ -300,7 +301,7 @@ export default function OndeEstaOBrinquedoPage() {
         </Link>
         <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow">
           <Trophy className="w-5 h-5 text-yellow-500" />
-          <span className="font-bold text-[#234c38]">{score}/{attempts}</span>
+          <span className="font-bold text-[#234c38]">{level}/3</span>
         </div>
         <div className="w-10" />
       </header>
@@ -370,7 +371,7 @@ export default function OndeEstaOBrinquedoPage() {
                 />
                 {/* Overlay para caixas erradas */}
                 {wrongBoxes.includes(i) && (
-                  <div className="absolute inset-0 bg-red-500/40 rounded-lg" />
+                  <div className="absolute inset-0 bg-black/50 rounded-lg" />
                 )}
               </button>
             ))}
