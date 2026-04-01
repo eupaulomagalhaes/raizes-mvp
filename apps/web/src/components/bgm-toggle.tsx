@@ -13,10 +13,14 @@ export function BGMToggle() {
     setEnabled(bgmController.isEnabled())
     setPlaying(bgmController.isPlaying())
 
-    return bgmController.subscribe((en, pl) => {
+    const unsubscribe = bgmController.subscribe((en, pl) => {
       setEnabled(en)
       setPlaying(pl)
     })
+
+    return () => {
+      unsubscribe()
+    }
   }, [])
 
   const handleToggle = () => {
