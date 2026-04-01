@@ -90,8 +90,12 @@ export default function OndeEstaOBrinquedoPage() {
   }, [sessionId])
 
   // Iniciar nível
-  const startNewRound = useCallback(() => {
-    if (level >= 3) return
+  const startNewRound = useCallback((levelToUse?: number) => {
+    const actualLevel = levelToUse !== undefined ? levelToUse : level
+    if (actualLevel >= 3) return
+    
+    // Usar o brinquedo correto do nível atual
+    const toy = ASSETS.toys[actualLevel]
     
     setPhase('show-toy')
     setCorrectBox(Math.floor(Math.random() * boxCount))
@@ -100,8 +104,8 @@ export default function OndeEstaOBrinquedoPage() {
     setHandTargetBox(0)
 
     // TTS: Narrar "Olhe para o [brinquedo]!"
-    const toyName = currentToy.name
-    const toyArticle = currentToy.article
+    const toyName = toy.name
+    const toyArticle = toy.article
     ttsController.speak(`Olhe para ${toyArticle} ${toyName}!`)
 
     setTimeout(() => {
@@ -112,7 +116,7 @@ export default function OndeEstaOBrinquedoPage() {
         setPhase('guess')
       }, 500)
     }, 3000)
-  }, [level, boxCount, currentToy])
+  }, [level, boxCount])
 
   // Removido: não inicia automaticamente, só após o usuário clicar no intro
 
@@ -225,7 +229,7 @@ export default function OndeEstaOBrinquedoPage() {
       
       // Pequeno delay antes de iniciar próximo round
       setTimeout(() => {
-        startNewRound()
+        startNewRound(nextLevel)
       }, 300)
     } else {
       setShowParentFeedback(true)
