@@ -346,7 +346,7 @@ export default function OndeEstaOBrinquedoPage() {
 
         {/* Mão indicadora na fase guess - em cima da caixa */}
         {phase === 'guess' && showHand && handAnimation && (
-          <div className="absolute top-[45%] left-1/2 transform -translate-x-1/2 -translate-y-full w-24 h-24 z-30">
+          <div className="absolute bottom-[62%] left-1/2 transform -translate-x-1/2 w-20 h-20 z-30">
             <Lottie animationData={handAnimation} loop />
           </div>
         )}
