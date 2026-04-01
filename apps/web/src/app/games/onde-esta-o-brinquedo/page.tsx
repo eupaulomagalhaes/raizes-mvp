@@ -146,6 +146,14 @@ export default function OndeEstaOBrinquedoPage() {
     const createSession = async () => {
       const supabase = createClient()
       
+      // Buscar criança ativa do localStorage
+      const activeChildId = localStorage.getItem('active_child_id')
+      if (!activeChildId) {
+        console.error('[DEBUG] Nenhuma criança selecionada - redirecionando para /children')
+        router.push('/children')
+        return
+      }
+      
       // Buscar id_jogo pelo slug
       const { data: jogo } = await supabase
         .from('jogos')
@@ -155,11 +163,14 @@ export default function OndeEstaOBrinquedoPage() {
       
       const { data } = await supabase
         .from('sessoes_jogo')
-        .insert({ id_jogo: jogo?.id_jogo || null })
+        .insert({ 
+          id_jogo: jogo?.id_jogo || null,
+          id_crianca: activeChildId
+        })
         .select()
         .single()
       if (data) {
-        console.log('[DEBUG] Sessão criada:', data.id_sessao)
+        console.log('[DEBUG] Sessão criada:', data.id_sessao, 'para criança:', activeChildId)
         setSessionId(data.id_sessao)
         sessionIdRef.current = data.id_sessao
       }
