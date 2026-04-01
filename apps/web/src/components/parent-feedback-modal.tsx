@@ -32,13 +32,20 @@ export function ParentFeedbackModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!sessionId) return
+    
+    console.log('handleSubmit called', { sessionId, childBehavior, childInteraction, parentDifficulty })
+    
+    if (!sessionId) {
+      console.error('No sessionId - cannot save feedback')
+      alert('Erro: Sessão não encontrada. Por favor, recarregue a página.')
+      return
+    }
 
     setLoading(true)
     const supabase = createClient()
 
     try {
-      await supabase.from('eventos_jogo').insert({
+      const { error } = await supabase.from('eventos_jogo').insert({
         id_sessao: sessionId,
         tipo_evento: 'parent_feedback',
         dados_adicionais: {
@@ -51,10 +58,17 @@ export function ParentFeedbackModal({
         }
       })
 
+      if (error) {
+        console.error('Supabase error:', error)
+        throw error
+      }
+
+      console.log('Feedback saved successfully')
       onClose()
       if (onSuccess) onSuccess()
     } catch (error) {
       console.error('Error saving parent feedback:', error)
+      alert('Erro ao salvar feedback. Por favor, tente novamente.')
     } finally {
       setLoading(false)
     }
