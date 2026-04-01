@@ -388,11 +388,11 @@ export default function OndeEstaOBrinquedoPage() {
         {phase === 'result' && selectedBox === correctBox && (
           <div className="flex flex-col items-center gap-6 z-40">
             <div className="bg-white/70 backdrop-blur-sm rounded-3xl px-8 py-6 shadow-xl flex flex-col items-center gap-3">
-              <h2 className="text-2xl font-bold text-[#234c38]">Nível {level}</h2>
+              <h2 className="text-2xl font-bold text-[#234c38]">Nível {level + 1}</h2>
               <p className="text-lg font-semibold text-[#16a34a]">Concluído!</p>
               <div className="flex gap-3 mt-2">
                 {[0, 1, 2].map(i => (
-                  <span key={i} className={`text-4xl ${i < level ? '' : 'opacity-30'}`}>
+                  <span key={i} className={`text-4xl ${i <= level ? '' : 'opacity-30'}`}>
                     ⭐
                   </span>
                 ))}
