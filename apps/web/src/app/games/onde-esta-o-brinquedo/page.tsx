@@ -53,7 +53,94 @@ export default function OndeEstaOBrinquedoPage() {
 
   const currentToy = ASSETS.toys[Math.min(level, 2)]
 
-  // Criar sessão no Supabase
+  // Registrar evento
+  const logEvent = useCallback(async (tipo: string, dados?: object) => {
+    if (!sessionId) return
+    console.log('[DEBUG] logEvent:', tipo, dados)
+    const supabase = createClient()
+    
+    // Adicionar campo correct para eventos de resposta
+    const dadosAdicionais: any = { ...dados }
+    if (tipo === 'correct_answer') {
+      dadosAdicionais.correct = true
+    } else if (tipo === 'wrong_answer') {
+      dadosAdicionais.correct = false
+    }
+    
+    const { error } = await supabase.from('eventos_jogo').insert({
+      id_sessao: sessionId,
+      tipo_evento: 'game_action',
+      dados_adicionais: dadosAdicionais,
+    })
+    if (error) {
+      console.error('[DEBUG] Erro ao salvar evento:', error)
+    } else {
+      console.log('[DEBUG] Evento salvo com sucesso:', tipo, dadosAdicionais)
+    }
+  }, [sessionId])
+
+  // Finalizar sessão e calcular métricas
+  const endSession = useCallback(async () => {
+    if (!sessionId) return
+    console.log('[DEBUG] endSession - iniciando para sessionId:', sessionId)
+    const supabase = createClient()
+    
+    try {
+      // Buscar eventos da sessão para calcular métricas
+      const { data: events, error: eventsErr } = await supabase
+        .from('eventos_jogo')
+        .select('dados_adicionais')
+        .eq('id_sessao', sessionId)
+        .eq('tipo_evento', 'game_action')
+      
+      console.log('[DEBUG] Eventos encontrados:', events?.length || 0, events)
+      
+      if (!eventsErr && events) {
+        let pontos = 0, acertos = 0, tentativas = 0
+        
+        events.forEach(e => {
+          const payload = e.dados_adicionais || {}
+          if (typeof payload.correct === 'boolean') {
+            tentativas++
+            if (payload.correct) {
+              acertos++
+              pontos += payload.level || 1
+            }
+          }
+        })
+        
+        console.log('[DEBUG] Métricas calculadas:', { pontos, acertos, tentativas })
+        
+        // Atualizar sessão com as métricas calculadas
+        const { error: updateErr } = await supabase
+          .from('sessoes_jogo')
+          .update({ 
+            finalizada: true,
+            pontos,
+            acertos,
+            tentativas
+          })
+          .eq('id_sessao', sessionId)
+        
+        if (updateErr) {
+          console.error('[DEBUG] Erro ao atualizar sessão:', updateErr)
+        } else {
+          console.log('[DEBUG] Sessão finalizada com sucesso')
+        }
+      } else {
+        console.log('[DEBUG] Fallback - apenas marcando como finalizada')
+        // Fallback se não conseguir buscar eventos
+        await supabase
+          .from('sessoes_jogo')
+          .update({ finalizada: true })
+          .eq('id_sessao', sessionId)
+      }
+    } catch (e) {
+      console.error('[DEBUG] Erro em endSession:', e)
+    }
+  }, [sessionId])
+
+  // Criar sessão no Supabase e cleanup ao sair
   useEffect(() => {
     const createSession = async () => {
       const supabase = createClient()
@@ -70,10 +157,21 @@ export default function OndeEstaOBrinquedoPage() {
         .insert({ id_jogo: jogo?.id_jogo || null })
         .select()
         .single()
-      if (data) setSessionId(data.id_sessao)
+      if (data) {
+        console.log('[DEBUG] Sessão criada:', data.id_sessao)
+        setSessionId(data.id_sessao)
+      }
     }
     createSession()
-  }, [])
+    
+    // Cleanup: finalizar sessão ao sair da página
+    return () => {
+      console.log('[DEBUG] Componente desmontando - finalizando sessão')
+      if (sessionId) {
+        endSession()
+      }
+    }
+  }, [sessionId, endSession])
 
   // Carregar animações Lottie
   useEffect(() => {
@@ -87,17 +185,6 @@ export default function OndeEstaOBrinquedoPage() {
       .then(data => setConfettiAnimation(data))
       .catch(err => console.error('Erro ao carregar confetti:', err))
   }, [])
-
-  // Registrar evento
-  const logEvent = useCallback(async (tipo: string, dados?: object) => {
-    if (!sessionId) return
-    const supabase = createClient()
-    await supabase.from('eventos_jogo').insert({
-      id_sessao: sessionId,
-      tipo_evento: tipo,
-      dados_adicionais: dados || {},
-    })
-  }, [sessionId])
 
   // Iniciar nível
   const startNewRound = useCallback((levelToUse?: number) => {
@@ -506,7 +593,10 @@ export default function OndeEstaOBrinquedoPage() {
                   Jogar novamente
                 </Button>
                 <Button
-                  onClick={() => router.push('/games')}
+                  onClick={async () => {
+                    await endSession()
+                    router.push('/games')
+                  }}
                   variant="outline"
                   className="w-full border-2 border-[#234c38] text-[#234c38] font-bold py-6 rounded-full text-lg hover:bg-[#edf4f0]"
                 >
@@ -526,7 +616,8 @@ export default function OndeEstaOBrinquedoPage() {
         onClose={() => {
           setShowParentFeedback(false)
         }}
-        onSuccess={() => {
+        onSuccess={async () => {
+          await endSession()
           setPhase('congratulations')
           ttsController.speak('Parabéns! Você completou todas as 3 fases da atividade!')
         }}
