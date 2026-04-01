@@ -367,12 +367,10 @@ export default function OndeEstaOBrinquedoPage() {
                 <img
                   src={ASSETS.box}
                   alt="Caixa"
-                  className="w-full h-full object-contain drop-shadow-lg"
+                  className={`w-full h-full object-contain drop-shadow-lg transition-all ${
+                    wrongBoxes.includes(i) ? 'grayscale brightness-75 opacity-60' : ''
+                  }`}
                 />
-                {/* Overlay para caixas erradas */}
-                {wrongBoxes.includes(i) && (
-                  <div className="absolute inset-0 bg-black/50 rounded-lg" />
-                )}
               </button>
             ))}
           </div>
