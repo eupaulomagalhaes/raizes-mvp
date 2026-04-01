@@ -110,7 +110,7 @@ export default function ProgressPage() {
       
       const { data: events, error: eventsError } = await supabase
         .from('eventos_jogo')
-        .select('tempo_reacao_ms, tipo_evento, dados_adicionais, id_sessao, data_hora')
+        .select('tipo_evento, dados_adicionais, id_sessao, data_hora')
         .in('id_sessao', sessionIds);
 
       if (eventsError) throw eventsError;
@@ -120,9 +120,9 @@ export default function ProgressPage() {
       const totalCorrect = sessions?.reduce((sum, s) => sum + (s.acertos || 0), 0) || 0;
       const totalErrors = totalAttempts - totalCorrect;
       
-      const reactionEvents = events?.filter(e => e.tempo_reacao_ms) || [];
+      const reactionEvents = events?.filter(e => e.dados_adicionais?.reactionTimeMs) || [];
       const avgReactionMs = reactionEvents.length > 0
-        ? reactionEvents.reduce((sum, e) => sum + (e.tempo_reacao_ms || 0), 0) / reactionEvents.length
+        ? reactionEvents.reduce((sum, e) => sum + (e.dados_adicionais?.reactionTimeMs || 0), 0) / reactionEvents.length
         : 0;
 
       // Calcular nível médio dos eventos
