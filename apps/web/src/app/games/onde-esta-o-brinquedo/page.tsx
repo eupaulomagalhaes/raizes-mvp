@@ -49,6 +49,7 @@ export default function OndeEstaOBrinquedoPage() {
   const [wrongBoxes, setWrongBoxes] = useState<number[]>([])
   const [handTargetBox, setHandTargetBox] = useState(0)
   const [revealedToy, setRevealedToy] = useState<typeof ASSETS.toys[0] | null>(null)
+  const [completedLevel, setCompletedLevel] = useState(0)
 
   const currentToy = ASSETS.toys[Math.min(level, 2)]
 
@@ -192,8 +193,9 @@ export default function OndeEstaOBrinquedoPage() {
     if (index === correctBox) {
       setScore(s => s + 1)
       
-      // Salvar toy atual antes de incrementar level
+      // Salvar toy e nível atual antes de incrementar
       setRevealedToy(currentToy)
+      setCompletedLevel(level)
       
       setPhase('reveal') // Mostrar brinquedo primeiro
       await logEvent('correct_answer', { boxIndex: index, level })
@@ -415,11 +417,11 @@ export default function OndeEstaOBrinquedoPage() {
         {phase === 'result' && selectedBox === correctBox && (
           <div className="flex flex-col items-center gap-6 z-40">
             <div className="bg-white/70 backdrop-blur-sm rounded-3xl px-8 py-6 shadow-xl flex flex-col items-center gap-3">
-              <h2 className="text-2xl font-bold text-[#234c38]">Nível {level + 1}</h2>
+              <h2 className="text-2xl font-bold text-[#234c38]">Nível {completedLevel + 1}</h2>
               <p className="text-lg font-semibold text-[#16a34a]">Concluído!</p>
               <div className="flex gap-3 mt-2">
                 {[0, 1, 2].map(i => (
-                  <span key={i} className={`text-4xl ${i <= level ? '' : 'opacity-30'}`}>
+                  <span key={i} className={`text-4xl ${i <= completedLevel ? '' : 'opacity-30'}`}>
                     ⭐
                   </span>
                 ))}
