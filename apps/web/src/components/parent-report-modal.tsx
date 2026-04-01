@@ -2,8 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { X } from 'lucide-react'
 import { createClient } from '@/lib/supabase-client'
 
 interface ParentReportModalProps {
@@ -65,12 +63,25 @@ export function ParentReportModal({ open, onClose, childId, childName }: ParentR
     const supabase = createClient()
 
     try {
+      // Buscar id_jogo pelo slug primeiro
+      const { data: jogo } = await supabase
+        .from('jogos')
+        .select('id_jogo')
+        .eq('slug', 'onde-esta-o-brinquedo')
+        .single()
+      
+      if (!jogo) {
+        setFeedbacks([])
+        setLoading(false)
+        return
+      }
+      
       // Buscar sessões da criança
       const { data: sessions } = await supabase
         .from('sessoes_jogo')
         .select('id_sessao, id_crianca')
         .eq('id_crianca', childId)
-        .eq('id_jogo', 'onde-esta-o-brinquedo')
+        .eq('id_jogo', jogo.id_jogo)
 
       if (!sessions || sessions.length === 0) {
         setFeedbacks([])
@@ -110,19 +121,9 @@ export function ParentReportModal({ open, onClose, childId, childName }: ParentR
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <div className="flex items-center justify-between">
-            <DialogTitle className="text-2xl font-bold text-[#234c38]">
-              Relatório do Responsável
-            </DialogTitle>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onClose}
-              className="rounded-full"
-            >
-              <X className="w-5 h-5" />
-            </Button>
-          </div>
+          <DialogTitle className="text-2xl font-bold text-[#234c38]">
+            Relatório do Responsável
+          </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
