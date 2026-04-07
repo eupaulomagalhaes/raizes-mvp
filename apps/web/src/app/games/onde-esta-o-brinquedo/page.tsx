@@ -386,7 +386,7 @@ export default function OndeEstaOBrinquedoPage() {
       
       // Mensagem de encorajamento
       ttsController.cancel() // Cancelar qualquer TTS anterior
-      ttsController.speak('Quase! Estava aqui... tenta de novo! 🐻')
+      ttsController.speak('Quase! Estava aqui... tenta de novo!')
       
       // Revelar brinquedo por 2s (Protocolo)
       setRevealedToy(currentToy)
