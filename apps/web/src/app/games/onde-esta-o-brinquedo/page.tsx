@@ -60,6 +60,7 @@ export default function OndeEstaOBrinquedoPage() {
   const [showHint, setShowHint] = useState(false)
   const [showQuestionnaire, setShowQuestionnaire] = useState(false)
   const [childName, setChildName] = useState<string>('')
+  const [guessStartTime, setGuessStartTime] = useState<number | null>(null)
 
   const currentToy = ASSETS.toys[Math.min(level, 2)]
 
@@ -241,10 +242,10 @@ export default function OndeEstaOBrinquedoPage() {
         const supabase = createClient()
         const { data } = await supabase
           .from('criancas')
-          .select('nome')
+          .select('nome_completo')
           .eq('id_crianca', childId)
           .single()
-        if (data) setChildName(data.nome)
+        if (data) setChildName(data.nome_completo)
       }
     }
     fetchChildName()
@@ -279,6 +280,7 @@ export default function OndeEstaOBrinquedoPage() {
       setTimeout(() => {
         ttsController.speak(`Onde está ${toyArticle} ${toyName}?`)
         setPhase('guess')
+        setGuessStartTime(Date.now()) // Capturar timestamp do início
       }, 500)
     }, 3000)
   }, [level, boxCount])
@@ -364,7 +366,16 @@ export default function OndeEstaOBrinquedoPage() {
     if (selectedBox !== null || wrongBoxes.includes(index) || level >= 3) return
     setSelectedBox(index)
     setAttempts(a => a + 1)
-    await logEvent('box_clicked', { boxIndex: index, correctBox, level })
+    
+    // Calcular tempo de reação
+    const reactionTimeMs = guessStartTime ? Date.now() - guessStartTime : null
+    
+    await logEvent('box_clicked', { 
+      boxIndex: index, 
+      correctBox, 
+      level,
+      reactionTimeMs 
+    })
 
     if (index === correctBox) {
       // ACERTO
@@ -410,8 +421,8 @@ export default function OndeEstaOBrinquedoPage() {
         setPhase('guess')
         setRevealedToy(null)
         setSelectedBox(null)
+        setGuessStartTime(Date.now()) // Reiniciar timestamp após erro
         
-        // Dica visual após 2 erros (Protocolo)
         if (newErrorCount >= 2) {
           setShowHint(true)
         }
