@@ -502,7 +502,7 @@ export default function OndeEstaOBrinquedoPage() {
       {/* Don - Posicionamento Dinâmico conforme Protocolo */}
       {donState === 'presentation' && (phase === 'ritual' || phase === 'welcome') && (
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30 flex flex-col items-center gap-4">
-          <img src={ASSETS.donFull} alt="Don" className="w-24 h-24 animate-bounce" />
+          <img src={ASSETS.donFull} alt="Don" className="h-32 w-auto object-contain animate-bounce" />
           <div className="bg-white rounded-3xl px-6 py-3 shadow-xl">
             <p className="text-[#234c38] font-bold text-lg">
               {phase === 'ritual' ? 'Usa o dedinho assim! ☝️' : getSpeechText()}
@@ -546,7 +546,7 @@ export default function OndeEstaOBrinquedoPage() {
           >
             <Star className="w-32 h-32 text-yellow-400 animate-pulse fill-yellow-400" />
             {handAnimation && (
-              <div className="absolute top-1/2 left-1/2 transform translate-x-8 translate-y-8 w-24 h-24">
+              <div className="absolute bottom-1/4 left-1/2 transform -translate-x-1/2 w-32 h-32">
                 <Lottie animationData={handAnimation} loop />
               </div>
             )}
