@@ -190,17 +190,22 @@ export default function OndeEstaOBrinquedoPage() {
     // Cleanup: finalizar sessão ao sair da página
     return () => {
       console.log('[DEBUG] Componente desmontando - finalizando sessão')
-      if (sessionIdRef.current) {
-        const finalSessionId = sessionIdRef.current
+      if (sessionId) {
+        const finalSessionId = sessionId
+        console.log('[DEBUG] Cleanup - Iniciando atualização da sessão:', finalSessionId)
+        
         const supabase = createClient()
         
-        supabase
-          .from('eventos_jogo')
-          .select('dados_adicionais')
-          .eq('id_sessao', finalSessionId)
-          .eq('tipo_evento', 'game_action')
-          .then(({ data: events }) => {
-            let pontos = 0, acertos = 0, tentativas = 0
+        ;(async () => {
+          try {
+            const { data: events } = await supabase
+              .from('eventos_jogo')
+              .select('dados_adicionais')
+              .eq('id_sessao', finalSessionId)
+            
+            let pontos = 0
+            let acertos = 0
+            let tentativas = 0
             
             events?.forEach(e => {
               const payload = e.dados_adicionais || {}
@@ -215,12 +220,14 @@ export default function OndeEstaOBrinquedoPage() {
             
             console.log('[DEBUG] Cleanup - Métricas:', { pontos, acertos, tentativas })
             
-            return supabase
+            await supabase
               .from('sessoes_jogo')
               .update({ finalizada: true, pontos, acertos, tentativas })
               .eq('id_sessao', finalSessionId)
-          })
-          .catch(err => console.error('[DEBUG] Erro no cleanup:', err))
+          } catch (err) {
+            console.error('[DEBUG] Erro no cleanup:', err)
+          }
+        })()
       }
     }
   }, [])
