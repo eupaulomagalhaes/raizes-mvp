@@ -12,6 +12,7 @@ import { createClient } from '@/lib/supabase-client'
 interface LeadQuestionnaireProps {
   onComplete: () => void
   childId: string
+  childName?: string
 }
 
 interface StepOption {
@@ -106,9 +107,16 @@ const STEPS: Step[] = [
   },
 ]
 
-export function LeadQuestionnaire({ onComplete, childId }: LeadQuestionnaireProps) {
+export function LeadQuestionnaire({ onComplete, childId, childName }: LeadQuestionnaireProps) {
   const [currentStep, setCurrentStep] = useState(0)
-  const [answers, setAnswers] = useState<Record<string, any>>({})
+  const [answers, setAnswers] = useState<Record<string, any>>({
+    diagnosis: '',
+    challenges: [],
+    interest: '',
+    benefit: [],
+    digital_usage: '',
+    vip: '',
+  })
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const currentStepData = STEPS[currentStep]
@@ -188,6 +196,11 @@ export function LeadQuestionnaire({ onComplete, childId }: LeadQuestionnaireProp
         <div className="p-6 space-y-6">
           {/* Header */}
           <div className="text-center space-y-2">
+            {childName && currentStep === 0 && (
+              <p className="text-[#234c38] font-semibold">
+                Sobre: <span className="text-green-600">{childName}</span>
+              </p>
+            )}
             {currentStepData.highlight && (
               <div className="inline-flex items-center gap-2 bg-yellow-100 text-yellow-800 px-4 py-1 rounded-full text-sm font-semibold">
                 <Sparkles className="w-4 h-4" />

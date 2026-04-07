@@ -507,8 +507,8 @@ export default function OndeEstaOBrinquedoPage() {
         </div>
       )}
 
-      {/* Don - Celebração (centralizado, grande) */}
-      {donState === 'celebration' && (
+      {/* Don - Celebração (centralizado, grande) - Não mostrar durante congratulations */}
+      {donState === 'celebration' && phase !== 'congratulations' && (
         <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-40">
           <img src={ASSETS.donMascot} alt="Don" className="w-32 h-auto object-contain animate-bounce" />
         </div>
