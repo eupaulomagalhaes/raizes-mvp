@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { ChevronLeft, RotateCcw, Home, Trophy } from 'lucide-react'
+import { ChevronLeft, RotateCcw, Home, Trophy, Star, ArrowDown, Sparkles } from 'lucide-react'
 import { createClient } from '@/lib/supabase-client'
 import Link from 'next/link'
 import { STORAGE } from '@/lib/storage'
@@ -23,17 +23,27 @@ const ASSETS = {
   box: STORAGE.images.misteryBox,
   boxEmpty: STORAGE.images.misteryBoxEmpty,
   donHead: STORAGE.images.donCabeca,
+  donFull: STORAGE.images.donInteiro,
+  donMascot: STORAGE.images.donMascote,
   roomBg: 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/raizes-m-v-p-i9jdtd/assets/8sgpf2p40cxs/tela_fundo_atividade_1.png',
   clickHand: 'https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/Click_hand2.json',
   confetti: 'https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/confetti.json',
 }
 
-type Phase = 'welcome' | 'intro' | 'show-toy' | 'hide' | 'guess' | 'reveal' | 'result' | 'end' | 'congratulations'
+const CELEBRATIONS = [
+  { type: 'confetti', emojis: '🎊🎉' },
+  { type: 'stars', emojis: '⭐✨' },
+  { type: 'party', emojis: '🎈🎁' },
+]
+
+type Phase = 'ritual' | 'welcome' | 'intro' | 'show-toy' | 'hide' | 'guess' | 'reveal' | 'reveal-error' | 'result' | 'end' | 'congratulations'
+type DonState = 'hidden' | 'presentation' | 'game' | 'celebration'
 
 export default function OndeEstaOBrinquedoPage() {
   const router = useRouter()
   const [level, setLevel] = useState(0) // 0, 1, 2 = girafa, robô, dinossauro
-  const [phase, setPhase] = useState<Phase>('welcome')
+  const [phase, setPhase] = useState<Phase>('ritual')
+  const [donState, setDonState] = useState<DonState>('hidden')
   const [boxCount, setBoxCount] = useState(1)
   const [correctBox, setCorrectBox] = useState(0)
   const [selectedBox, setSelectedBox] = useState<number | null>(null)
@@ -51,6 +61,9 @@ export default function OndeEstaOBrinquedoPage() {
   const [handTargetBox, setHandTargetBox] = useState(0)
   const [revealedToy, setRevealedToy] = useState<typeof ASSETS.toys[0] | null>(null)
   const [completedLevel, setCompletedLevel] = useState(0)
+  const [errorCount, setErrorCount] = useState(0)
+  const [showHint, setShowHint] = useState(false)
+  const [celebrationIndex, setCelebrationIndex] = useState(0)
 
   const currentToy = ASSETS.toys[Math.min(level, 2)]
 
@@ -237,10 +250,14 @@ export default function OndeEstaOBrinquedoPage() {
     const toy = ASSETS.toys[actualLevel]
     
     setPhase('show-toy')
+    setDonState('presentation')
     setCorrectBox(Math.floor(Math.random() * boxCount))
     setSelectedBox(null)
     setWrongBoxes([])
     setHandTargetBox(0)
+    setErrorCount(0) // Reset contador de erros
+    setShowHint(false) // Reset dica visual
+    setRevealedToy(null)
 
     // TTS: Narrar "Olhe para o [brinquedo]!"
     const toyName = toy.name
@@ -270,20 +287,31 @@ export default function OndeEstaOBrinquedoPage() {
     }
   }, [])
 
-  // Fluxo welcome -> intro
+  // Ritual de início -> welcome -> intro
   useEffect(() => {
-    if (phase === 'welcome') {
+    if (phase === 'ritual') {
+      // Ritual: estrela aparece, aguarda toque
+      ttsController.speak('Usa o dedinho assim!')
+      setDonState('presentation')
+    } else if (phase === 'welcome') {
       ttsController.speak('Esse é o jogo: ONDE ESTÁ O BRINQUEDO!')
+      setDonState('presentation')
       
-      // Após 5s, muda para intro (dar tempo do TTS terminar)
       const timer = setTimeout(() => {
         setPhase('intro')
         ttsController.speak('Clique na tela para começar!')
+        setDonState('game')
       }, 5000)
 
       return () => clearTimeout(timer)
     }
   }, [phase])
+
+  // Handler do ritual
+  const handleRitualStart = () => {
+    setPhase('welcome')
+    setShowHand(false)
+  }
 
   // Mão indicadora após 5s
   useEffect(() => {
@@ -330,39 +358,58 @@ export default function OndeEstaOBrinquedoPage() {
     await logEvent('box_clicked', { boxIndex: index, correctBox, level })
 
     if (index === correctBox) {
+      // ACERTO
       setScore(s => s + 1)
+      setErrorCount(0) // Reset contador de erros
+      setShowHint(false)
       
       // Salvar toy e nível atual antes de incrementar (máximo 2 = nível 3)
       setRevealedToy(currentToy)
       setCompletedLevel(Math.min(level, 2))
       
-      setPhase('reveal') // Mostrar brinquedo primeiro
+      // Celebração variada
+      const randomIndex = Math.floor(Math.random() * CELEBRATIONS.length)
+      setCelebrationIndex(randomIndex)
+      
+      setPhase('reveal')
+      setDonState('celebration')
       await logEvent('correct_answer', { boxIndex: index, level })
       
-      // Incrementar nível imediatamente para sincronizar troféu com card
       setLevel(l => l + 1)
       setBoxCount(c => c + 1)
       
       ttsController.speak('MUITO BEM! VOCÊ ACERTOU!')
 
-      // Após 2.5s, mostrar card de conclusão
       setTimeout(() => {
         setPhase('result')
-        // Mostrar botão próximo nível após mais 0.5s
         setTimeout(() => {
           setShowNextButton(true)
         }, 500)
       }, 2500)
     } else {
-      // Erro: adicionar caixa à lista de erradas
+      // ERRO - Protocolo Base
+      const newErrorCount = errorCount + 1
+      setErrorCount(newErrorCount)
       setWrongBoxes(prev => [...prev, index])
       await logEvent('wrong_answer', { boxIndex: index, correctBox, level })
       
-      ttsController.speak('Ops! Tente outra caixa!')
+      // Mensagem de encorajamento
+      ttsController.speak('Quase! Estava aqui... tenta de novo! 🐻')
+      
+      // Revelar brinquedo por 2s (Protocolo)
+      setRevealedToy(currentToy)
+      setPhase('reveal-error')
       
       setTimeout(() => {
+        setPhase('guess')
+        setRevealedToy(null)
         setSelectedBox(null)
-      }, 1500)
+        
+        // Dica visual após 2 erros (Protocolo)
+        if (newErrorCount >= 2) {
+          setShowHint(true)
+        }
+      }, 2000)
     }
   }
 
@@ -403,6 +450,7 @@ export default function OndeEstaOBrinquedoPage() {
   const handleStartGame = () => {
     if (phase === 'intro') {
       setShowHand(false)
+      setDonState('game')
       startNewRound()
     }
   }
@@ -448,21 +496,60 @@ export default function OndeEstaOBrinquedoPage() {
         <div className="w-10" />
       </header>
 
-      {/* Mascote - Posição igual ao legado (topo esquerda) */}
-      <div className="relative z-10 px-4 flex items-start gap-3 mb-4 mt-2">
-        <div className="w-20 h-20 rounded-full bg-white shadow-xl flex items-center justify-center flex-shrink-0 border-4 border-[#234c38]">
-          <img src={ASSETS.donHead} alt="Don" className="w-14 h-auto" />
+      {/* Don - Posicionamento Dinâmico conforme Protocolo */}
+      {donState === 'presentation' && (phase === 'ritual' || phase === 'welcome') && (
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30 flex flex-col items-center gap-4">
+          <img src={ASSETS.donFull} alt="Don" className="w-24 h-24 animate-bounce" />
+          <div className="bg-white rounded-3xl px-6 py-3 shadow-xl">
+            <p className="text-[#234c38] font-bold text-lg">
+              {phase === 'ritual' ? 'Usa o dedinho assim! ☝️' : getSpeechText()}
+            </p>
+          </div>
         </div>
-        <div className="relative bg-white rounded-3xl px-5 py-4 shadow-xl max-w-md">
-          <div className="absolute -left-3 top-6 w-0 h-0 border-t-[12px] border-t-transparent border-b-[12px] border-b-transparent border-r-[16px] border-r-white" />
-          <p className="text-[#234c38] font-bold text-base leading-snug">
-            {getSpeechText()}
-          </p>
+      )}
+
+      {/* Don - Modo Jogo (canto inferior direito, discreto) */}
+      {donState === 'game' && phase !== 'ritual' && phase !== 'welcome' && (
+        <div className="fixed bottom-4 right-4 z-20 opacity-45">
+          <img src={ASSETS.donHead} alt="Don" className="w-13 h-13" />
         </div>
-      </div>
+      )}
+
+      {/* Don - Celebração (centralizado, grande) */}
+      {donState === 'celebration' && (
+        <div className="fixed top-1/3 left-1/2 transform -translate-x-1/2 z-40">
+          <img src={ASSETS.donMascot} alt="Don" className="w-28 h-28 animate-bounce" />
+        </div>
+      )}
+
+      {/* Balão de fala - Fases normais */}
+      {(phase === 'intro' || phase === 'show-toy' || phase === 'hide' || phase === 'guess') && (
+        <div className="relative z-10 px-4 flex items-start gap-3 mb-4 mt-2">
+          <div className="relative bg-white rounded-3xl px-5 py-4 shadow-xl max-w-md">
+            <p className="text-[#234c38] font-bold text-base leading-snug">
+              {getSpeechText()}
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Game Area */}
       <div className="relative z-10 flex-1 flex flex-col items-center justify-end px-6 pb-20">
+        {/* RITUAL DE INÍCIO - Estrela + Mãozinha (Protocolo Base) */}
+        {phase === 'ritual' && (
+          <button
+            onClick={handleRitualStart}
+            className="absolute inset-0 flex flex-col items-center justify-center z-20"
+          >
+            <Star className="w-32 h-32 text-yellow-400 animate-pulse fill-yellow-400" />
+            {handAnimation && (
+              <div className="absolute top-1/2 left-1/2 transform translate-x-8 translate-y-8 w-24 h-24">
+                <Lottie animationData={handAnimation} loop />
+              </div>
+            )}
+          </button>
+        )}
+
         {/* Intro Screen - Click to start */}
         {phase === 'intro' && (
           <button
@@ -477,7 +564,7 @@ export default function OndeEstaOBrinquedoPage() {
           </button>
         )}
 
-        {/* Toy Display - Mostrar em show-toy e reveal */}
+        {/* Toy Display - Mostrar em show-toy, reveal e reveal-error */}
         {phase === 'show-toy' && (
           <div className="mb-4 animate-bounce">
             <img
@@ -487,13 +574,18 @@ export default function OndeEstaOBrinquedoPage() {
             />
           </div>
         )}
-        {phase === 'reveal' && revealedToy && (
+        {(phase === 'reveal' || phase === 'reveal-error') && revealedToy && (
           <div className="mb-4 animate-bounce">
             <img
               src={revealedToy.url}
               alt={revealedToy.name}
               className="w-32 h-32 object-contain drop-shadow-xl"
             />
+            {phase === 'reveal-error' && (
+              <p className="text-center text-white bg-[#234c38] px-4 py-2 rounded-full mt-2 font-bold">
+                Estava aqui! Tente de novo!
+              </p>
+            )}
           </div>
         )}
 
@@ -538,17 +630,37 @@ export default function OndeEstaOBrinquedoPage() {
               <Lottie animationData={handAnimation} loop />
             </div>
           )}
+
+          {/* DICA VISUAL - Seta apontando para caixa correta após 2 erros (Protocolo) */}
+          {phase === 'guess' && showHint && (
+            <div 
+              className="absolute -top-16 z-40 transition-all duration-500 animate-bounce pointer-events-none"
+              style={{
+                left: boxCount === 1 ? '50%' : `${((correctBox + 0.5) / boxCount) * 100}%`,
+                transform: 'translateX(-50%)'
+              }}
+            >
+              <ArrowDown className="w-12 h-12 text-green-500 drop-shadow-lg" strokeWidth={3} />
+              <Sparkles className="w-8 h-8 text-yellow-400 absolute -top-2 -right-2 animate-pulse" />
+            </div>
+          )}
         </div>
         )}
 
-        {/* Confetes quando acertar - Lottie fullscreen */}
-        {(phase === 'reveal' || phase === 'result') && selectedBox === correctBox && confettiAnimation && (
+        {/* Celebrações variadas quando acertar (Protocolo) */}
+        {(phase === 'reveal' || phase === 'result') && selectedBox === correctBox && (
           <div className="fixed inset-0 pointer-events-none z-50 flex items-center justify-center">
-            <Lottie 
-              animationData={confettiAnimation} 
-              loop={false}
-              style={{ width: '100vw', height: '100vh' }}
-            />
+            {CELEBRATIONS[celebrationIndex].type === 'confetti' && confettiAnimation ? (
+              <Lottie 
+                animationData={confettiAnimation} 
+                loop={false}
+                style={{ width: '100vw', height: '100vh' }}
+              />
+            ) : (
+              <div className="text-9xl animate-spin">
+                {CELEBRATIONS[celebrationIndex].emojis}
+              </div>
+            )}
           </div>
         )}
 
