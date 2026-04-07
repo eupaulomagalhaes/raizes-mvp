@@ -31,12 +31,6 @@ const ASSETS = {
   confetti: 'https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/images/confetti.json',
 }
 
-const CELEBRATIONS = [
-  { type: 'confetti', emojis: '🎊🎉' },
-  { type: 'stars', emojis: '⭐✨' },
-  { type: 'party', emojis: '🎈🎁' },
-]
-
 type Phase = 'ritual' | 'welcome' | 'intro' | 'show-toy' | 'hide' | 'guess' | 'reveal' | 'reveal-error' | 'result' | 'end' | 'congratulations' | 'questionnaire'
 type DonState = 'hidden' | 'presentation' | 'game' | 'celebration'
 
@@ -64,7 +58,6 @@ export default function OndeEstaOBrinquedoPage() {
   const [completedLevel, setCompletedLevel] = useState(0)
   const [errorCount, setErrorCount] = useState(0)
   const [showHint, setShowHint] = useState(false)
-  const [celebrationIndex, setCelebrationIndex] = useState(0)
   const [showQuestionnaire, setShowQuestionnaire] = useState(false)
 
   const currentToy = ASSETS.toys[Math.min(level, 2)]
@@ -369,10 +362,6 @@ export default function OndeEstaOBrinquedoPage() {
       setRevealedToy(currentToy)
       setCompletedLevel(Math.min(level, 2))
       
-      // Celebração variada
-      const randomIndex = Math.floor(Math.random() * CELEBRATIONS.length)
-      setCelebrationIndex(randomIndex)
-      
       setPhase('reveal')
       setDonState('celebration')
       await logEvent('correct_answer', { boxIndex: index, level })
@@ -667,20 +656,14 @@ export default function OndeEstaOBrinquedoPage() {
         </div>
         )}
 
-        {/* Celebrações variadas quando acertar (Protocolo) */}
-        {(phase === 'reveal' || phase === 'result') && selectedBox === correctBox && (
+        {/* Confete quando acertar */}
+        {(phase === 'reveal' || phase === 'result') && selectedBox === correctBox && confettiAnimation && (
           <div className="fixed inset-0 pointer-events-none z-50 flex items-center justify-center">
-            {CELEBRATIONS[celebrationIndex].type === 'confetti' && confettiAnimation ? (
-              <Lottie 
-                animationData={confettiAnimation} 
-                loop={false}
-                style={{ width: '100vw', height: '100vh' }}
-              />
-            ) : (
-              <div className="text-9xl animate-spin">
-                {CELEBRATIONS[celebrationIndex].emojis}
-              </div>
-            )}
+            <Lottie 
+              animationData={confettiAnimation} 
+              loop={false}
+              style={{ width: '100vw', height: '100vh' }}
+            />
           </div>
         )}
 
@@ -714,16 +697,16 @@ export default function OndeEstaOBrinquedoPage() {
         {phase === 'congratulations' && !showQuestionnaire && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6">
-              <div className="flex items-center gap-4 mb-4">
-                <img src={ASSETS.donHead} alt="Don" className="w-16 h-16" />
-                <h2 className="text-2xl font-bold text-[#234c38]">
-                  Parabéns! 🎉
-                </h2>
-              </div>
+              <h2 className="text-2xl font-bold text-[#234c38] mb-4">
+                Parabéns! 🎉
+              </h2>
               
-              <p className="text-[#234c38] mb-6">
-                Você completou todas as 3 fases da atividade!
-              </p>
+              <div className="flex items-start gap-3 mb-6">
+                <img src={ASSETS.donHead} alt="Don" className="w-12 h-12 flex-shrink-0" />
+                <p className="text-[#234c38] font-medium">
+                  Você completou todas as 3 fases da atividade!
+                </p>
+              </div>
 
               <div className="bg-[#edf4f0] rounded-2xl p-4 mb-6 space-y-4">
                 <div>
