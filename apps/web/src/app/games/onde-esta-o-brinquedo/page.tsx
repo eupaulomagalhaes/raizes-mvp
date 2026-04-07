@@ -394,6 +394,7 @@ export default function OndeEstaOBrinquedoPage() {
       await logEvent('wrong_answer', { boxIndex: index, correctBox, level })
       
       // Mensagem de encorajamento
+      ttsController.cancel() // Cancelar qualquer TTS anterior
       ttsController.speak('Quase! Estava aqui... tenta de novo! 🐻')
       
       // Revelar brinquedo por 2s (Protocolo)
@@ -564,33 +565,30 @@ export default function OndeEstaOBrinquedoPage() {
           </button>
         )}
 
-        {/* Toy Display - Mostrar em show-toy, reveal e reveal-error */}
+        {/* Toy Display - Mostrar em show-toy */}
         {phase === 'show-toy' && (
           <div className="mb-4 animate-bounce">
             <img
               src={currentToy.url}
-              alt={currentToy.name}
+              alt=""
               className="w-32 h-32 object-contain drop-shadow-xl"
             />
           </div>
         )}
-        {(phase === 'reveal' || phase === 'reveal-error') && revealedToy && (
+        
+        {/* Toy Display - Acerto (centralizado) */}
+        {phase === 'reveal' && revealedToy && (
           <div className="mb-4 animate-bounce">
             <img
               src={revealedToy.url}
-              alt={revealedToy.name}
+              alt=""
               className="w-32 h-32 object-contain drop-shadow-xl"
             />
-            {phase === 'reveal-error' && (
-              <p className="text-center text-white bg-[#234c38] px-4 py-2 rounded-full mt-2 font-bold">
-                Estava aqui! Tente de novo!
-              </p>
-            )}
           </div>
         )}
 
-        {/* Boxes Grid - Mostrar apenas em hide e guess */}
-        {(phase === 'hide' || phase === 'guess') && (
+        {/* Boxes Grid - Mostrar em hide, guess e reveal-error */}
+        {(phase === 'hide' || phase === 'guess' || phase === 'reveal-error') && (
         <div className="relative">
           <div className={`grid gap-4 ${boxCount === 1 ? 'grid-cols-1' : boxCount === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
             {Array.from({ length: boxCount }).map((_, i) => (
@@ -634,14 +632,34 @@ export default function OndeEstaOBrinquedoPage() {
           {/* DICA VISUAL - Seta apontando para caixa correta após 2 erros (Protocolo) */}
           {phase === 'guess' && showHint && (
             <div 
-              className="absolute -top-16 z-40 transition-all duration-500 animate-bounce pointer-events-none"
+              className="absolute -top-20 z-40 transition-all duration-500 animate-bounce pointer-events-none flex flex-col items-center"
               style={{
                 left: boxCount === 1 ? '50%' : `${((correctBox + 0.5) / boxCount) * 100}%`,
                 transform: 'translateX(-50%)'
               }}
             >
-              <ArrowDown className="w-12 h-12 text-green-500 drop-shadow-lg" strokeWidth={3} />
-              <Sparkles className="w-8 h-8 text-yellow-400 absolute -top-2 -right-2 animate-pulse" />
+              <Sparkles className="w-10 h-10 text-yellow-400 animate-pulse fill-yellow-300" />
+              <ArrowDown className="w-14 h-14 text-green-500 drop-shadow-2xl" strokeWidth={4} />
+            </div>
+          )}
+
+          {/* BRINQUEDO revelado sobre caixa correta em caso de erro */}
+          {phase === 'reveal-error' && revealedToy && (
+            <div 
+              className="absolute -top-32 z-50 pointer-events-none"
+              style={{
+                left: boxCount === 1 ? '50%' : `${((correctBox + 0.5) / boxCount) * 100}%`,
+                transform: 'translateX(-50%)'
+              }}
+            >
+              <img
+                src={revealedToy.url}
+                alt=""
+                className="w-28 h-28 object-contain drop-shadow-2xl animate-bounce"
+              />
+              <p className="text-center text-white bg-[#234c38] px-4 py-2 rounded-full mt-2 font-bold text-sm">
+                Estava aqui!
+              </p>
             </div>
           )}
         </div>
