@@ -9,6 +9,7 @@ import { createClient } from '@/lib/supabase-client'
 import Link from 'next/link'
 import { STORAGE } from '@/lib/storage'
 import { ParentFeedbackModal } from '@/components/parent-feedback-modal'
+import { LeadQuestionnaire } from '@/components/lead-questionnaire'
 import { ttsController } from '@/lib/tts'
 import dynamic from 'next/dynamic'
 
@@ -36,7 +37,7 @@ const CELEBRATIONS = [
   { type: 'party', emojis: '🎈🎁' },
 ]
 
-type Phase = 'ritual' | 'welcome' | 'intro' | 'show-toy' | 'hide' | 'guess' | 'reveal' | 'reveal-error' | 'result' | 'end' | 'congratulations'
+type Phase = 'ritual' | 'welcome' | 'intro' | 'show-toy' | 'hide' | 'guess' | 'reveal' | 'reveal-error' | 'result' | 'end' | 'congratulations' | 'questionnaire'
 type DonState = 'hidden' | 'presentation' | 'game' | 'celebration'
 
 export default function OndeEstaOBrinquedoPage() {
@@ -64,6 +65,7 @@ export default function OndeEstaOBrinquedoPage() {
   const [errorCount, setErrorCount] = useState(0)
   const [showHint, setShowHint] = useState(false)
   const [celebrationIndex, setCelebrationIndex] = useState(0)
+  const [showQuestionnaire, setShowQuestionnaire] = useState(false)
 
   const currentToy = ASSETS.toys[Math.min(level, 2)]
 
@@ -709,7 +711,7 @@ export default function OndeEstaOBrinquedoPage() {
         )}
 
         {/* Tela de Congratulações */}
-        {phase === 'congratulations' && (
+        {phase === 'congratulations' && !showQuestionnaire && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6">
               <div className="flex items-center gap-4 mb-4">
@@ -759,21 +761,14 @@ export default function OndeEstaOBrinquedoPage() {
 
               <div className="space-y-3">
                 <Button
-                  onClick={handlePlayAgain}
-                  className="w-full bg-[#234c38] hover:bg-[#1d3f2f] text-white font-bold py-6 rounded-full text-lg"
+                  onClick={() => setShowQuestionnaire(true)}
+                  className="w-full bg-gradient-to-r from-[#234c38] to-green-600 hover:from-[#1d3f2f] hover:to-green-700 text-white font-bold py-6 rounded-full text-lg shadow-lg"
                 >
-                  Jogar novamente
+                  🎁 Continuar e Ganhar Acesso VIP
                 </Button>
-                <Button
-                  onClick={async () => {
-                    await endSession()
-                    router.push('/games')
-                  }}
-                  variant="outline"
-                  className="w-full border-2 border-[#234c38] text-[#234c38] font-bold py-6 rounded-full text-lg hover:bg-[#edf4f0]"
-                >
-                  Voltar aos jogos
-                </Button>
+                <p className="text-center text-xs text-gray-500">
+                  Responda 6 perguntas rápidas e concorra a benefícios exclusivos
+                </p>
               </div>
             </div>
           </div>
