@@ -777,6 +777,18 @@ export default function OndeEstaOBrinquedoPage() {
         {/* Estrelas removidas - agora estão no card de conclusão */}
       </div>
 
+      {/* Lead Questionnaire */}
+      {showQuestionnaire && (
+        <LeadQuestionnaire
+          childId={typeof window !== 'undefined' ? localStorage.getItem('active_child_id') || '' : ''}
+          onComplete={async () => {
+            setShowQuestionnaire(false)
+            await endSession()
+            router.push('/games')
+          }}
+        />
+      )}
+
       {/* Parent Feedback Modal */}
       <ParentFeedbackModal
         open={showParentFeedback}
