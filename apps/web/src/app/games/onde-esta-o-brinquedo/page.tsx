@@ -59,6 +59,7 @@ export default function OndeEstaOBrinquedoPage() {
   const [errorCount, setErrorCount] = useState(0)
   const [showHint, setShowHint] = useState(false)
   const [showQuestionnaire, setShowQuestionnaire] = useState(false)
+  const [childName, setChildName] = useState<string>('')
 
   const currentToy = ASSETS.toys[Math.min(level, 2)]
 
@@ -223,17 +224,30 @@ export default function OndeEstaOBrinquedoPage() {
     }
   }, [])
 
-  // Carregar animações Lottie
+  // Carregar animações Lottie e nome da criança
   useEffect(() => {
     fetch(ASSETS.clickHand)
       .then(res => res.json())
       .then(data => setHandAnimation(data))
-      .catch(err => console.error('Erro ao carregar mão:', err))
-
+    
     fetch(ASSETS.confetti)
       .then(res => res.json())
       .then(data => setConfettiAnimation(data))
-      .catch(err => console.error('Erro ao carregar confetti:', err))
+
+    // Buscar nome da criança
+    const fetchChildName = async () => {
+      const childId = typeof window !== 'undefined' ? localStorage.getItem('active_child_id') : null
+      if (childId) {
+        const supabase = createClient()
+        const { data } = await supabase
+          .from('criancas')
+          .select('nome')
+          .eq('id_crianca', childId)
+          .single()
+        if (data) setChildName(data.nome)
+      }
+    }
+    fetchChildName()
   }, [])
 
   // Iniciar nível
@@ -764,6 +778,7 @@ export default function OndeEstaOBrinquedoPage() {
       {showQuestionnaire && (
         <LeadQuestionnaire
           childId={typeof window !== 'undefined' ? localStorage.getItem('active_child_id') || '' : ''}
+          childName={childName}
           onComplete={async () => {
             setShowQuestionnaire(false)
             await endSession()
