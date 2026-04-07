@@ -147,7 +147,7 @@ export default function ChildrenPage() {
           .in('id_sessao', sessionIds);
         
         if (!eventsError && events) {
-          let total = 0, hits = 0, rtSum = 0, levelSum = 0, levelCount = 0;
+          let total = 0, hits = 0, rtSum = 0, rtCount = 0, levelSum = 0, levelCount = 0;
           
           events.forEach(e => {
             const payload = e.dados_adicionais || {};
@@ -155,7 +155,10 @@ export default function ChildrenPage() {
               total++;
               if (payload.correct) hits++;
             }
-            if (typeof payload.reactionTimeMs === 'number') rtSum += payload.reactionTimeMs;
+            if (typeof payload.reactionTimeMs === 'number') {
+              rtSum += payload.reactionTimeMs;
+              rtCount++;
+            }
             if (typeof payload.level === 'number') {
               levelSum++;
               levelCount++;
@@ -164,7 +167,8 @@ export default function ChildrenPage() {
           });
           
           accuracy = total > 0 ? Math.round((hits / total) * 100) : 0;
-          avgReactionTime = total > 0 ? Math.round(rtSum / total) : 0;
+          avgReactionTime = rtCount > 0 ? Math.round(rtSum / rtCount) : 0;
+          maxLevel = maxLevel + 1; // Converter de índice (0,1,2) para nível exibido (1,2,3)
         }
       }
       
