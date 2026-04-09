@@ -7,6 +7,7 @@ import { ArrowLeft, Volume2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Lottie from 'lottie-react';
 import { LeadQuestionnaire } from '@/components/lead-questionnaire';
+import { GAME_ASSETS, getAnimalsList, getRandomSceneryElement } from '@/config/game-assets';
 
 // TTS Controller
 const ttsController = {
@@ -26,28 +27,12 @@ const ttsController = {
   }
 }
 
-// PLACEHOLDER - Assets serão substituídos quando você enviar
+// Assets do Supabase Storage
 const ASSETS = {
-  don: '/assets/don-mascot.png',
-  confetti: 'https://lottie.host/3f3c0e4a-8e4a-4e4a-9c4a-0e4a3f3c0e4a/3f3c0e4a.json',
-  
-  // Layers do cenário (placeholder)
-  scenery: {
-    background: '/assets/forest/background.png',
-    trees: '/assets/forest/trees.png',
-    rocks: '/assets/forest/rocks.png',
-    bushes: '/assets/forest/bushes.png',
-  },
-  
-  // Animais (placeholder)
-  animals: [
-    { id: 'lion', name: 'leão', article: 'o', image: '/assets/animals/lion.png' },
-    { id: 'monkey', name: 'macaco', article: 'o', image: '/assets/animals/monkey.png' },
-    { id: 'parrot', name: 'papagaio', article: 'o', image: '/assets/animals/parrot.png' },
-    { id: 'elephant', name: 'elefante', article: 'o', image: '/assets/animals/elephant.png' },
-    { id: 'tiger', name: 'tigre', article: 'o', image: '/assets/animals/tiger.png' },
-    { id: 'zebra', name: 'zebra', article: 'a', image: '/assets/animals/zebra.png' },
-  ]
+  don: GAME_ASSETS.shared.mascot.don,
+  confetti: GAME_ASSETS.shared.animations.confetti,
+  scenery: GAME_ASSETS.ondeEstaoOsAnimais.scenery,
+  animals: getAnimalsList(),
 }
 
 // Configuração dos níveis
@@ -423,9 +408,12 @@ export default function OndeEstaoOsAnimaisPage() {
             </div>
           )}
 
-          {/* Cenário (placeholder - será substituído por layers reais) */}
+          {/* Cenário com background real */}
           <div className="relative w-full h-full flex items-center justify-center">
-            <div className="relative w-[90%] h-[80%] bg-gradient-to-b from-green-200 to-green-400 rounded-3xl overflow-hidden shadow-2xl">
+            <div 
+              className="relative w-[90%] h-[80%] rounded-3xl overflow-hidden shadow-2xl bg-cover bg-center"
+              style={{ backgroundImage: `url(${ASSETS.scenery.background})` }}
+            >
               
               {/* Elementos escondedores */}
               {hidingSpots.map(spot => (
@@ -441,42 +429,32 @@ export default function OndeEstaoOsAnimaisPage() {
                   }}
                   onClick={() => handleSpotClick(spot.id)}
                 >
-                  {/* Placeholder - será substituído por imagens reais */}
-                  <div className={`w-24 h-24 rounded-full flex items-center justify-center text-4xl ${
-                    spot.type === 'tree' ? 'bg-green-700' :
-                    spot.type === 'rock' ? 'bg-gray-500' :
-                    'bg-green-600'
-                  }`}>
-                    {spot.type === 'tree' ? '🌳' :
-                     spot.type === 'rock' ? '🪨' :
-                     '🌿'}
-                  </div>
+                  {/* Elemento do cenário (imagem real) */}
+                  <img 
+                    src={getRandomSceneryElement(spot.type === 'tree' ? 'trees' : spot.type === 'rock' ? 'rocks' : 'bushes')}
+                    alt={spot.type}
+                    className="w-32 h-32 object-contain drop-shadow-lg hover:scale-110 transition-transform"
+                  />
                   
                   {/* Mostrar animais na fase 'show' */}
                   {phase === 'show' && spot.hasAnimal && spot.animalId && (
-                    <div className="absolute -top-16 left-1/2 -translate-x-1/2">
-                      <div className="text-5xl animate-bounce">
-                        {ASSETS.animals.find(a => a.id === spot.animalId)?.id === 'lion' ? '🦁' :
-                         ASSETS.animals.find(a => a.id === spot.animalId)?.id === 'monkey' ? '🐵' :
-                         ASSETS.animals.find(a => a.id === spot.animalId)?.id === 'parrot' ? '🦜' :
-                         ASSETS.animals.find(a => a.id === spot.animalId)?.id === 'elephant' ? '🐘' :
-                         ASSETS.animals.find(a => a.id === spot.animalId)?.id === 'tiger' ? '🐯' :
-                         '🦓'}
-                      </div>
+                    <div className="absolute -top-20 left-1/2 -translate-x-1/2">
+                      <img 
+                        src={ASSETS.animals.find(a => a.id === spot.animalId)?.image}
+                        alt={ASSETS.animals.find(a => a.id === spot.animalId)?.name}
+                        className="w-24 h-24 object-contain animate-bounce drop-shadow-xl"
+                      />
                     </div>
                   )}
                   
                   {/* Mostrar animais encontrados */}
                   {foundAnimals.includes(spot.animalId || '') && (
-                    <div className="absolute -top-16 left-1/2 -translate-x-1/2">
-                      <div className="text-5xl">
-                        {ASSETS.animals.find(a => a.id === spot.animalId)?.id === 'lion' ? '🦁' :
-                         ASSETS.animals.find(a => a.id === spot.animalId)?.id === 'monkey' ? '🐵' :
-                         ASSETS.animals.find(a => a.id === spot.animalId)?.id === 'parrot' ? '🦜' :
-                         ASSETS.animals.find(a => a.id === spot.animalId)?.id === 'elephant' ? '🐘' :
-                         ASSETS.animals.find(a => a.id === spot.animalId)?.id === 'tiger' ? '🐯' :
-                         '🦓'}
-                      </div>
+                    <div className="absolute -top-20 left-1/2 -translate-x-1/2">
+                      <img 
+                        src={ASSETS.animals.find(a => a.id === spot.animalId)?.image}
+                        alt={ASSETS.animals.find(a => a.id === spot.animalId)?.name}
+                        className="w-24 h-24 object-contain drop-shadow-xl"
+                      />
                     </div>
                   )}
                   
