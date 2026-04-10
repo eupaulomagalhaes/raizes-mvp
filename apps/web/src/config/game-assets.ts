@@ -7,11 +7,11 @@ export const GAME_ASSETS = {
     scenery: {
       background: `${STORAGE_BASE_URL}/onde-estao-os-animais/scenery/background.png`,
       trees: [
-        `${STORAGE_BASE_URL}/onde-estao-os-animais/scenery/trees/arvore1.png`,
-        `${STORAGE_BASE_URL}/onde-estao-os-animais/scenery/trees/pinheiro.png`,
+        `${STORAGE_BASE_URL}/onde-estao-os-animais/scenery/trees/arvores.png`,
+        `${STORAGE_BASE_URL}/onde-estao-os-animais/scenery/trees/pinheiros.png`,
       ],
       rocks: [
-        `${STORAGE_BASE_URL}/onde-estao-os-animais/scenery/rocks/pedra.png`,
+        `${STORAGE_BASE_URL}/onde-estao-os-animais/scenery/rocks/rocha.png`,
       ],
       bushes: [
         `${STORAGE_BASE_URL}/onde-estao-os-animais/scenery/bushes/arbusto.png`,
@@ -72,7 +72,8 @@ export const GAME_ASSETS = {
   // Assets compartilhados
   shared: {
     mascot: {
-      don: '/assets/don-mascot.png', // Local até migrar para Storage
+      // Placeholder emoji até ter o Don no Storage
+      don: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🐻</text></svg>',
     },
     animations: {
       confetti: 'https://lottie.host/3f3c0e4a-8e4a-4e4a-9c4a-0e4a3f3c0e4a/3f3c0e4a.json',

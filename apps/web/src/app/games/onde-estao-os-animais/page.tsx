@@ -3,11 +3,11 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { createClient } from '@/lib/supabase-client';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Volume2 } from 'lucide-react';
+import { ArrowLeft, Play } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Lottie from 'lottie-react';
 import { LeadQuestionnaire } from '@/components/lead-questionnaire';
-import { GAME_ASSETS, getAnimalsList, getRandomSceneryElement } from '@/config/game-assets';
+import { GAME_ASSETS, getAnimalsList } from '@/config/game-assets';
 
 // TTS Controller
 const ttsController = {
@@ -34,6 +34,30 @@ const ASSETS = {
   scenery: GAME_ASSETS.ondeEstaoOsAnimais.scenery,
   animals: getAnimalsList(),
 }
+
+// Posições fixas dos elementos do cenário (pixel-perfect baseado no layout)
+const SCENERY_POSITIONS = [
+  // Cabana - canto inferior esquerdo
+  { id: 'cabana', type: 'structure' as const, x: 15, y: 75, image: GAME_ASSETS.ondeEstaoOsAnimais.scenery.structures[0] },
+  // Arbusto - centro inferior
+  { id: 'arbusto1', type: 'bush' as const, x: 45, y: 85, image: GAME_ASSETS.ondeEstaoOsAnimais.scenery.bushes[0] },
+  // Arbusto - direita inferior
+  { id: 'arbusto2', type: 'bush' as const, x: 75, y: 80, image: GAME_ASSETS.ondeEstaoOsAnimais.scenery.bushes[0] },
+  // Árvores - meio esquerda
+  { id: 'arvore1', type: 'tree' as const, x: 25, y: 55, image: GAME_ASSETS.ondeEstaoOsAnimais.scenery.trees[0] },
+  // Árvores - centro
+  { id: 'arvore2', type: 'tree' as const, x: 40, y: 50, image: GAME_ASSETS.ondeEstaoOsAnimais.scenery.trees[0] },
+  // Pinheiros - fundo direita
+  { id: 'pinheiro1', type: 'tree' as const, x: 65, y: 45, image: GAME_ASSETS.ondeEstaoOsAnimais.scenery.trees[1] },
+  // Pinheiros - fundo centro
+  { id: 'pinheiro2', type: 'tree' as const, x: 80, y: 48, image: GAME_ASSETS.ondeEstaoOsAnimais.scenery.trees[1] },
+  // Pedras - direita
+  { id: 'pedra1', type: 'rock' as const, x: 85, y: 70, image: GAME_ASSETS.ondeEstaoOsAnimais.scenery.rocks[0] },
+  // Pedras - direita inferior
+  { id: 'pedra2', type: 'rock' as const, x: 70, y: 75, image: GAME_ASSETS.ondeEstaoOsAnimais.scenery.rocks[0] },
+  // Nuvem - céu
+  { id: 'nuvem', type: 'cloud' as const, x: 70, y: 15, image: GAME_ASSETS.ondeEstaoOsAnimais.scenery.clouds[0] },
+]
 
 // Configuração dos níveis
 const LEVEL_CONFIG = {
@@ -62,11 +86,12 @@ type DonState = 'game' | 'celebration'
 
 interface HidingSpot {
   id: string
-  type: 'tree' | 'rock' | 'bush'
+  type: 'tree' | 'rock' | 'bush' | 'structure' | 'cloud'
   x: number
   y: number
   hasAnimal: boolean
   animalId?: string
+  image?: string
 }
 
 export default function OndeEstaoOsAnimaisPage() {
@@ -105,12 +130,24 @@ export default function OndeEstaoOsAnimaisPage() {
         router.push('/children')
         return
       }
+      
+      // Buscar id_jogo pelo slug
+      const { data: jogo, error: jogoError } = await supabase
+        .from('jogos')
+        .select('id_jogo')
+        .eq('slug', 'onde-estao-os-animais')
+        .single()
+      
+      if (jogoError || !jogo) {
+        console.error('Erro ao buscar jogo:', jogoError)
+        return
+      }
 
       const { data, error } = await supabase
         .from('sessoes_jogo')
         .insert({
           id_crianca: activeChildId,
-          slug_jogo: 'onde-estao-os-animais',
+          id_jogo: jogo.id_jogo,
           pontos: 0,
           acertos: 0,
           tentativas: 0,
@@ -212,22 +249,33 @@ export default function OndeEstaoOsAnimaisPage() {
       })
   }, [sessionId])
 
-  // Gerar posições dos elementos
+  // Gerar posições dos elementos (usando posições fixas do cenário)
   const generateHidingSpots = useCallback((levelNum: number) => {
     const config = LEVEL_CONFIG[levelNum as keyof typeof LEVEL_CONFIG]
-    const spots: HidingSpot[] = []
-    const types: ('tree' | 'rock' | 'bush')[] = ['tree', 'rock', 'bush']
     
-    // Gerar elementos
-    for (let i = 0; i < config.elementCount; i++) {
-      spots.push({
-        id: `spot-${i}`,
-        type: types[i % types.length],
-        x: 10 + (i * (80 / config.elementCount)),
-        y: 30 + Math.random() * 40,
-        hasAnimal: false
-      })
+    // Selecionar posições baseadas no nível
+    let selectedPositions = SCENERY_POSITIONS
+    if (levelNum === 0) {
+      // Nível 1: 3 elementos (cabana, arbusto, pedra)
+      selectedPositions = SCENERY_POSITIONS.filter(p => 
+        ['cabana', 'arbusto1', 'pedra1'].includes(p.id)
+      )
+    } else if (levelNum === 1) {
+      // Nível 2: 5 elementos
+      selectedPositions = SCENERY_POSITIONS.filter(p => 
+        ['cabana', 'arbusto1', 'arbusto2', 'arvore1', 'pedra1'].includes(p.id)
+      )
     }
+    // Nível 3: usa todos os 10 elementos
+    
+    const spots: HidingSpot[] = selectedPositions.map(pos => ({
+      id: pos.id,
+      type: pos.type,
+      x: pos.x,
+      y: pos.y,
+      hasAnimal: false,
+      image: pos.image,
+    }))
     
     // Distribuir animais aleatoriamente
     const availableAnimals = [...ASSETS.animals].slice(0, config.animalCount)
@@ -240,7 +288,7 @@ export default function OndeEstaoOsAnimaisPage() {
       }
     })
     
-    return spots.sort((a, b) => parseFloat(a.id.split('-')[1]) - parseFloat(b.id.split('-')[1]))
+    return spots
   }, [])
 
   // Iniciar novo round
@@ -345,20 +393,41 @@ export default function OndeEstaoOsAnimaisPage() {
 
   // Renderizar
   return (
-    <div className="relative min-h-screen bg-gradient-to-b from-green-50 to-blue-50 overflow-hidden">
+    <main 
+      className="min-h-screen flex flex-col relative overflow-hidden"
+      style={{
+        backgroundImage: `url(${ASSETS.scenery.background})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      }}
+    >
+      {/* Estilos CSS para animação de respiração */}
+      <style jsx>{`
+        @keyframes breathe {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.03); }
+        }
+        .animal-breathe {
+          animation: breathe 2s ease-in-out infinite;
+        }
+      `}</style>
       {/* Header */}
-      <div className="absolute top-4 left-4 right-4 z-50 flex justify-between items-center">
+      <div className="absolute top-4 left-4 right-4 z-50 flex justify-between items-center pointer-events-none">
         <Button
           variant="ghost"
           size="icon"
           onClick={() => router.push('/games')}
-          className="bg-white/80 hover:bg-white"
+          className="bg-white/80 hover:bg-white shadow-lg pointer-events-auto"
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <div className="bg-white/80 px-4 py-2 rounded-full">
-          <span className="font-bold">{LEVEL_CONFIG[level as keyof typeof LEVEL_CONFIG]?.stars || '⭐'}</span>
-        </div>
+        {/* Indicador de nível - só aparece durante o jogo, não na intro */}
+        {phase !== 'intro' && (
+          <div className="bg-white/90 px-4 py-2 rounded-full shadow-lg">
+            <span className="font-bold text-lg">{LEVEL_CONFIG[level as keyof typeof LEVEL_CONFIG]?.stars || '⭐'}</span>
+          </div>
+        )}
       </div>
 
       {/* Confete (quando acerta todos) */}
@@ -371,26 +440,26 @@ export default function OndeEstaoOsAnimaisPage() {
       {/* Don Mascot */}
       {donState === 'celebration' && phase !== 'congratulations' && (
         <div className="absolute bottom-4 left-4 z-40 animate-bounce">
-          <img src={ASSETS.don} alt="Don" className="h-32 w-auto object-contain" />
+          <img src={ASSETS.don} alt="Don" className="h-32 w-auto object-contain drop-shadow-2xl" />
         </div>
       )}
 
       {/* Intro */}
       {phase === 'intro' && (
-        <div className="flex flex-col items-center justify-center min-h-screen p-8">
-          <img src={ASSETS.don} alt="Don" className="h-48 w-auto object-contain mb-6 animate-bounce" />
-          <h1 className="text-4xl font-bold text-center mb-4 text-green-800">
+        <div className="flex flex-col items-center justify-center min-h-screen p-8 bg-black/30">
+          <img src={ASSETS.don} alt="Don" className="h-48 w-auto object-contain mb-6 animate-bounce drop-shadow-2xl" />
+          <h1 className="text-4xl font-bold text-center mb-4 text-white drop-shadow-lg">
             Onde estão os animais?
           </h1>
-          <p className="text-lg text-center mb-8 text-gray-700 max-w-md">
+          <p className="text-lg text-center mb-8 text-white/90 max-w-md drop-shadow-md">
             Observe onde os animais estão e depois encontre-os escondidos na floresta!
           </p>
           <Button
             onClick={() => startNewRound()}
             size="lg"
-            className="bg-green-600 hover:bg-green-700 text-white px-8 py-6 text-xl"
+            className="bg-green-600 hover:bg-green-700 text-white px-8 py-6 text-xl shadow-xl"
           >
-            <Volume2 className="mr-2 h-6 w-6" />
+            <Play className="mr-2 h-6 w-6" />
             Começar
           </Button>
         </div>
@@ -401,19 +470,16 @@ export default function OndeEstaoOsAnimaisPage() {
         <div className="relative w-full h-screen pt-20 pb-8">
           {/* Contagem regressiva */}
           {phase === 'countdown' && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/30 z-40">
-              <div className="text-9xl font-bold text-white animate-ping">
+            <div className="absolute inset-0 flex items-center justify-center bg-black/40 z-40">
+              <div className="text-9xl font-bold text-white animate-ping drop-shadow-2xl">
                 {countdown}
               </div>
             </div>
           )}
 
-          {/* Cenário com background real */}
+          {/* Área de jogo - já tem o background da tela inteira */}
           <div className="relative w-full h-full flex items-center justify-center">
-            <div 
-              className="relative w-[90%] h-[80%] rounded-3xl overflow-hidden shadow-2xl bg-cover bg-center"
-              style={{ backgroundImage: `url(${ASSETS.scenery.background})` }}
-            >
+            <div className="relative w-full h-full">
               
               {/* Elementos escondedores */}
               {hidingSpots.map(spot => (
@@ -429,31 +495,43 @@ export default function OndeEstaoOsAnimaisPage() {
                   }}
                   onClick={() => handleSpotClick(spot.id)}
                 >
-                  {/* Elemento do cenário (imagem real) */}
+                  {/* Elemento do cenário (imagem real na posição fixa) */}
                   <img 
-                    src={getRandomSceneryElement(spot.type === 'tree' ? 'trees' : spot.type === 'rock' ? 'rocks' : 'bushes')}
+                    src={spot.image}
                     alt={spot.type}
                     className="w-32 h-32 object-contain drop-shadow-lg hover:scale-110 transition-transform"
                   />
                   
-                  {/* Mostrar animais na fase 'show' */}
+                  {/* Mostrar animais na fase 'show' - posicionados ao lado da estrutura */}
                   {phase === 'show' && spot.hasAnimal && spot.animalId && (
-                    <div className="absolute -top-20 left-1/2 -translate-x-1/2">
+                    <div className={`
+                      absolute animal-breathe drop-shadow-xl
+                      ${spot.type === 'structure' ? '-right-16 top-0' : ''}
+                      ${spot.type === 'tree' ? '-left-12 -top-4' : ''}
+                      ${spot.type === 'bush' ? '-right-12 top-2' : ''}
+                      ${spot.type === 'rock' ? '-left-10 top-0' : ''}
+                    `}>
                       <img 
                         src={ASSETS.animals.find(a => a.id === spot.animalId)?.image}
                         alt={ASSETS.animals.find(a => a.id === spot.animalId)?.name}
-                        className="w-24 h-24 object-contain animate-bounce drop-shadow-xl"
+                        className="w-20 h-20 object-contain"
                       />
                     </div>
                   )}
                   
-                  {/* Mostrar animais encontrados */}
+                  {/* Mostrar animais encontrados - aparecem de novo ao clicar */}
                   {foundAnimals.includes(spot.animalId || '') && (
-                    <div className="absolute -top-20 left-1/2 -translate-x-1/2">
+                    <div className={`
+                      absolute drop-shadow-xl
+                      ${spot.type === 'structure' ? '-right-16 top-0' : ''}
+                      ${spot.type === 'tree' ? '-left-12 -top-4' : ''}
+                      ${spot.type === 'bush' ? '-right-12 top-2' : ''}
+                      ${spot.type === 'rock' ? '-left-10 top-0' : ''}
+                    `}>
                       <img 
                         src={ASSETS.animals.find(a => a.id === spot.animalId)?.image}
                         alt={ASSETS.animals.find(a => a.id === spot.animalId)?.name}
-                        className="w-24 h-24 object-contain drop-shadow-xl"
+                        className="w-20 h-20 object-contain"
                       />
                     </div>
                   )}
@@ -467,8 +545,8 @@ export default function OndeEstaoOsAnimaisPage() {
                   
                   {/* Dica após 2 erros */}
                   {showHint && spot.hasAnimal && !foundAnimals.includes(spot.animalId || '') && (
-                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 animate-bounce">
-                      <div className="text-4xl">⭐</div>
+                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 animate-pulse">
+                      <div className="text-4xl drop-shadow-lg">⭐</div>
                     </div>
                   )}
                 </div>
@@ -543,6 +621,6 @@ export default function OndeEstaoOsAnimaisPage() {
           childName={childName}
         />
       )}
-    </div>
+    </main>
   )
 }

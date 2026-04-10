@@ -169,6 +169,7 @@ export default function GamesPage() {
         {/* Games List */}
         <ul className="w-full flex flex-col gap-4 list-none p-0 m-0">
           {jogos.map((jogo, index) => {
+            // Primeiro jogo: Onde está o brinquedo
             if (index === 0 && jogo.habilitado) {
               return (
                 <li key={jogo.id_jogo} className="w-full">
@@ -181,6 +182,28 @@ export default function GamesPage() {
                       alt="Caixa misteriosa"
                       className="w-14 h-14 object-contain"
                     />
+                    <span className="text-[#234c38] font-extrabold text-[1.05rem] flex-1 text-left break-words leading-tight">
+                      {jogo.nome}
+                    </span>
+                  </Link>
+                </li>
+              )
+            }
+            // Segundo jogo: Onde estão os animais
+            if (index === 1 && jogo.slug === 'onde-estao-os-animais') {
+              return (
+                <li key={jogo.id_jogo} className="w-full">
+                  <Link
+                    href={`/games/${jogo.slug}`}
+                    className="w-full rounded-3xl p-4 flex items-center gap-3 shadow-[0_14px_28px_rgba(0,0,0,0.16)] no-underline bg-gradient-to-br from-white to-[#e3ffec]/90 border-2 border-[#a5d9b3] hover:shadow-[0_20px_40px_rgba(0,0,0,0.2)] transition-shadow"
+                  >
+                    <div className="w-14 h-14 flex items-center justify-center">
+                      <img
+                        src="https://vjeizqpzzfgdxbhetfdc.supabase.co/storage/v1/object/public/game-assets/onde-estao-os-animais/animals/coruja.png"
+                        alt="Coruja"
+                        className="max-w-full max-h-full object-contain"
+                      />
+                    </div>
                     <span className="text-[#234c38] font-extrabold text-[1.05rem] flex-1 text-left break-words leading-tight">
                       {jogo.nome}
                     </span>
